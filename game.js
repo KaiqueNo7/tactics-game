@@ -81,11 +81,32 @@ function drawBoard() {
 
 function getMovableHexes(hex) {
     return board.filter(h => {
+        if (h.occupied || h.label === hex.label) return false;
+        
         let colDiff = Math.abs(h.col - hex.col);
         let rowDiff = Math.abs(h.row - hex.row);
-        return (colDiff + rowDiff <= moveRange) && !h.occupied && h.label !== hex.label;
+        
+        // Distância para grid offset
+        let distance;
+        if (colDiff === 0) {
+            distance = rowDiff;
+        } else if (colDiff === 1) {
+            // Ajuste para colunas offset
+            if (hex.col % 2 === 0) { // Coluna par
+                distance = (h.row >= hex.row) ? rowDiff : rowDiff + 1;
+            } else { // Coluna ímpar
+                distance = (h.row <= hex.row) ? rowDiff : rowDiff + 1;
+            }
+        } else if (colDiff === 2) {
+            distance = rowDiff <= 1 ? 2 : 3;
+        } else {
+            distance = colDiff + rowDiff; // Para distâncias maiores
+        }
+        
+        return distance <= moveRange;
     });
 }
+
 
 function highlightMovableHexes(hex) {
     highlightedHexes = getMovableHexes(hex).map(h => h.label);
