@@ -45,8 +45,6 @@ function drawHexagon(x, y, label, highlight = false) {
 }
 
 function drawCharacter(x, y) {
-    console.log(x, y);
-    console.log('etntr');
     ctx.beginPath();
     ctx.arc(x, y, hexRadius / 3, 0, 2 * Math.PI);
     ctx.fillStyle = "red";
@@ -54,9 +52,8 @@ function drawCharacter(x, y) {
     ctx.stroke();
 }
 
-function drawBoard(hex) {
+function drawBoard() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    board = [];
     let xOffset = startX;
     for (let col = 0; col < columns.length; col++) {
         let yOffset = startY;
@@ -73,31 +70,24 @@ function drawBoard(hex) {
         xOffset += hexWidth * 0.75;
     }
 
-    console.log(hex);
-
-    board.forEach(hex => { if (hex.occupied) drawCharacter(hex.x, hex.y); });
-}
-
-function placeCharacter(label) {
-    let hex = board.find(h => h.label === label);
-    if (hex) {
-        hex.occupied = true;
-        selectedCharacter = hex;
-        drawBoard(hex);
-    }
-}
-
-function getMovableHexes(hex) {
-    return board.filter(h => {
-        let colDiff = Math.abs(h.col - hex.col);
-        let rowDiff = Math.abs(h.row - hex.row);
-        return (colDiff + rowDiff <= moveRange) && !h.occupied && h.label !== hex.label;
+    // Agora que o tabuleiro foi desenhado, desenha os personagens nas posições ocupadas
+    board.forEach(hex => {
+        if (hex.occupied) {
+            console.log(`Hex ${hex.label} is occupied`); // Verifique se o personagem está sendo desenhado
+            drawCharacter(hex.x, hex.y);
+        }
     });
 }
 
-function highlightMovableHexes(hex) {
-    highlightedHexes = getMovableHexes(hex).map(h => h.label);
-    drawBoard();
+function placeCharacter(label) {
+    // Verifique se o label está correto
+    console.log(`Placing character at ${label}`);
+    let hex = board.find(h => h.label === label);
+    if (hex && !hex.occupied) { // Adiciona a condição de que a casa não pode estar ocupada
+        hex.occupied = true;
+        selectedCharacter = hex;
+        drawBoard(); // Redesenha o tabuleiro com o personagem colocado
+    }
 }
 
 canvas.addEventListener("click", function(event) {
