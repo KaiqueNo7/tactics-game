@@ -79,6 +79,19 @@ function drawBoard() {
     });
 }
 
+function getMovableHexes(hex) {
+    return board.filter(h => {
+        let colDiff = Math.abs(h.col - hex.col);
+        let rowDiff = Math.abs(h.row - hex.row);
+        return (colDiff + rowDiff <= moveRange) && !h.occupied && h.label !== hex.label;
+    });
+}
+
+function highlightMovableHexes(hex) {
+    highlightedHexes = getMovableHexes(hex).map(h => h.label);
+    drawBoard();
+}
+
 function placeCharacter(label) {
     // Verifique se o label está correto
     console.log(`Placing character at ${label}`);
