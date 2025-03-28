@@ -1,7 +1,6 @@
-// src/core/game.js (atualizado)
-import { Board } from './board.js';
+import { Board } from './board-logic.js';
 import { BoardRenderer } from '../ui/render.js';
-import { TurnManager, Player } from './turnManager.js';
+import { TurnManager, Player } from './turn-manager.js';
 import { DebugHUD } from '../ui/hud.js';
 import { warrior1, warrior2, archer1, archer2, mage1, mage2 } from '../characters/characters.js';
 
