@@ -46,10 +46,13 @@ export class BoardRenderer {
     }
 
     drawCharacters(characters) {
+        this.board.board.forEach(hex => hex.occupied = false);
+
         characters.forEach(character => {
             if (character.position) {
                 const hex = this.board.getHexByLabel(character.position);
                 if (hex) {
+                    hex.occupied = true;
                     this.drawCharacter(hex.x, hex.y, character.color);
                 }
             }

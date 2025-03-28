@@ -55,3 +55,5 @@ mage2.addSpecialSkill((character, context) => {
         }
     });
 });
+
+export { warrior1, archer1, mage1, warrior2, archer2, mage2 };

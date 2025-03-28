@@ -1,5 +1,9 @@
+// src/core/game.js (atualizado)
 import { Board } from './board.js';
 import { BoardRenderer } from '../ui/render.js';
+import { TurnManager, Player } from './turnManager.js';
+import { DebugHUD } from '../ui/hud.js';
+import { warrior1, warrior2, archer1, archer2, mage1, mage2 } from '../characters/characters.js';
 
 export class GameController {
     constructor(canvas) {
@@ -8,18 +12,69 @@ export class GameController {
         this.renderer = new BoardRenderer(this.board, canvas);
         this.selectedCharacter = null;
         this.highlightedHexes = [];
-        this.players = [];
 
+        // Criar jogadores com personagens
+        const player1 = new Player("Jogador 1", [warrior1, archer1, mage1]);
+        const player2 = new Player("Jogador 2", [warrior2, archer2, mage2]);
+        
+        // Definir posições iniciais para os personagens
+        this.setupInitialPositions(player1, player2);
+
+        this.turnManager = new TurnManager([player1, player2]);
+        this.currentPlayer = this.turnManager.getCurrentCharacter();
+
+        // Adicionar HUD de depuração
+        this.debugHUD = new DebugHUD(canvas, this);
+
+        // Configurar event listeners
         this.setupEventListeners();
+    }
+
+    // Adicionar o método setupInitialPositions
+    setupInitialPositions(player1, player2) {
+        // Posições de início para os personagens do jogador 1
+        player1.characters[0].position = 'A1';
+        player1.characters[1].position = 'B2';
+        player1.characters[2].position = 'C1';
+
+        // Posições de início para os personagens do jogador 2
+        player2.characters[0].position = 'E6';
+        player2.characters[1].position = 'D5';
+        player2.characters[2].position = 'E4';
+    }
+
+    // Adicionar método setupEventListeners
+    setupEventListeners() {
+        this.canvas.addEventListener("click", (event) => this.handleCanvasClick(event));
+        
+        // Adicionar tecla de espaço para passar turno
+        window.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                this.passTurn();
+            }
+        });
+    }
+
+    // Método para passar turno
+    passTurn() {
+        this.currentPlayer = this.turnManager.nextTurn();
+        // Atualizar UI para mostrar turno atual
+        this.renderer.drawBoard();
+        this.renderer.drawCharacters([
+            ...this.turnManager.players[0].characters, 
+            ...this.turnManager.players[1].characters
+        ]);
+        this.debugHUD.update();
     }
 
     init() {
         this.board.initializeBoard();
         this.renderer.drawBoard();
-    }
-
-    setupEventListeners() {
-        this.canvas.addEventListener("click", (event) => this.handleCanvasClick(event));
+        this.renderer.drawCharacters([
+            ...this.turnManager.players[0].characters, 
+            ...this.turnManager.players[1].characters
+        ]);
+        this.debugHUD.update();
     }
 
     handleCanvasClick(event) {
@@ -38,8 +93,24 @@ export class GameController {
         }
     }
 
+    // Método de movimento de personagem
+    moveCharacter(targetHex) {
+        if (this.selectedCharacter) {
+            // Lógica de movimento do personagem
+            this.selectedCharacter.position = targetHex.label;
+            this.selectedCharacter = null;
+            this.highlightedHexes = [];
+            this.renderer.drawBoard();
+            this.renderer.drawCharacters([
+                ...this.turnManager.players[0].characters, 
+                ...this.turnManager.players[1].characters
+            ]);
+            this.debugHUD.update();
+        }
+    }
+
+    // Método de seleção de personagem
     selectCharacter(hex) {
-        // Lógica para selecionar personagem
         const character = this.findCharacterAtHex(hex);
         if (character) {
             this.selectedCharacter = character;
@@ -48,26 +119,19 @@ export class GameController {
         }
     }
 
-    moveCharacter(targetHex) {
-        if (this.selectedCharacter) {
-            // Lógica de movimento do personagem
-            this.selectedCharacter.position = targetHex.label;
-            this.selectedCharacter = null;
-            this.highlightedHexes = [];
-            this.renderer.drawBoard();
-        }
-    }
-
+    // Método para encontrar personagem no hexágono
     findCharacterAtHex(hex) {
-        // Encontra personagem na posição do hexágono
-        for (let player of this.players) {
+        for (let player of this.turnManager.players) {
             const character = player.characters.find(c => c.position === hex.label);
             if (character) return character;
         }
         return null;
     }
-
-    addPlayer(player) {
-        this.players.push(player);
-    }
 }
+
+// Inicialização do jogo
+window.addEventListener('load', () => {
+    const canvas = document.getElementById('gameCanvas');
+    const gameController = new GameController(canvas);
+    gameController.init();
+});
