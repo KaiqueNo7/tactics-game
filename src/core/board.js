@@ -1,32 +1,29 @@
-const columns = [6, 7, 6, 7, 6];
-const columnLabels = ["A", "B", "C", "D", "E"];
-
 export default class Board {
     constructor(scene, hexRadius = 40) {
-        this.scene = scene; // Referência para a cena Phaser
+        this.scene = scene;
         this.hexRadius = hexRadius;
         this.hexWidth = hexRadius * 2;
         this.hexHeight = Math.sqrt(3) * hexRadius;
-        this.columns = columns;
-        this.columnLabels = columnLabels;
-
         this.board = [];
-        this.characters = {}; // Armazena os personagens posicionados
+        this.characters = {};
+        this.highlightedHexes = [];
+        this.selectedCharacter = null;
     }
 
     initializeBoard() {
         this.board = [];
-        let xOffset = 100; // Posição inicial X do tabuleiro
-        let yOffset = 100; // Posição inicial Y do tabuleiro
+        let xOffset = 100;
+        let yOffset = 100;
 
-        for (let col = 0; col < this.columns.length; col++) {
+        for (let col = 0; col < 5; col++) {
             let currentYOffset = yOffset;
-            if (col % 2 !== 0) { 
-                currentYOffset += this.hexHeight / 2;
+
+            if (col % 2 === 1) { 
+                currentYOffset -= this.hexHeight / 2;
             }
 
-            for (let row = 0; row < this.columns[col]; row++) {
-                let label = this.columnLabels[col] + (row + 1);
+            for (let row = 0; row < 7; row++) {
+                let label = String.fromCharCode(65 + col) + (row + 1); // A1, B1, C1, etc.
                 let hex = { 
                     x: xOffset, 
                     y: currentYOffset, 
@@ -42,94 +39,94 @@ export default class Board {
         }
     }
 
-    drawBoard() {
-        this.graphics.clear();
-        this.graphics.lineStyle(2, 0x000000, 1);
+    placeCharacter(character, position) {
+        const hex = this.getHexByLabel(position);
 
-        this.board.forEach(hex => {
-            const points = this.calculateHexPoints(hex.x, hex.y);
-            
-            this.graphics.beginPath();
-            this.graphics.moveTo(points[0].x, points[0].y);
+        if (!hex || !this.scene) return;
 
-            for (let i = 1; i < points.length; i++) {
-                this.graphics.lineTo(points[i].x, points[i].y);
-            }
+        hex.occupied = true;
+        this.characters[position] = character;
+        character.state.position = position;
 
-            this.graphics.closePath();
-            this.graphics.strokePath();
-            this.graphics.fillStyle(0xcccccc, 1);
-            this.graphics.fillPath();
+        const graphics = this.scene.add.graphics();
+        graphics.fillStyle(character.color || 0x6666ff, 1);
+        graphics.fillCircle(hex.x, hex.y, 20);
+        character.sprite = graphics;
 
-            // Adiciona texto com o rótulo do hexágono
-            this.scene.add.text(hex.x, hex.y, hex.label, {
-                fontSize: '14px',
-                color: '#000'
-            }).setOrigin(0.5);
+        // Adiciona interatividade ao personagem
+        graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 20), Phaser.Geom.Circle.Contains);
+
+        graphics.on('pointerdown', () => this.selectCharacter(character));
+        
+        this.scene.add.text(hex.x, hex.y - 30, character.name, {
+            fontSize: '12px',
+            color: '#ffffff'
+        }).setOrigin(0.5);
+    }
+
+    selectCharacter(character) {
+        console.log(`Personagem ${character.name} selecionado.`);
+        this.selectedCharacter = character;
+
+        // Limpar os destaques anteriores
+        this.clearHighlights();
+
+        // Destacar hexágonos válidos para movimentação
+        this.highlightedHexes = this.getMovableHexes(character, 2);
+        this.highlightHexes(this.highlightedHexes);
+    }
+
+    getMovableHexes(character, range) {
+        const currentHex = this.getHexByLabel(character.state.position);
+
+        if (!currentHex) return [];
+
+        return this.board.filter(hex => {
+            const distance = Math.abs(hex.col - currentHex.col) + Math.abs(hex.row - currentHex.row);
+            return distance <= range && !hex.occupied;
         });
     }
 
-    calculateHexPoints(x, y) {
-        const points = [];
-        for (let i = 0; i < 6; i++) {
-            const angle = Phaser.Math.DegToRad(60 * i);
-            points.push({
-                x: x + this.hexRadius * Math.cos(angle),
-                y: y + this.hexRadius * Math.sin(angle)
-            });
-        }
-        return points;
+    highlightHexes(hexes) {
+        hexes.forEach(hex => {
+            const graphics = this.scene.add.graphics();
+            graphics.lineStyle(2, 0xffff00, 1);
+            graphics.strokeCircle(hex.x, hex.y, 25);
+            
+            // Permitir movimento quando o hexágono destacado for clicado
+            graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 25), Phaser.Geom.Circle.Contains);
+
+            graphics.on('pointerdown', () => this.moveCharacter(this.selectedCharacter, hex));
+            
+            this.highlightedHexes.push(graphics);
+        });
+    }
+
+    clearHighlights() {
+        this.highlightedHexes.forEach(graphics => graphics.destroy());
+        this.highlightedHexes = [];
+    }
+
+    moveCharacter(character, targetHex) {
+        if (!character || !targetHex) return;
+
+        console.log(`Movendo ${character.name} para ${targetHex.label}`);
+
+        // Atualizar ocupação dos hexágonos
+        const currentHex = this.getHexByLabel(character.state.position);
+        if (currentHex) currentHex.occupied = false;
+        targetHex.occupied = true;
+
+        // Mover personagem para o novo hexágono
+        character.state.position = targetHex.label;
+        character.sprite.x = targetHex.x;
+        character.sprite.y = targetHex.y;
+
+        this.clearHighlights();
+        this.selectedCharacter = null;
     }
 
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
-    }
-
-    placeCharacter(character, position) {
-        const hex = this.getHexByLabel(position);
-    
-        if (!hex) {
-            console.warn(`Hexágono inválido: ${position}`);
-            return;
-        }
-    
-        if (hex.occupied) {
-            console.warn(`Hexágono ${position} já está ocupado.`);
-            return;
-        }
-    
-        if (!this.scene || !this.scene.add) {  // Verifica se a cena foi inicializada
-            console.error("A cena Phaser não está definida ou não foi inicializada corretamente.");
-            return;
-        }
-    
-        if (!character) {
-            console.error("O personagem é undefined. Verifique a inicialização.");
-            return;
-        }
-    
-        hex.occupied = true;
-        this.characters[position] = character;
-        character.state.position = position;
-    
-        console.log(`Renderizando personagem ${character.name} no hexágono ${position}`);
-    
-        // Renderiza o personagem usando gráficos Phaser
-        const graphics = this.scene.add.graphics(); // Certifique-se que a cena Phaser foi inicializada
-        graphics.fillStyle(character.color || 0x6666ff, 1); // Cor do personagem
-        graphics.fillCircle(hex.x, hex.y, 20); // Desenha o círculo do personagem
-    
-        // Salva o objeto Graphics como "sprite" do personagem para futuras referências
-        character.sprite = graphics;
-    
-        // Adiciona um texto acima do círculo com o nome do personagem
-        this.scene.add.text(hex.x, hex.y - 30, character.name || 'Personagem', {
-            fontSize: '12px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
-    }     
-
-    getCharacterAt(position) {
-        return this.characters[position] || null;
     }
 }
