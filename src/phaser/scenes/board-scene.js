@@ -26,63 +26,67 @@ export default class BoardScene extends Phaser.Scene {
         // Comunicar com a cena de personagens
         this.events.emit('boardReady', this.board);
         
-        // Permitir que esta cena receba input
-        this.input.on('gameobjectdown', this.handleHexClick, this);
+        // Garantir que o zone interativo seja atualizado corretamente
+        this.createInteractiveZone();
     }
+    
+    createInteractiveZone() {
+        // Se já existe um interactiveZone, remover o evento registrado anteriormente
+        if (this.interactiveZone) {
+            this.interactiveZone.off('pointerdown', this.handleHexClick, this);
+        }
+    
+        // Criar um único zone para interação com clique
+        this.interactiveZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height);
+        this.interactiveZone.setOrigin(0, 0);
+        this.interactiveZone.setInteractive();
+    
+        // Registrar o evento de clique
+        this.interactiveZone.on('pointerdown', this.handleHexClick, this);
+    }    
     
     createHexagons() {
         // Limpar hexágonos existentes
-        this.hexagons.forEach(hex => hex.destroy());
+        this.hexagons.forEach(hex => hex.graphics.destroy());
         this.hexagons = [];
         
-        // Criar novos hexágonos baseados no board
+        const graphics = this.add.graphics();
+        graphics.lineStyle(2, 0x000000, 1);
+        
+        // Criar um único zone para interação com clique
+        const interactiveZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height);
+        interactiveZone.setOrigin(0, 0);
+        interactiveZone.setInteractive();
+        interactiveZone.on('pointerdown', this.handleHexClick, this);
+        
+        // Renderizar todos os hexágonos no mesmo Graphics
         this.board.board.forEach(hex => {
             const points = this.calculateHexPoints(hex.x, hex.y);
             
-            // Criar o polígono do hexágono
-            const graphics = this.add.graphics();
-            graphics.lineStyle(2, 0x000000, 1);
             graphics.fillStyle(0xcccccc, 1);
-            
-            // Desenhar o hexágono
             graphics.beginPath();
             graphics.moveTo(points[0].x, points[0].y);
+            
             for (let i = 1; i < points.length; i++) {
                 graphics.lineTo(points[i].x, points[i].y);
             }
+            
             graphics.closePath();
             graphics.strokePath();
             graphics.fillPath();
             
-            // Adicionar texto do rótulo
-            const text = this.add.text(hex.x, hex.y, hex.label, {
+            // Armazenar os hexágonos na lista
+            this.hexagons.push({ hexData: hex, points });
+            
+            // Adicionar texto do rótulo (opcional)
+            this.add.text(hex.x, hex.y, hex.label, {
                 fontSize: '16px',
                 fill: '#000',
                 align: 'center'
             }).setOrigin(0.5);
-            
-            // Criar um objeto interativo para o hexágono
-            const hitArea = new Phaser.Geom.Polygon(points);
-            const hexInteractive = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height)
-                .setInteractive(hitArea, Phaser.Geom.Polygon.Contains);
-            
-            // Armazenar dados do hexágono no objeto interativo
-            hexInteractive.setData('hexData', hex);
-            
-            // Adicionar evento de clique
-            hexInteractive.on('pointerdown', () => {
-                this.handleHexClick(null, hexInteractive);
-            });
-            
-            // Agrupar gráficos e interatividade
-            this.hexagons.push({
-                graphics,
-                text,
-                interactive: hexInteractive,
-                hexData: hex
-            });
         });
     }
+    
     
     calculateHexPoints(x, y) {
         const points = [];
@@ -99,32 +103,33 @@ export default class BoardScene extends Phaser.Scene {
         return points;
     }
     
-    handleHexClick(pointer, gameObject) {
-        if (!gameObject || !gameObject.getData) return;
-        
-        const hexData = gameObject.getData('hexData');
-        if (!hexData) return;
-        
+    handleHexClick(pointer) {
+        const { x, y } = pointer;
+    
+        // Encontrar qual hexágono foi clicado
+        const clickedHex = this.hexagons.find(item => {
+            const polygon = new Phaser.Geom.Polygon(item.points.map(p => new Phaser.Geom.Point(p.x, p.y)));
+            return Phaser.Geom.Polygon.Contains(polygon, x, y);
+        });
+    
+        if (!clickedHex) return;
+    
+        const hexData = clickedHex.hexData;
         console.log(`Hexágono ${hexData.label} foi clicado`);
-        
-        // Emitir evento para outras cenas
+    
         this.events.emit('hexClicked', hexData);
-        
-        // Selecionar ou mover, dependendo do contexto
+    
         if (this.selectedHex) {
             if (this.highlightedHexes.includes(hexData.label)) {
-                // Mover para hexágono válido
                 this.events.emit('moveTo', this.selectedHex, hexData);
                 this.clearSelection();
             } else if (hexData.occupied) {
-                // Selecionar outro hexágono
                 this.selectHex(hexData);
             }
         } else if (hexData.occupied) {
-            // Selecionar hexágono com personagem
             this.selectHex(hexData);
         }
-    }
+    }    
     
     selectHex(hexData) {
         this.clearSelection();
@@ -145,27 +150,29 @@ export default class BoardScene extends Phaser.Scene {
     }
     
     updateHexHighlights() {
+        const graphics = this.add.graphics();
+        graphics.clear();
+    
         this.hexagons.forEach(item => {
             const isHighlighted = this.highlightedHexes.includes(item.hexData.label);
             const isSelected = this.selectedHex && this.selectedHex.label === item.hexData.label;
             
-            // Atualizar aparência
-            item.graphics.clear();
-            item.graphics.lineStyle(2, isSelected ? 0x0000ff : 0x000000, 1);
-            item.graphics.fillStyle(isHighlighted ? 0xadd8e6 : isSelected ? 0x87cefa : 0xcccccc, 1);
+            const color = isSelected ? 0x87cefa : isHighlighted ? 0xadd8e6 : 0xcccccc;
+            graphics.lineStyle(2, isSelected ? 0x0000ff : 0x000000, 1);
+            graphics.fillStyle(color, 1);
             
-            // Redesenhar hexágono
-            const points = this.calculateHexPoints(item.hexData.x, item.hexData.y);
-            item.graphics.beginPath();
-            item.graphics.moveTo(points[0].x, points[0].y);
-            for (let i = 1; i < points.length; i++) {
-                item.graphics.lineTo(points[i].x, points[i].y);
+            graphics.beginPath();
+            graphics.moveTo(item.points[0].x, item.points[0].y);
+            
+            for (let i = 1; i < item.points.length; i++) {
+                graphics.lineTo(item.points[i].x, item.points[i].y);
             }
-            item.graphics.closePath();
-            item.graphics.strokePath();
-            item.graphics.fillPath();
+            
+            graphics.closePath();
+            graphics.strokePath();
+            graphics.fillPath();
         });
-    }
+    }    
     
     update() {
         // Lógica de atualização, se necessário
