@@ -1,4 +1,4 @@
-import { Character } from '../core/character.js';
+import Character from '../core/character.js';
 
 const warrior1 = new Character("Guerreiro 1", 100, 20, 10, "darkblue");
 warrior1.abilities.taunt = true; // Tem a habilidade Taunt

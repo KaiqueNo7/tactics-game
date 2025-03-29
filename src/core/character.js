@@ -1,4 +1,4 @@
-export class Character {
+export default class Character {
   constructor(config) {
       const {
           name, 
@@ -25,6 +25,7 @@ export class Character {
       this.abilities = {
           passive: [],
           active: [],
+          specialSkills: [],
           movement: {
               baseRange: 2,
               sprint: false
@@ -66,6 +67,10 @@ export class Character {
   addActiveAbility(ability) {
       this.abilities.active.push(ability);
   }
+
+  addSpecialSkill(skill) {
+        this.abilities.specialSkills.push(skill);
+    }
 
   // Cálculo de movimento
   getMovementRange() {
