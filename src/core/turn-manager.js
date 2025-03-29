@@ -1,9 +1,9 @@
-export class TurnManager {
+export default class TurnManager {
     constructor(players) {
         this.players = players;
         this.currentPlayerIndex = 0;
         this.currentTurn = {
-            player: null,
+            player: this.players[0], // Inicializa com o primeiro jogador
             phase: 'start',
             roundNumber: 1
         };
@@ -13,19 +13,24 @@ export class TurnManager {
         };
     }
 
+    // Método para obter o personagem atual (novo método)
+    getCurrentCharacter() {
+        const currentPlayer = this.currentTurn.player;
+        if (!currentPlayer) return null;
+
+        // Assumindo que o personagem atual é o primeiro personagem vivo do jogador
+        return currentPlayer.getAliveCharacters()[0] || null;
+    }
+
     // Avança para o próximo turno
     nextTurn() {
-        // Lógica de progressão de turno
-        this.currentPlayerIndex = 
-            (this.currentPlayerIndex + 1) % this.players.length;
-        
+        this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
         
         this.currentTurn = {
             player: currentPlayer,
             phase: 'start',
-            roundNumber: this.currentTurn.roundNumber + 
-                (this.currentPlayerIndex === 0 ? 1 : 0)
+            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 0 ? 1 : 0)
         };
 
         this.checkGameState();
@@ -34,19 +39,14 @@ export class TurnManager {
 
     // Realizar ação de combate
     resolveCombat(attacker, defender) {
-        // Calcula dano considerando habilidades
         const baseDamage = Math.max(0, attacker.stats.attack - defender.stats.defense);
-        
-        // Verifica habilidades ativas do atacante
         const extraDamage = attacker.abilities.active.reduce((total, ability) => {
             return total + (ability.effect(defender) || 0);
         }, 0);
 
         const totalDamage = baseDamage + extraDamage;
-        
-        // Aplica danos e verifica efeitos passivos
         defender.takeDamage(totalDamage);
-        
+
         return {
             attacker: attacker.name,
             defender: defender.name,
@@ -55,7 +55,6 @@ export class TurnManager {
         };
     }
 
-    // Verificar estado do jogo
     checkGameState() {
         const alivePlayers = this.players.filter(player => 
             player.characters.some(char => char.state.isAlive)
@@ -71,7 +70,6 @@ export class TurnManager {
         return this.gameState;
     }
 
-    // Exportar estado para serialização/rede
     toJSON() {
         return {
             currentPlayer: this.currentTurn.player.name,
@@ -82,32 +80,5 @@ export class TurnManager {
                 characters: player.characters.map(char => char.toJSON())
             }))
         };
-    }
-}
-
-// Classe de Player atualizada
-export class Player {
-    constructor(name, characters = []) {
-        this.id = Date.now() + Math.random();
-        this.name = name;
-        this.characters = characters;
-        this.strategy = 'default'; // Para futuras implementações de IA
-    }
-
-    // Adicionar personagem
-    addCharacter(character) {
-        this.characters.push(character);
-    }
-
-    // Remover personagem
-    removeCharacter(characterId) {
-        this.characters = this.characters.filter(
-            char => char.id !== characterId
-        );
-    }
-
-    // Obter personagens vivos
-    getAliveCharacters() {
-        return this.characters.filter(char => char.state.isAlive);
     }
 }

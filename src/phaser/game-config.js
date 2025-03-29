@@ -1,5 +1,6 @@
 import BoardScene from './scenes/board-scene.js';
 import CharacterScene from './scenes/character-scene.js';
+import GameManager from '../core/game.js';
 
 const config = {
     type: Phaser.AUTO,

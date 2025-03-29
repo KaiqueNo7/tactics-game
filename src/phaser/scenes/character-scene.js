@@ -15,21 +15,27 @@ export default class CharacterScene extends Phaser.Scene {
   }
 
   create() {
-      // Initialize characters
-      this.initializeCharacters();
-      
-      // Communication with the board scene
-      this.boardScene = this.scene.get('BoardScene');
-      
-      // Listen for board click events
-      this.events.on('boardClicked', this.handleBoardClick, this);
-      
-      // Create selection indicator
-      this.selectionIndicator = this.add.image(0, 0, 'selection-indicator').setVisible(false);
-      
-      // Listen for turn change events
-      this.events.on('turnChanged', this.handleTurnChange, this);
-  }
+    // Initialize characters
+    this.initializeCharacters();
+    
+    // Communication with the board scene
+    this.boardScene = this.scene.get('BoardScene');
+    
+    // Remover listener anterior, se existir
+    this.events.off('boardClicked', this.handleBoardClick, this);
+    
+    // Listen for board click events
+    this.events.on('boardClicked', this.handleBoardClick, this);
+    
+    // Create selection indicator
+    this.selectionIndicator = this.add.image(0, 0, 'selection-indicator').setVisible(false);
+    
+    // Listen for turn change events
+    this.events.off('turnChanged', this.handleTurnChange, this);
+    this.events.on('turnChanged', this.handleTurnChange, this);
+}
+
+
 
   initializeCharacters() {
       // Use the character instances from characters.js instead of creating new ones
@@ -120,22 +126,19 @@ export default class CharacterScene extends Phaser.Scene {
       character.healthBarBg = bgBar;
   }
 
-  handleBoardClick(hexData) {
-      // If we have a selected character and the clicked hex is in movable hexes
-      if (this.selectedCharacter && this.movableHexes.includes(hexData.label)) {
-          this.moveCharacter(this.selectedCharacter, hexData);
-      } 
-      // If the clicked hex contains a character, select it
-      else {
-          const character = this.findCharacterAtHex(hexData.label);
-          
-          if (character) {
-              this.selectCharacter(character);
-          } else {
-              this.clearSelection();
-          }
-      }
-  }
+    handleBoardClick(hexData) {
+        if (this.selectedCharacter && this.movableHexes.includes(hexData.label)) {
+            this.moveCharacter(this.selectedCharacter, hexData);
+        } else {
+            const character = this.findCharacterAtHex(hexData.label);
+            
+            if (character) {
+                this.selectCharacter(character);
+            } else {
+                this.clearSelection();
+            }
+        }
+    }
   
   findCharacterAtHex(hexLabel) {
       return this.characters.find(char => char.state.position === hexLabel);
@@ -179,25 +182,28 @@ export default class CharacterScene extends Phaser.Scene {
   }
   
   moveCharacter(character, targetHex) {
-      // Update character position
-      character.state.position = targetHex.label;
-      
-      // Animate movement
-      this.tweens.add({
-          targets: [character.sprite, character.healthBar, character.healthBarBg],
-          x: targetHex.x,
-          y: targetHex.y + (character.healthBar ? 25 : 0),
-          duration: 500,
-          ease: 'Power2',
-          onComplete: () => {
-              // Check for adjacency to enemies after movement
-              this.checkCombatOpportunities(character);
-              
-              // Clear selection
-              this.clearSelection();
-          }
-      });
-  }
+    // Atualizar o estado do personagem antes de mover
+    character.state.position = targetHex.label;
+    
+    // Animate movement
+    this.tweens.add({
+        targets: [character.sprite, character.healthBar, character.healthBarBg],
+        x: targetHex.x,
+        y: targetHex.y + 25,
+        duration: 500,
+        ease: 'Power2',
+        onComplete: () => {
+            // Atualiza o hexágono ocupado no BoardScene
+            this.boardScene.updateCharacterPosition(character, targetHex);
+
+            // Check for adjacency to enemies after movement
+            this.checkCombatOpportunities(character);
+            
+            // Clear selection
+            this.clearSelection();
+        }
+    });
+}
   
   checkCombatOpportunities(character) {
       // Get adjacent hexes

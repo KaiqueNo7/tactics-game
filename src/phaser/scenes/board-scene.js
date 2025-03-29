@@ -1,4 +1,5 @@
-import { Board } from '../../core/board.js';
+import Board from '../../core/board.js';
+import GameManager from '../../core/game.js';
 
 export default class BoardScene extends Phaser.Scene {
     constructor() {
@@ -13,11 +14,9 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     create() {
-        // Criar o canvas virtual para o Board
         this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
-        
-        // Inicializar o Board do core
-        this.board = new Board(this.canvas.canvas, 40);
+    
+        this.board = new Board(this, 40);  
         this.board.initializeBoard();
         
         // Renderizar hexágonos no Phaser
@@ -28,6 +27,8 @@ export default class BoardScene extends Phaser.Scene {
         
         // Garantir que o zone interativo seja atualizado corretamente
         this.createInteractiveZone();
+
+        this.gameManager = new GameManager(this.board); 
     }
     
     createInteractiveZone() {
@@ -87,7 +88,6 @@ export default class BoardScene extends Phaser.Scene {
         });
     }
     
-    
     calculateHexPoints(x, y) {
         const points = [];
         const radius = this.board.hexRadius;
@@ -103,34 +103,17 @@ export default class BoardScene extends Phaser.Scene {
         return points;
     }
     
-    handleHexClick(pointer) {
-        const { x, y } = pointer;
+    handleHexClick(pointer, gameObject) {
+        if (!gameObject || !gameObject.getData) return;
     
-        // Encontrar qual hexágono foi clicado
-        const clickedHex = this.hexagons.find(item => {
-            const polygon = new Phaser.Geom.Polygon(item.points.map(p => new Phaser.Geom.Point(p.x, p.y)));
-            return Phaser.Geom.Polygon.Contains(polygon, x, y);
-        });
+        const hexData = gameObject.getData('hexData');
+        if (!hexData) return;
     
-        if (!clickedHex) return;
-    
-        const hexData = clickedHex.hexData;
         console.log(`Hexágono ${hexData.label} foi clicado`);
     
-        this.events.emit('hexClicked', hexData);
-    
-        if (this.selectedHex) {
-            if (this.highlightedHexes.includes(hexData.label)) {
-                this.events.emit('moveTo', this.selectedHex, hexData);
-                this.clearSelection();
-            } else if (hexData.occupied) {
-                this.selectHex(hexData);
-            }
-        } else if (hexData.occupied) {
-            this.selectHex(hexData);
-        }
-    }    
-    
+        this.scene.get('CharacterScene').events.emit('boardClicked', hexData);
+    }
+            
     selectHex(hexData) {
         this.clearSelection();
         this.selectedHex = hexData;
@@ -171,6 +154,18 @@ export default class BoardScene extends Phaser.Scene {
             graphics.closePath();
             graphics.strokePath();
             graphics.fillPath();
+        });
+    }    
+
+    updateCharacterPosition(character, targetHex) {
+        this.board.board.forEach(hex => {
+            if (hex.label === targetHex.label) {
+                hex.occupied = true; // Marcar o hexágono como ocupado
+                hex.character = character;
+            } else if (hex.character === character) {
+                hex.occupied = false; // Liberar o hexágono anterior
+                delete hex.character;
+            }
         });
     }    
     
