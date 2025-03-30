@@ -57,12 +57,12 @@ export default class CharacterScene extends Phaser.Scene {
       if (!hexPosition) return;
       
       // Create character sprite
-      const sprite = this.add.sprite(
-          hexPosition.x, 
-          hexPosition.y, 
-          'characters', 
-          this.getCharacterFrame(character)
-      );
+      const sprite = this.add.image(
+            hexPosition.x, 
+            hexPosition.y, 
+            'characters'
+        ).setOrigin(0.5);
+    
       
       // Set sprite properties
       sprite.setTint(this.getColorValue(character.color));
@@ -187,22 +187,27 @@ export default class CharacterScene extends Phaser.Scene {
     
     // Animate movement
     this.tweens.add({
-        targets: [character.sprite, character.healthBar, character.healthBarBg],
+        targets: character.sprite,
         x: targetHex.x,
-        y: targetHex.y + 25,
+        y: targetHex.y,
         duration: 500,
         ease: 'Power2',
         onComplete: () => {
-            // Atualiza o hexágono ocupado no BoardScene
+            character.state.position = targetHex.label;
             this.boardScene.updateCharacterPosition(character, targetHex);
-
-            // Check for adjacency to enemies after movement
             this.checkCombatOpportunities(character);
-            
-            // Clear selection
             this.clearSelection();
         }
     });
+    
+    // Atualiza também as barras de vida para o novo hexágono
+    this.tweens.add({
+        targets: [character.healthBar, character.healthBarBg],
+        x: targetHex.x,
+        y: targetHex.y + 25,
+        duration: 500,
+        ease: 'Power2'
+    });    
 }
   
   checkCombatOpportunities(character) {

@@ -103,28 +103,38 @@ export default class Board {
     }
 
     clearHighlights() {
-        this.highlightedHexes.forEach(graphics => graphics.destroy());
+        this.highlightedHexes.forEach(graphics => {
+            if (graphics && graphics.destroy) {
+                graphics.destroy(true);
+            }
+        });
         this.highlightedHexes = [];
-    }
+    }    
 
     moveCharacter(character, targetHex) {
         if (!character || !targetHex) return;
-
+    
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
-
+    
         // Atualizar ocupação dos hexágonos
         const currentHex = this.getHexByLabel(character.state.position);
         if (currentHex) currentHex.occupied = false;
         targetHex.occupied = true;
-
-        // Mover personagem para o novo hexágono
+    
+        // Atualizar posição do personagem
         character.state.position = targetHex.label;
-        character.sprite.x = targetHex.x;
-        character.sprite.y = targetHex.y;
-
+    
+        // Limpar o gráfico atual
+        character.sprite.clear();
+        
+        // Desenhar o círculo na nova posição
+        character.sprite.fillStyle(character.color || 0x6666ff, 1);
+        character.sprite.fillCircle(targetHex.x, targetHex.y, 20);
+    
         this.clearHighlights();
         this.selectedCharacter = null;
     }
+    
 
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);

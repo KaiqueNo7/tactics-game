@@ -19,25 +19,20 @@ export default class BoardScene extends Phaser.Scene {
         this.board = new Board(this, 40);  
         this.board.initializeBoard();
         
-        // Renderizar hexágonos no Phaser
         this.createHexagons();
         
-        // Comunicar com a cena de personagens
         this.events.emit('boardReady', this.board);
         
-        // Garantir que o zone interativo seja atualizado corretamente
         this.createInteractiveZone();
 
         this.gameManager = new GameManager(this.board); 
     }
     
     createInteractiveZone() {
-        // Se já existe um interactiveZone, remover o evento registrado anteriormente
         if (this.interactiveZone) {
             this.interactiveZone.off('pointerdown', this.handleHexClick, this);
         }
     
-        // Criar um único zone para interação com clique
         this.interactiveZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height);
         this.interactiveZone.setOrigin(0, 0);
         this.interactiveZone.setInteractive();
