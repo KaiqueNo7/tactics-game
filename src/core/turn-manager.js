@@ -3,26 +3,34 @@ export default class TurnManager {
         this.players = players;
         this.currentPlayerIndex = 0;
         this.currentTurn = {
-            player: this.players[0], // Inicializa com o primeiro jogador
+            player: null,
             phase: 'start',
-            roundNumber: 1
+            roundNumber: 1,
+            hasMoved: false // Novo campo para rastrear se o jogador já moveu um personagem
         };
         this.gameState = {
             status: 'active',
             winner: null
         };
+
+        // Decidir aleatoriamente quem começa o jogo
+        this.determineStartingPlayer();
     }
 
-    // Método para obter o personagem atual (novo método)
+    determineStartingPlayer() {
+        const startingPlayerIndex = Math.random() > 0.5 ? 0 : 1;
+        this.currentPlayerIndex = startingPlayerIndex;
+        this.currentTurn.player = this.players[startingPlayerIndex];
+        console.log(`${this.currentTurn.player.name} começa o jogo!`);
+    }
+
     getCurrentCharacter() {
         const currentPlayer = this.currentTurn.player;
         if (!currentPlayer) return null;
 
-        // Assumindo que o personagem atual é o primeiro personagem vivo do jogador
         return currentPlayer.getAliveCharacters()[0] || null;
     }
 
-    // Avança para o próximo turno
     nextTurn() {
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
@@ -30,14 +38,25 @@ export default class TurnManager {
         this.currentTurn = {
             player: currentPlayer,
             phase: 'start',
-            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 0 ? 1 : 0)
+            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 0 ? 1 : 0),
+            hasMoved: false 
         };
-
+    
         this.checkGameState();
         return this.currentTurn;
+    }    
+
+    endTurn() {
+        if (!this.currentTurn.hasMoved) {
+            console.log('Você deve mover um personagem antes de finalizar o turno.');
+            return false;
+        }
+    
+        this.nextTurn(); // Delega a troca de turno para o método `nextTurn()`
+        console.log(`Agora é a vez de ${this.currentTurn.player.name}.`);
+        return true;
     }
 
-    // Realizar ação de combate
     resolveCombat(attacker, defender) {
         const baseDamage = Math.max(0, attacker.stats.attack - defender.stats.defense);
         const extraDamage = attacker.abilities.active.reduce((total, ability) => {

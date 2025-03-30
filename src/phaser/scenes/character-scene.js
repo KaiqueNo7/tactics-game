@@ -20,6 +20,8 @@ export default class CharacterScene extends Phaser.Scene {
     
     // Communication with the board scene
     this.boardScene = this.scene.get('BoardScene');
+
+    this.createEndTurnButton();
     
     // Remover listener anterior, se existir
     this.events.off('boardClicked', this.handleBoardClick, this);
@@ -35,7 +37,24 @@ export default class CharacterScene extends Phaser.Scene {
     this.events.on('turnChanged', this.handleTurnChange, this);
 }
 
+    createEndTurnButton() {
+        const gameManager = this.game.turnManager; // Agora você acessa o TurnManager global do jogo
 
+        this.endTurnButton = this.add.text(700, 550, 'Finalizar Turno', {
+            fontSize: '20px',
+            fill: '#ff0000',
+            backgroundColor: '#ffffff',
+            padding: { x: 10, y: 5 }
+        })
+        .setInteractive()
+        .on('pointerdown', () => {
+            const turnEnded = gameManager.endTurn();
+
+            if (!turnEnded) {
+                console.log('Você precisa mover um personagem antes de finalizar o turno.');
+            }
+        });
+    }
 
   initializeCharacters() {
       // Use the character instances from characters.js instead of creating new ones
@@ -145,32 +164,26 @@ export default class CharacterScene extends Phaser.Scene {
   }
   
   selectCharacter(character) {
-      // Only allow selection of characters belonging to current player
       const currentPlayer = this.scene.get('GameScene').turnManager.currentTurn.player;
       const isCurrentPlayerCharacter = currentPlayer.characters.includes(character);
       
-      if (!isCurrentPlayerCharacter) {
-          return;
-      }
+      if (!isCurrentPlayerCharacter) return;
+
+        if (currentPlayer.hasMoved) {
+            console.log('Você já moveu um personagem neste turno.');
+            return;
+        }
       
-      // Set as selected character
-      this.selectedCharacter = character;
+        this.selectedCharacter = character;
+        this.selectionIndicator.setPosition(character.sprite.x, character.sprite.y);
+        this.selectionIndicator.setVisible(true);
       
-      // Show selection indicator
-      this.selectionIndicator.setPosition(character.sprite.x, character.sprite.y);
-      this.selectionIndicator.setVisible(true);
-      
-      // Get movable hexes from board
-      const characterHex = this.boardScene.getHexByLabel(character.state.position);
-      const moveRange = character.getMovementRange();
-      this.movableHexes = this.boardScene.getMovableHexes(characterHex, moveRange)
-          .map(hex => hex.label);
-      
-      // Highlight movable hexes
-      this.boardScene.highlightHexes(this.movableHexes);
-      
-      // Show character info in UI
-      this.events.emit('characterSelected', character);
+        const characterHex = this.boardScene.getHexByLabel(character.state.position);
+        const moveRange = character.getMovementRange();
+        this.movableHexes = this.boardScene.getMovableHexes(characterHex, moveRange)
+            .map(hex => hex.label);
+    
+        this.boardScene.highlightHexes(this.movableHexes);
   }
   
   clearSelection() {
@@ -182,10 +195,15 @@ export default class CharacterScene extends Phaser.Scene {
   }
   
   moveCharacter(character, targetHex) {
-    // Atualizar o estado do personagem antes de mover
+    const gameManager = this.scene.get('GameScene').turnManager;
+    const currentPlayer = gameManager.currentTurn.player;
+
+    if (gameManager.currentTurn.hasMoved) {
+        console.log('Você já moveu um personagem neste turno.');
+        return;
+    }
+
     character.state.position = targetHex.label;
-    
-    // Animate movement
     this.tweens.add({
         targets: character.sprite,
         x: targetHex.x,
@@ -193,23 +211,15 @@ export default class CharacterScene extends Phaser.Scene {
         duration: 500,
         ease: 'Power2',
         onComplete: () => {
-            character.state.position = targetHex.label;
             this.boardScene.updateCharacterPosition(character, targetHex);
-            this.checkCombatOpportunities(character);
             this.clearSelection();
+
+            // Marca que o jogador atual já fez sua jogada
+            gameManager.currentTurn.hasMoved = true;
         }
     });
-    
-    // Atualiza também as barras de vida para o novo hexágono
-    this.tweens.add({
-        targets: [character.healthBar, character.healthBarBg],
-        x: targetHex.x,
-        y: targetHex.y + 25,
-        duration: 500,
-        ease: 'Power2'
-    });    
 }
-  
+ 
   checkCombatOpportunities(character) {
       // Get adjacent hexes
       const currentHex = this.boardScene.getHexByLabel(character.state.position);

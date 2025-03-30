@@ -12,12 +12,13 @@ export default class GameManager {
         // Cria jogadores e associa personagens
         this.player1 = new Player("Jogador 1", [warrior1, archer1, mage1]);
         this.player2 = new Player("Jogador 2", [warrior2, archer2, mage2]);
-        
+
         console.log('Personagens do Jogador 1:', this.player1.characters);
         console.log('Personagens do Jogador 2:', this.player2.characters);
 
+        // Inicializa o TurnManager e armazena como parte do GameManager
         this.turnManager = new TurnManager([this.player1, this.player2]);
-        this.currentPlayer = this.turnManager.getCurrentCharacter();
+        this.currentTurn = this.turnManager.currentTurn;        
 
         // Define posições iniciais dos personagens
         this.setupInitialPositions();
@@ -44,8 +45,11 @@ export default class GameManager {
         this.player2.characters[1].state.position = 'D5';
         this.player2.characters[2].state.position = 'E4';
 
-        // Atualiza o tabuleiro para marcar as posições iniciais
         this.player1.characters.forEach(character => this.board.placeCharacter(character, character.state.position));
         this.player2.characters.forEach(character => this.board.placeCharacter(character, character.state.position));
+    }
+
+    getTurnManager() {
+        return this.turnManager;
     }
 }
