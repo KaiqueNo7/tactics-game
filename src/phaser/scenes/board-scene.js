@@ -1,5 +1,6 @@
 import Board from '../../core/board.js';
 import GameManager from '../../core/game.js';
+import UIManager from '../../ui/hud.js';
 
 export default class BoardScene extends Phaser.Scene {
     constructor() {
@@ -14,9 +15,10 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     create() {
-        this.warningTextPlugin.showTemporaryMessage('Jogo iniciado!');
+        this.uiManager = new UIManager(this);
+
         this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
-    
+        
         this.board = new Board(this, 40);  
         this.board.initializeBoard();
         
@@ -32,6 +34,8 @@ export default class BoardScene extends Phaser.Scene {
         const turnManager = this.game.gameManager.getTurnManager();
 
         this.createEndTurnButton(turnManager);
+        this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
+        this.uiManager.updateCharacterPanel(turnManager.players);
     }
 
     createEndTurnButton(turnManager) {

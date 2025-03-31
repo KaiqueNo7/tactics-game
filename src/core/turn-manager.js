@@ -61,14 +61,14 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.currentTurn = {
             player: currentPlayer,
             phase: 'start',
-            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 0 ? 1 : 0),
+            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 1 ? 1 : 0),
             hasMoved: false,
             movedCharacters: new Set()
         };
     
         this.checkGameState();
 
-        this.warningTextPlugin.showTemporaryMessage(`Agora é a vez de ${this.currentTurn.player.name}.`);
+        this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber)
 
         return this.currentTurn;
     }    
@@ -108,7 +108,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
     getCurrentPlayer() {
         return this.currentTurn.player;
     }
-
+ 
     toJSON() {
         return {
             currentPlayer: this.currentTurn.player.name,

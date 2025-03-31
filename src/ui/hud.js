@@ -1,36 +1,43 @@
-// src/ui/hud.js
-export class DebugHUD {
-    constructor(canvas, gameController) {
-        this.canvas = canvas;
-        this.gameController = gameController;
-        this.ctx = canvas.getContext('2d');
+export default class UIManager {
+    constructor(scene) {
+        this.scene = scene;
+
+        this.turnPanel = this.scene.add.text(600, 150, '', { 
+            font: '18px Arial', 
+            fill: '#ffffff', 
+            backgroundColor: '#333333',
+            padding: { x: 10, y: 10 },
+            wordWrap: { width: 300 }
+        }).setScrollFactor(0);
+
+        this.characterPanel = this.scene.add.text(600, 300, '', { 
+            font: '16px Arial', 
+            fill: '#ffffff', 
+            backgroundColor: '#444444',
+            padding: { x: 10, y: 10 }
+        }).setScrollFactor(0);
     }
 
-    drawDebugInfo() {
-        const turnManager = this.gameController.turnManager;
-        const currentCharacter = turnManager.getCurrentCharacter();
-        
-        this.ctx.fillStyle = 'black';
-        this.ctx.font = '16px Arial';
-        
-        // Informações de depuração
-        const debugInfo = [
-            `Turno Atual: ${turnManager.currentPlayerIndex + 1}`,
-            `Personagem: ${currentCharacter.name}`,
-            `Saúde: ${currentCharacter.health}/${currentCharacter.maxHealth}`,
-            `Posição: ${currentCharacter.position}`,
-            `Ataque: ${currentCharacter.attack}`,
-            `Defesa: ${currentCharacter.defense}`
-        ];
+    updateTurnPanel(currentPlayer, roundNumber) {
+        this.turnPanel.setText(
+            `Turno Atual: ${roundNumber}\n` +
+            `Jogador: ${currentPlayer.name}`
+        );
+    }
 
-        debugInfo.forEach((line, index) => {
-            this.ctx.fillText(line, 10, 20 * (index + 1));
+    updateCharacterPanel(players) {
+        let panelText = '';
+        
+        players.forEach(player => {
+            panelText += `\nJogador: ${player.name}\n`;
+
+            player.characters.forEach(character => {
+                const isAlive = character.state.isAlive;
+                const statusIcon = isAlive ? '🟢' : '❌';
+                panelText += `${statusIcon} ${character.name}\n`;
+            });
         });
-    }
 
-    update() {
-        // Limpa a área de debug anterior
-        this.ctx.clearRect(0, 0, 250, 200);
-        this.drawDebugInfo();
+        this.characterPanel.setText(panelText);
     }
 }

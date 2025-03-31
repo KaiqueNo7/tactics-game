@@ -151,7 +151,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         if (!turnManager.canMoveCharacter(character)) {
             this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
-            return; // Impede o movimento do personagem
+            return; 
         }
         
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
@@ -159,19 +159,16 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const currentHex = this.getHexByLabel(character.state.position);
         if (currentHex) {
             currentHex.occupied = false;
-            delete this.characters[currentHex.label]; // Remover referência do personagem no mapa
+            delete this.characters[currentHex.label];
         }
     
-        // Atualizar o hexágono alvo
         targetHex.occupied = true;
         this.characters[targetHex.label] = character;
     
-        // Atualizar a posição do personagem
         character.state.position = targetHex.label;
     
-        // Remover o sprite anterior e recriá-lo na nova posição
         character.sprite.clear();
-        character.sprite.destroy();  // Destroi o sprite antigo
+        character.sprite.destroy();
     
         const graphics = this.scene.add.graphics();
         graphics.fillStyle(character.color || 0x6666ff, 1);
@@ -180,16 +177,14 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
     
-        // Verificação do movimento do personagem
         graphics.on('pointerdown', () => {
             if (turnManager.currentTurn.hasMoved) {
-                this.scene.warningTextPlugin.showTemporaryMessage("Você já moveu um personagem neste turno.");
+                this.scene.warningTextPlugin.showTemporaryMessage("Você já moveu esse personagem neste turno.");
                 return;
             }
             this.selectCharacter(character);
         });
     
-        // Marca o personagem como movido no turno atual
         turnManager.markCharacterAsMoved(character);
     
         this.clearHighlights();
