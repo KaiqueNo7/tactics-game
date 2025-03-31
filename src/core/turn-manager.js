@@ -50,7 +50,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
     }
 
     nextTurn() {
-        if (!this.currentTurn.hasMoved) {
+        if (this.currentTurn.movedCharacters.size == 0) {
             this.scene.warningTextPlugin.showTemporaryMessage('Você deve mover um personagem antes de finalizar o turno.');
             return false;
         }
