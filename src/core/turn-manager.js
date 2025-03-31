@@ -1,6 +1,7 @@
 export default class TurnManager extends Phaser.Data.DataManager {
     constructor(scene, players) {
         super(scene, 'TurnManager');
+        this.scene = scene;
         this.players = players;
         this.currentPlayerIndex = 0;
         this.currentTurn = {
@@ -31,16 +32,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
         return !this.currentTurn.movedCharacters.has(character);
     }
 
-    determineStartingPlayer(scene) {
+    determineStartingPlayer() {
         const startingPlayerIndex = Math.random() > 0.5 ? 0 : 1;
         this.currentPlayerIndex = startingPlayerIndex;
         this.currentTurn.player = this.players[startingPlayerIndex];
 
-        this.displayText = scene.add.text(
-            scene.cameras.main.width - 150, 50, // Posição X, Y na tela
-            `${this.currentTurn.player.name} começa o jogo!`, // Texto a ser exibido
-            { fontSize: '20px', color: '#333' } // Estilo do texto
-        ).setOrigin(0.5);
+        this.scene.warningTextPlugin.showTemporaryMessage(`${this.currentTurn.player.name} começa o jogo!`);
     }
 
     getCurrentCharacter() {
@@ -52,7 +49,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
     nextTurn() {
         if (!this.currentTurn.hasMoved) {
-            this.displayText.setText('Você deve mover um personagem antes de finalizar o turno.');
+            this.scene.warningTextPlugin.showTemporaryMessage('Você deve mover um personagem antes de finalizar o turno.');
             return false;
         }
 
@@ -72,7 +69,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
     
         this.checkGameState();
 
-        this.displayText.setText(`Agora é a vez de ${this.currentTurn.player.name}.`);
+        this.warningTextPlugin.showTemporaryMessage(`Agora é a vez de ${this.currentTurn.player.name}.`);
 
         return this.currentTurn;
     }    

@@ -14,6 +14,7 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     create() {
+        this.warningTextPlugin.showTemporaryMessage('Jogo iniciado!');
         this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
     
         this.board = new Board(this, 40);  
@@ -122,7 +123,10 @@ export default class BoardScene extends Phaser.Scene {
         if (!gameObject || !gameObject.getData) return;
     
         const hexData = gameObject.getData('hexData');
-        if (!hexData) return;
+        if(!hexData) {
+            console.log('Clique fora do hexágono');
+            return;
+        } 
     
         console.log(`Hexágono ${hexData.label} foi clicado`);
     
