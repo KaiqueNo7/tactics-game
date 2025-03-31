@@ -6,15 +6,24 @@ export default class TurnManager {
             player: null,
             phase: 'start',
             roundNumber: 1,
-            hasMoved: false // Novo campo para rastrear se o jogador já moveu um personagem
+            hasMoved: false,
+            movedCharacters: new Set() 
         };
         this.gameState = {
             status: 'active',
             winner: null
         };
-
-        // Decidir aleatoriamente quem começa o jogo
+        
         this.determineStartingPlayer();
+    }
+
+    markCharacterAsMoved(character) {
+        console.log(`${character.name} se moveu.`);
+        this.currentTurn.movedCharacters.add(character);
+    }
+
+    canMoveCharacter(character) {
+        return !this.currentTurn.movedCharacters.has(character);
     }
 
     determineStartingPlayer() {
@@ -32,6 +41,7 @@ export default class TurnManager {
     }
 
     nextTurn() {
+        console.log('Próximo turno...');
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
         
@@ -51,8 +61,8 @@ export default class TurnManager {
             console.log('Você deve mover um personagem antes de finalizar o turno.');
             return false;
         }
-    
-        this.nextTurn(); // Delega a troca de turno para o método `nextTurn()`
+        this.currentTurn.movedCharacters.clear();
+        this.nextTurn(); 
         console.log(`Agora é a vez de ${this.currentTurn.player.name}.`);
         return true;
     }
@@ -87,6 +97,10 @@ export default class TurnManager {
         }
 
         return this.gameState;
+    }
+
+    getCurrentPlayer() {
+        return this.currentTurn.player;
     }
 
     toJSON() {

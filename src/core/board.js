@@ -53,29 +53,36 @@ export default class Board {
         graphics.fillCircle(hex.x, hex.y, 20);
         character.sprite = graphics;
 
-        // Adiciona interatividade ao personagem
         graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 20), Phaser.Geom.Circle.Contains);
 
         graphics.on('pointerdown', () => this.selectCharacter(character));
-        
-        this.scene.add.text(hex.x, hex.y - 30, character.name, {
-            fontSize: '12px',
-            color: '#ffffff'
-        }).setOrigin(0.5);
     }
 
     selectCharacter(character) {
+        const gameManager = this.scene.game.gameManager;
+        const turnManager = gameManager.getTurnManager();
+        const currentPlayer = turnManager.getCurrentPlayer();
+        
+        if (!currentPlayer.characters.includes(character)) {
+            console.log("Esse personagem não pertence ao jogador atual.");
+            return;
+        }
+    
+        if (turnManager.currentTurn.hasMoved) {
+            console.log("Você já moveu um personagem neste turno.");
+            return;
+        }
+    
         console.log(`Personagem ${character.name} selecionado.`);
+        console.log('Características do personagem:', character);
         this.selectedCharacter = character;
-
-        // Limpar os destaques anteriores
+    
         this.clearHighlights();
-
-        // Destacar hexágonos válidos para movimentação
+    
         this.highlightedHexes = this.getMovableHexes(character, 2);
         this.highlightHexes(this.highlightedHexes);
     }
-
+    
     getMovableHexes(character, range) {
         const currentHex = this.getHexByLabel(character.state.position);
 
@@ -88,16 +95,27 @@ export default class Board {
     }
 
     highlightHexes(hexes) {
+        const gameManager = this.scene.game.gameManager;
+        const turnManager = gameManager.getTurnManager();
+    
         hexes.forEach(hex => {
             const graphics = this.scene.add.graphics();
             graphics.lineStyle(2, 0xffff00, 1);
             graphics.strokeCircle(hex.x, hex.y, 25);
-            
-            // Permitir movimento quando o hexágono destacado for clicado
+    
             graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 25), Phaser.Geom.Circle.Contains);
-
-            graphics.on('pointerdown', () => this.moveCharacter(this.selectedCharacter, hex));
-            
+    
+            graphics.on('pointerdown', () => {
+                if (!this.selectedCharacter) return;
+    
+                if (turnManager.currentTurn.hasMoved) {
+                    console.log("Você já moveu um personagem neste turno.");
+                    return;
+                }
+    
+                this.moveCharacter(this.selectedCharacter, hex);
+            });
+    
             this.highlightedHexes.push(graphics);
         });
     }
@@ -111,31 +129,30 @@ export default class Board {
         this.highlightedHexes = [];
     }    
 
-    moveCharacter(character, targetHex) {
+    moveCharacter(character, targetHex) {   
+        const gameManager = this.scene.game.gameManager;
+        const turnManager = gameManager.getTurnManager();
+
         if (!character || !targetHex) return;
     
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
     
-        // Atualizar ocupação dos hexágonos
         const currentHex = this.getHexByLabel(character.state.position);
         if (currentHex) currentHex.occupied = false;
         targetHex.occupied = true;
     
-        // Atualizar posição do personagem
         character.state.position = targetHex.label;
-    
-        // Limpar o gráfico atual
+
         character.sprite.clear();
-        
-        // Desenhar o círculo na nova posição
         character.sprite.fillStyle(character.color || 0x6666ff, 1);
         character.sprite.fillCircle(targetHex.x, targetHex.y, 20);
+
+        turnManager.markCharacterAsMoved(character);
     
         this.clearHighlights();
         this.selectedCharacter = null;
     }
     
-
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
     }
