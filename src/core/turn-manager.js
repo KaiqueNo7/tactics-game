@@ -66,7 +66,8 @@ export default class TurnManager extends Phaser.Data.DataManager {
             player: currentPlayer,
             phase: 'start',
             roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 0 ? 1 : 0),
-            hasMoved: false 
+            hasMoved: false,
+            movedCharacters: new Set()
         };
     
         this.checkGameState();

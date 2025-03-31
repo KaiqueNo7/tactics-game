@@ -60,6 +60,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
 
     selectCharacter(character) {
+        console.log('Personagem selecionado:', character);
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
