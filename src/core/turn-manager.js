@@ -16,7 +16,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
             winner: null
         };
         
-        this.determineStartingPlayer(scene);
+        this.determineStartingPlayer();
     }
 
     markCharacterAsMoved(character) {
@@ -38,6 +38,8 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.currentTurn.player = this.players[startingPlayerIndex];
 
         this.scene.warningTextPlugin.showTemporaryMessage(`${this.currentTurn.player.name} começa o jogo!`);
+
+        this.whoStarted = startingPlayerIndex;
     }
 
     getCurrentCharacter() {
@@ -57,11 +59,14 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
+
+        const isBackToStarter = (this.currentPlayerIndex === this.whoStarted);
+        const newRoundNumber = this.currentTurn.roundNumber + (isBackToStarter ? 1 : 0);
         
         this.currentTurn = {
             player: currentPlayer,
             phase: 'start',
-            roundNumber: this.currentTurn.roundNumber + (this.currentPlayerIndex === 1 ? 1 : 0),
+            roundNumber: newRoundNumber,
             hasMoved: false,
             movedCharacters: new Set()
         };

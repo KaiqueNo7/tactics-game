@@ -3,7 +3,8 @@ export default class Player {
       this.id = Date.now() + Math.random();
       this.name = name;
       this.characters = characters;
-      this.strategy = 'default'; // Para futuras implementações de IA
+      this.strategy = 'default';
+      this.color = 0x000000;
   }
 
   addCharacter(character) {

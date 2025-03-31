@@ -40,7 +40,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     }
 
-    placeCharacter(character, position) {
+    placeCharacter(character, position, playerColor) {
         const hex = this.getHexByLabel(position);
 
         if (!hex || !this.scene) {
@@ -60,7 +60,25 @@ export default class Board extends Phaser.GameObjects.GameObject {
         graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 20), Phaser.Geom.Circle.Contains);
 
         graphics.on('pointerdown', () => this.selectCharacter(character));
+
+        hex.playerColor = playerColor;
+        this.drawHexBorder(hex, playerColor);
     }
+
+    drawHexBorder(hex, color) {
+        if (hex.borderGraphics) {
+            hex.borderGraphics.clear();
+            hex.borderGraphics.destroy();
+        }
+    
+        // Criar um novo gráfico para a borda
+        const borderGraphics = this.scene.add.graphics();
+        borderGraphics.lineStyle(3, color, 1);
+        borderGraphics.strokeCircle(hex.x, hex.y, 30);
+        
+        hex.borderGraphics = borderGraphics;
+    }
+    
 
     selectCharacter(character) {
         const gameManager = this.scene.game.gameManager;
@@ -143,6 +161,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     moveCharacter(character, targetHex) {   
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
+        const currentPlayer = turnManager.getCurrentPlayer();
     
         if (!character || !targetHex) {
             console.log('Personagem ou hex inválidos.');
@@ -151,22 +170,28 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         if (!turnManager.canMoveCharacter(character)) {
             this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
-            return; 
+            return;
         }
-        
+    
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
     
         const currentHex = this.getHexByLabel(character.state.position);
         if (currentHex) {
             currentHex.occupied = false;
             delete this.characters[currentHex.label];
+
+            if (currentHex.borderGraphics) {
+                currentHex.borderGraphics.clear();
+                currentHex.borderGraphics.destroy();
+                currentHex.borderGraphics = null;
+            }
         }
     
         targetHex.occupied = true;
         this.characters[targetHex.label] = character;
-    
         character.state.position = targetHex.label;
     
+        // Redesenhar o sprite do personagem
         character.sprite.clear();
         character.sprite.destroy();
     
@@ -177,13 +202,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
     
-        graphics.on('pointerdown', () => {
-            if (turnManager.currentTurn.hasMoved) {
-                this.scene.warningTextPlugin.showTemporaryMessage("Você já moveu esse personagem neste turno.");
-                return;
-            }
-            this.selectCharacter(character);
-        });
+        graphics.on('pointerdown', () => this.selectCharacter(character));
+    
+        // Desenhar a borda com a cor do jogador
+        this.drawHexBorder(targetHex, currentPlayer.color);
     
         turnManager.markCharacterAsMoved(character);
     
@@ -191,7 +213,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.selectedCharacter = null;
     
         console.log('Personagem movido com sucesso para ' + character.state.position);
-    }
+    }    
         
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
