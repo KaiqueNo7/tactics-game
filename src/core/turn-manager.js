@@ -1,5 +1,6 @@
-export default class TurnManager {
-    constructor(players) {
+export default class TurnManager extends Phaser.Data.DataManager {
+    constructor(scene, players) {
+        super(scene, 'TurnManager');
         this.players = players;
         this.currentPlayerIndex = 0;
         this.currentTurn = {
@@ -14,23 +15,32 @@ export default class TurnManager {
             winner: null
         };
         
-        this.determineStartingPlayer();
+        this.determineStartingPlayer(scene);
     }
 
     markCharacterAsMoved(character) {
         console.log(`${character.name} se moveu.`);
         this.currentTurn.movedCharacters.add(character);
+
+        if(this.currentTurn.movedCharacters.size === this.currentTurn.player.characters.length) {
+            this.currentTurn.hasMoved = true;
+        }
     }
 
     canMoveCharacter(character) {
         return !this.currentTurn.movedCharacters.has(character);
     }
 
-    determineStartingPlayer() {
+    determineStartingPlayer(scene) {
         const startingPlayerIndex = Math.random() > 0.5 ? 0 : 1;
         this.currentPlayerIndex = startingPlayerIndex;
         this.currentTurn.player = this.players[startingPlayerIndex];
-        console.log(`${this.currentTurn.player.name} começa o jogo!`);
+
+        this.displayText = scene.add.text(
+            scene.cameras.main.width - 150, 50, // Posição X, Y na tela
+            `${this.currentTurn.player.name} começa o jogo!`, // Texto a ser exibido
+            { fontSize: '20px', color: '#333' } // Estilo do texto
+        ).setOrigin(0.5);
     }
 
     getCurrentCharacter() {
@@ -41,7 +51,14 @@ export default class TurnManager {
     }
 
     nextTurn() {
-        console.log('Próximo turno...');
+        if (!this.currentTurn.hasMoved) {
+            this.displayText.setText('Você deve mover um personagem antes de finalizar o turno.');
+            return false;
+        }
+
+        this.currentTurn.movedCharacters.clear();
+
+        this.displayText.setText('Próximo turno...');
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
         
@@ -53,19 +70,11 @@ export default class TurnManager {
         };
     
         this.checkGameState();
+
+        this.displayText.setText(`Agora é a vez de ${this.currentTurn.player.name}.`);
+
         return this.currentTurn;
     }    
-
-    endTurn() {
-        if (!this.currentTurn.hasMoved) {
-            console.log('Você deve mover um personagem antes de finalizar o turno.');
-            return false;
-        }
-        this.currentTurn.movedCharacters.clear();
-        this.nextTurn(); 
-        console.log(`Agora é a vez de ${this.currentTurn.player.name}.`);
-        return true;
-    }
 
     resolveCombat(attacker, defender) {
         const baseDamage = Math.max(0, attacker.stats.attack - defender.stats.defense);

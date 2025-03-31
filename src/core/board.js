@@ -1,5 +1,6 @@
-export default class Board {
+export default class Board extends Phaser.GameObjects.GameObject {
     constructor(scene, hexRadius = 40) {
+        super(scene, 'Board');
         this.scene = scene;
         this.hexRadius = hexRadius;
         this.hexWidth = hexRadius * 2;

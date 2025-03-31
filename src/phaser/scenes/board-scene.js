@@ -27,6 +27,31 @@ export default class BoardScene extends Phaser.Scene {
 
         this.gameManager = new GameManager(this, this.board); 
         this.game.gameManager = this.gameManager;
+
+        const turnManager = this.game.gameManager.getTurnManager();
+
+        this.createEndTurnButton(turnManager);
+    }
+
+    createEndTurnButton(turnManager) {
+        const buttonText = this.add.text(this.cameras.main.width - 150, 20, 'Encerrar Turno', {
+            fontSize: '24px',
+            fill: '#ffffff',
+            backgroundColor: '#ff0000',
+            padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive();
+    
+        buttonText.on('pointerover', () => {
+            buttonText.setStyle({ fill: '#ffcc00' });  // Mudar a cor do texto quando o mouse está sobre ele
+        });
+    
+        buttonText.on('pointerout', () => {
+            buttonText.setStyle({ fill: '#ffffff' });
+        });
+    
+        buttonText.on('pointerdown', () => {
+            turnManager.nextTurn();
+        });
     }
     
     createInteractiveZone() {

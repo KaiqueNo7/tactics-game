@@ -21,7 +21,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
         this.player1 = new Player("Jogador 1", [warrior1, archer1, mage1]);
         this.player2 = new Player("Jogador 2", [warrior2, archer2, mage2]);
 
-        this.turnManager = new TurnManager([this.player1, this.player2]);
+        this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);
         this.currentTurn = this.turnManager.currentTurn;   
 
         this.setupInitialPositions();
