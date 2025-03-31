@@ -149,12 +149,16 @@ export default class Board extends Phaser.GameObjects.GameObject {
             return;
         }
     
+        if (!turnManager.canMoveCharacter(character)) {
+            this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
+            return; // Impede o movimento do personagem
+        }
+        
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
     
-        // Obter o hexágono atual do personagem
         const currentHex = this.getHexByLabel(character.state.position);
         if (currentHex) {
-            currentHex.occupied = false; // Liberar o hexágono original
+            currentHex.occupied = false;
             delete this.characters[currentHex.label]; // Remover referência do personagem no mapa
         }
     
@@ -175,16 +179,25 @@ export default class Board extends Phaser.GameObjects.GameObject {
         character.sprite = graphics;
     
         graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
-        graphics.on('pointerdown', () => this.selectCharacter(character));
     
+        // Verificação do movimento do personagem
+        graphics.on('pointerdown', () => {
+            if (turnManager.currentTurn.hasMoved) {
+                this.scene.warningTextPlugin.showTemporaryMessage("Você já moveu um personagem neste turno.");
+                return;
+            }
+            this.selectCharacter(character);
+        });
+    
+        // Marca o personagem como movido no turno atual
         turnManager.markCharacterAsMoved(character);
     
         this.clearHighlights();
         this.selectedCharacter = null;
     
         console.log('Personagem movido com sucesso para ' + character.state.position);
-    }    
-    
+    }
+        
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
     }
