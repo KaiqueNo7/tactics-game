@@ -16,7 +16,7 @@ class WarningTextPlugin extends Phaser.Plugins.ScenePlugin {
     
             this.warningText = this.scene.add.text(
                 canvasWidth - 20, // Posição X - Próxima da borda direita
-                70, // Posição Y
+                100, // Posição Y
                 '', 
                 { 
                     font: 'bold 25px Arial', // Fonte e tamanho

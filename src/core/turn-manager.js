@@ -55,7 +55,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
         this.currentTurn.movedCharacters.clear();
 
-        this.displayText.setText('Próximo turno...');
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
         

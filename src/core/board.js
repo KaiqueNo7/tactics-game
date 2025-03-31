@@ -68,27 +68,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const currentPlayer = turnManager.getCurrentPlayer();
     
         if (!currentPlayer.characters.includes(character)) {
-            const warningText = this.add.text(50, 50, 'Esse personagem não pertence ao jogador atual.', { fontSize: '20px', color: '#333' });
-            
-            this.time.delayedCall(3000, () => {
-                warningText.destroy();
-            });
+            this.scene.warningTextPlugin.showTemporaryMessage('Esse personagem não pertence ao jogador atual.');
     
             return;
         }
     
         if (turnManager.currentTurn.hasMoved) {    
-            const warningText = this.add.text(50, 80, 'Você já moveu um personagem neste turno.', { fontSize: '20px', color: '#333' });
-            
-            this.time.delayedCall(3000, () => {
-                warningText.destroy();
-            });
+            this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagem neste turno.');
     
             return;
         }
-    
-        console.log(`Personagem ${character.name} selecionado.`);
-        console.log('Características do personagem:', character);
+
         this.selectedCharacter = character;
     
         this.clearHighlights();
@@ -153,32 +143,47 @@ export default class Board extends Phaser.GameObjects.GameObject {
     moveCharacter(character, targetHex) {   
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
-
+    
         if (!character || !targetHex) {
             console.log('Personagem ou hex inválidos.');
-
             return;
         }
     
         console.log(`Movendo ${character.name} para ${targetHex.label}`);
     
+        // Obter o hexágono atual do personagem
         const currentHex = this.getHexByLabel(character.state.position);
-        if (currentHex) currentHex.occupied = false;
-        targetHex.occupied = true;
+        if (currentHex) {
+            currentHex.occupied = false; // Liberar o hexágono original
+            delete this.characters[currentHex.label]; // Remover referência do personagem no mapa
+        }
     
+        // Atualizar o hexágono alvo
+        targetHex.occupied = true;
+        this.characters[targetHex.label] = character;
+    
+        // Atualizar a posição do personagem
         character.state.position = targetHex.label;
-
+    
+        // Remover o sprite anterior e recriá-lo na nova posição
         character.sprite.clear();
-        character.sprite.fillStyle(character.color || 0x6666ff, 1);
-        character.sprite.fillCircle(targetHex.x, targetHex.y, 20);
-
+        character.sprite.destroy();  // Destroi o sprite antigo
+    
+        const graphics = this.scene.add.graphics();
+        graphics.fillStyle(character.color || 0x6666ff, 1);
+        graphics.fillCircle(targetHex.x, targetHex.y, 20);
+        character.sprite = graphics;
+    
+        graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
+        graphics.on('pointerdown', () => this.selectCharacter(character));
+    
         turnManager.markCharacterAsMoved(character);
     
         this.clearHighlights();
         this.selectedCharacter = null;
-
-        console.log('Personagem movido com sucesso.' + character.state.position);
-    }
+    
+        console.log('Personagem movido com sucesso para ' + character.state.position);
+    }    
     
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
