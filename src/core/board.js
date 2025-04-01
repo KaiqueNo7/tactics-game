@@ -131,70 +131,35 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     getMovableHexes(character, range) {
         const currentHex = this.getHexByLabel(character.state.position);
-        if (!currentHex) return [];
     
-        const reachableHexes = new Set(); 
-        const validHexes = []; 
+        if (!currentHex) {
+            console.log('Hex não encontrado.');
+            return [];
+        }
     
-        const explore = (currentHex, distance) => {
-            if (distance > range || reachableHexes.has(currentHex.label)) return;
+        return this.board.filter(hex => {
+            if (hex.occupied || hex.label === currentHex.label) return false;
     
-            reachableHexes.add(currentHex.label);
-    
-            if (distance > 0) validHexes.push(currentHex);
-    
-            const neighbors = this.getNeighbors(currentHex);
-    
-            neighbors.forEach(neighbor => {
-                const occupyingCharacter = this.characters[neighbor.label];
-    
-                // Se o hexágono está ocupado por um aliado, não continua o caminho
-                if (occupyingCharacter && occupyingCharacter.playerColor === character.playerColor) return;
-    
-                // Calcular a distância considerando a movimentação em colunas ímpares e pares
-                const colDiff = Math.abs(neighbor.col - currentHex.col);
-                const rowDiff = Math.abs(neighbor.row - currentHex.row);
-    
-                let calculatedDistance;
-                if (colDiff === 0) {
-                    calculatedDistance = rowDiff;
-                } else if (colDiff === 1) {
-                    if (currentHex.col % 2 === 0) {
-                        calculatedDistance = (neighbor.row >= currentHex.row) ? rowDiff : rowDiff + 1;
-                    } else {
-                        calculatedDistance = (neighbor.row <= currentHex.row) ? rowDiff : rowDiff + 1;
-                    }
-                } else if (colDiff === 2) {
-                    calculatedDistance = rowDiff <= 1 ? 2 : 3;
-                } else {
-                    calculatedDistance = colDiff + rowDiff; // Para distâncias maiores
+            const colDiff = Math.abs(hex.col - currentHex.col);
+            const rowDiff = Math.abs(hex.row - currentHex.row);
+            
+            let distance;
+            if (colDiff === 0) {
+                distance = rowDiff;
+            } else if (colDiff === 1) {
+                if (currentHex.col % 2 === 0) { // Coluna par
+                    distance = (hex.row >= currentHex.row) ? rowDiff : rowDiff + 1;
+                } else { // Coluna ímpar
+                    distance = (hex.row <= currentHex.row) ? rowDiff : rowDiff + 1;
                 }
-    
-                // Verifica se o movimento é válido considerando o alcance máximo permitido
-                if (calculatedDistance <= range && distance + 1 <= range) {
-                    explore(neighbor, distance + 1);
-                }
-            });
-        };
-    
-        explore(currentHex, 0);
-    
-        return validHexes;
-    }    
-
-    getNeighbors(hex) {
-        const directions = [
-            { col: 0, row: -1 }, // Cima
-            { col: 0, row: 1 },  // Baixo
-            { col: -1, row: 0 }, // Esquerda
-            { col: 1, row: 0 },  // Direita
-            { col: -1, row: hex.col % 2 === 0 ? -1 : 1 }, // Esquerda Cima/Baixo
-            { col: 1, row: hex.col % 2 === 0 ? -1 : 1 }   // Direita Cima/Baixo
-        ];
-    
-        return directions.map(dir => 
-            this.board.find(h => h.col === hex.col + dir.col && h.row === hex.row + dir.row)
-        ).filter(Boolean);
+            } else if (colDiff === 2) {
+                distance = rowDiff <= 1 ? 2 : 3;
+            } else {
+                distance = colDiff + rowDiff;
+            }
+            
+            return distance <= range;
+        });
     }      
     
     highlightHexes(hexes) {
