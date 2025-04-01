@@ -63,6 +63,25 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
+
+        // Renderizar vida e ataque como texto sobre o personagem
+        const { currentHealth, attack } = character.stats;
+
+        // Criar o texto mostrando vida e ataque
+        const statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
+            font: '12px Arial',
+            fill: '#ffffff',
+            align: 'center',
+            backgroundColor: '#000000',
+            padding: { x: 2, y: 2 }
+        });
+
+        statsText.setOrigin(0.5); // Centraliza o texto sobre o personagem
+
+        graphics.setDepth(5);
+        statsText.setDepth(10); 
+
+        character.statsText = statsText;
     }
 
     drawHexBorder(hex, color) {
@@ -84,16 +103,22 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
-    
-        if (!currentPlayer.characters.includes(character)) {
-            this.scene.warningTextPlugin.showTemporaryMessage('Esse personagem não pertence ao jogador atual.');
-    
+
+        if (this.selectedCharacter === character) {
+            this.selectedCharacter = null;
+            this.clearHighlights();
+            this.scene.uiManager.updateCharacterPanel(null);
             return;
         }
     
+        if (!currentPlayer.characters.includes(character)) {
+            this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover personagens do seu time.');
+            return;
+        }
+
         if (turnManager.currentTurn.hasMoved) {    
             this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagem neste turno.');
-    
+            this.clearHighlights();
             return;
         }
 
@@ -179,7 +204,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (currentHex) {
             currentHex.occupied = false;
             delete this.characters[currentHex.label];
-
+            
             if (currentHex.borderGraphics) {
                 currentHex.borderGraphics.clear();
                 currentHex.borderGraphics.destroy();
@@ -191,12 +216,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.characters[targetHex.label] = character;
         character.state.position = targetHex.label;
     
-        // Redesenhar o sprite do personagem
         character.sprite.clear();
         character.sprite.destroy();
     
         const graphics = this.scene.add.graphics();
-        graphics.fillStyle(character.color || 0x6666ff, 1);
+        graphics.fillStyle(character.color || currentPlayer.color, 1);
         graphics.fillCircle(targetHex.x, targetHex.y, 20);
         character.sprite = graphics;
     
@@ -204,16 +228,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         graphics.on('pointerdown', () => this.selectCharacter(character));
     
-        // Desenhar a borda com a cor do jogador
+        
+        if (character.statsText) {
+            character.statsText.setPosition(targetHex.x, targetHex.y + 25);
+        }
+        
         this.drawHexBorder(targetHex, currentPlayer.color);
-    
         turnManager.markCharacterAsMoved(character);
     
         this.clearHighlights();
         this.selectedCharacter = null;
-    
-        console.log('Personagem movido com sucesso para ' + character.state.position);
-    }    
+    }        
         
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);

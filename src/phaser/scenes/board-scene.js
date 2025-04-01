@@ -39,10 +39,11 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     createEndTurnButton(turnManager) {
-        const buttonText = this.add.text(this.cameras.main.width - 150, 20, 'Encerrar Turno', {
+        const buttonText = this.add.text(this.cameras.main.width - 150, 20, 'Próximo Turno', {
+            fontFamily: 'Arial',
             fontSize: '24px',
             fill: '#ffffff',
-            backgroundColor: '#ff0000',
+            backgroundColor: '#ccc',
             padding: { x: 10, y: 5 }
         }).setOrigin(0.5).setInteractive();
     
