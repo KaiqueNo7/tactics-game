@@ -67,7 +67,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         // Renderizar vida e ataque como texto sobre o personagem
         const { currentHealth, attack } = character.stats;
 
-        // Criar o texto mostrando vida e ataque
         const statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
             font: '12px Arial',
             fill: '#ffffff',
@@ -76,7 +75,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             padding: { x: 2, y: 2 }
         });
 
-        statsText.setOrigin(0.5); // Centraliza o texto sobre o personagem
+        statsText.setOrigin(0.5);
 
         graphics.setDepth(5);
         statsText.setDepth(10); 
@@ -132,17 +131,39 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     getMovableHexes(character, range) {
         const currentHex = this.getHexByLabel(character.state.position);
-
-        if(!currentHex){
+    
+        if (!currentHex) {
             console.log('Hex não encontrado.');
             return [];
         }
-
-        return this.board.filter(hex => {
-            const distance = Math.abs(hex.col - currentHex.col) + Math.abs(hex.row - currentHex.row);
-            return distance <= range && !hex.occupied;
+    
+        return this.board.filter(h => {
+            if (h.occupied || h.label === currentHex.label) return false; // Ignora hexágonos ocupados e o atual
+    
+            let colDiff = Math.abs(h.col - currentHex.col);
+            let rowDiff = Math.abs(h.row - currentHex.row);
+            
+            // Cálculo da distância levando em consideração o grid offset
+            let distance;
+            if (colDiff === 0) {
+                distance = rowDiff;
+            } else if (colDiff === 1) {
+                // Ajuste para colunas alternadas (offset)
+                if (currentHex.col % 2 === 0) { // Coluna par
+                    distance = (h.row >= currentHex.row) ? rowDiff : rowDiff + 1;
+                } else { // Coluna ímpar
+                    distance = (h.row <= currentHex.row) ? rowDiff : rowDiff + 1;
+                }
+            } else if (colDiff === 2) {
+                distance = rowDiff <= 1 ? 2 : 3;
+            } else {
+                distance = colDiff + rowDiff; // Para distâncias maiores
+            }
+            
+            return distance <= range; // Retorna hexágonos válidos dentro do range permitido
         });
     }
+    
 
     highlightHexes(hexes) {
         const gameManager = this.scene.game.gameManager;
