@@ -15,7 +15,7 @@ export default class UIManager {
             padding: { x: 10, y: 10 }
         }).setScrollFactor(0);
 
-        this.characterPanel = this.scene.add.text(400, 300, '', { 
+        this.characterPanel = this.scene.add.text(385, 300, '', { 
             font: '16px Arial', 
             fill: '#ffffff',
             padding: { x: 10, y: 10 }
