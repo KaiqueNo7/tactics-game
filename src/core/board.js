@@ -18,13 +18,15 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
         for (let col = 0; col < 5; col++) {
             let currentYOffset = yOffset;
+            let rows = 6;
 
             if (col % 2 === 1) { 
                 currentYOffset -= this.hexHeight / 2;
+                rows = 7;
             }
 
-            for (let row = 0; row < 7; row++) {
-                let label = String.fromCharCode(65 + col) + (row + 1); // A1, B1, C1, etc.
+            for (let row = 0; row < rows; row++) {
+                let label = String.fromCharCode(65 + col) + (row + 1);
                 let hex = { 
                     x: xOffset, 
                     y: currentYOffset, 
@@ -64,7 +66,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
 
-        // Renderizar vida e ataque como texto sobre o personagem
         const { currentHealth, attack } = character.stats;
 
         const statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
