@@ -5,10 +5,17 @@ export default class Character extends Phaser.GameObjects.Graphics {
             y = 0, 
             texture = 'defaultTexture', 
             name, 
-            health = 100, 
+            health = 30, 
             attack = 20, 
-            defense = 10, 
-            color = 'blue' 
+            color = 'blue',
+            abilities = {
+                passive: [],
+                specialSkills: [],
+                movement: {
+                    baseRange: 2,
+                    sprint: false
+                }
+            }
         } = config;
 
         super(scene, x, y, texture);
@@ -23,18 +30,9 @@ export default class Character extends Phaser.GameObjects.Graphics {
             maxHealth: health,
             currentHealth: health,
             attack: attack,
-            defense: defense
         };
 
-        this.abilities = {
-            passive: [],
-            active: [],
-            specialSkills: [],
-            movement: {
-                baseRange: 2,
-                sprint: false
-            }
-        };
+        this.abilities = abilities;
 
         this.state = {
             position: null,
@@ -48,7 +46,7 @@ export default class Character extends Phaser.GameObjects.Graphics {
 
         if (this.stats.currentHealth === 0) {
             this.state.isAlive = false;
-            this.destroy(); // Remove o sprite da cena quando morrer
+            this.destroy();
         }
     }
 }

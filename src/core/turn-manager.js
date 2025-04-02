@@ -8,7 +8,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
             player: null,
             phase: 'start',
             roundNumber: 1,
-            hasMoved: false,
+            movedAll: false,
             movedCharacters: new Set() 
         };
         this.gameState = {
@@ -24,7 +24,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.currentTurn.movedCharacters.add(character);
 
         if(this.currentTurn.movedCharacters.size === this.currentTurn.player.characters.length) {
-            this.currentTurn.hasMoved = true;
+            this.currentTurn.movedAll = true;
         }
     }
 
@@ -67,7 +67,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
             player: currentPlayer,
             phase: 'start',
             roundNumber: newRoundNumber,
-            hasMoved: false,
+            movedAll: false,
             movedCharacters: new Set()
         };
     

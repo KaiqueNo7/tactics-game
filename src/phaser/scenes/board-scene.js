@@ -35,7 +35,7 @@ export default class BoardScene extends Phaser.Scene {
 
         this.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
-        this.uiManager.updateCharacterPanel(turnManager.players);
+        this.uiManager.updategamePanel(turnManager.players);
     }
 
     createEndTurnButton(turnManager) {

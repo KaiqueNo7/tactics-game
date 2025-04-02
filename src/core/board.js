@@ -63,6 +63,23 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
         graphics.on('pointerdown', () => this.selectCharacter(character));
 
+        let hoverTimer;
+
+        graphics.on('pointerover', () => {
+            hoverTimer = this.scene.time.delayedCall(1000, () => {
+                this.scene.uiManager.showDetailedCharacterInfo(character);
+            });
+        });
+
+        graphics.on('pointerout', () => {
+            if (hoverTimer) {
+                hoverTimer.remove();
+                hoverTimer = null;
+            }
+
+            this.scene.uiManager.hideDetailedCharacterInfo();
+        });
+
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
 
@@ -106,7 +123,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (this.selectedCharacter === character) {
             this.selectedCharacter = null;
             this.clearHighlights();
-            this.scene.uiManager.updateCharacterPanel(null);
+            this.scene.uiManager.updategamePanel(null);
             return;
         }
     
@@ -115,7 +132,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             return;
         }
 
-        if (turnManager.currentTurn.hasMoved) {    
+        if (turnManager.currentTurn.movedAll) {    
             this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagem neste turno.');
             this.clearHighlights();
             return;
@@ -134,14 +151,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const rowDiff = targetHex.row - startHex.row;
         const steps = Math.max(Math.abs(colDiff), Math.abs(rowDiff));
 
-        // Se o movimento for de apenas 1 casa, não precisa verificar intermediários
         if (steps <= 1) return true;
 
-        // Determinar a direção do movimento
         const colStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
         const rowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
 
-        // Verificar cada hexágono no caminho
         let currentCol = startHex.col;
         let currentRow = startHex.row;
 
@@ -149,7 +163,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             currentCol += colStep;
             currentRow += rowStep;
 
-            // Ajuste para colunas ímpares/pares no tabuleiro hexagonal
             if (startHex.col % 2 === 1 && colStep !== 0) {
                 currentRow = startHex.row + Math.floor(rowStep * i + 0.5);
             } else if (startHex.col % 2 === 0 && colStep !== 0) {
@@ -161,10 +174,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
             );
 
             if (intermediateHex && intermediateHex.occupied) {
-                return false; // Caminho bloqueado por aliado ou objeto
+                return false;
             }
         }
-        return true; // Caminho livre
+        return true;
     }
 
     getMovableHexes(character, range) {
@@ -185,9 +198,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
             if (colDiff === 0) {
                 distance = rowDiff;
             } else if (colDiff === 1) {
-                if (currentHex.col % 2 === 0) { // Coluna par
+                if (currentHex.col % 2 === 0) {
                     distance = (hex.row >= currentHex.row) ? rowDiff : rowDiff + 1;
-                } else { // Coluna ímpar
+                } else {
                     distance = (hex.row <= currentHex.row) ? rowDiff : rowDiff + 1;
                 }
             } else if (colDiff === 2) {
@@ -196,14 +209,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
                 distance = colDiff + rowDiff;
             }
 
-            // Verifica se a distância está dentro do alcance e se o caminho está livre
             return distance <= range && this.isPathClear(currentHex, hex);
         });
     }     
     
     highlightHexes(hexes) {
-        console.log(hexes);
-    
         hexes.forEach(hex => {
             const graphics = this.scene.add.graphics();
             graphics.lineStyle(2, 0xffff00, 1);
@@ -272,7 +282,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
     
         graphics.on('pointerdown', () => this.selectCharacter(character));
-    
         
         if (character.statsText) {
             character.statsText.setPosition(targetHex.x, targetHex.y + 25);
@@ -280,6 +289,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
         
         this.drawHexBorder(targetHex, currentPlayer.color);
         turnManager.markCharacterAsMoved(character);
+
+        if(turnManager.currentTurn.movedAll) {
+            turnManager.nextTurn();
+        }
     
         this.clearHighlights();
         this.selectedCharacter = null;
