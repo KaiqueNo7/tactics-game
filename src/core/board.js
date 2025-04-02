@@ -98,7 +98,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         hex.borderGraphics = borderGraphics;
     }
     
-
     selectCharacter(character) {
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
@@ -130,17 +129,55 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightHexes(this.highlightedHexes);
     }    
     
+    isPathClear(startHex, targetHex) {
+        const colDiff = targetHex.col - startHex.col;
+        const rowDiff = targetHex.row - startHex.row;
+        const steps = Math.max(Math.abs(colDiff), Math.abs(rowDiff));
+
+        // Se o movimento for de apenas 1 casa, não precisa verificar intermediários
+        if (steps <= 1) return true;
+
+        // Determinar a direção do movimento
+        const colStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
+        const rowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
+
+        // Verificar cada hexágono no caminho
+        let currentCol = startHex.col;
+        let currentRow = startHex.row;
+
+        for (let i = 1; i < steps; i++) {
+            currentCol += colStep;
+            currentRow += rowStep;
+
+            // Ajuste para colunas ímpares/pares no tabuleiro hexagonal
+            if (startHex.col % 2 === 1 && colStep !== 0) {
+                currentRow = startHex.row + Math.floor(rowStep * i + 0.5);
+            } else if (startHex.col % 2 === 0 && colStep !== 0) {
+                currentRow = startHex.row + Math.ceil(rowStep * i - 0.5);
+            }
+
+            const intermediateHex = this.board.find(
+                hex => hex.col === currentCol && hex.row === currentRow
+            );
+
+            if (intermediateHex && intermediateHex.occupied) {
+                return false; // Caminho bloqueado por aliado ou objeto
+            }
+        }
+        return true; // Caminho livre
+    }
+
     getMovableHexes(character, range) {
         const currentHex = this.getHexByLabel(character.state.position);
-    
+
         if (!currentHex) {
             console.log('Hex não encontrado.');
             return [];
         }
-    
+
         return this.board.filter(hex => {
             if (hex.occupied || hex.label === currentHex.label) return false;
-    
+
             const colDiff = Math.abs(hex.col - currentHex.col);
             const rowDiff = Math.abs(hex.row - currentHex.row);
             
@@ -158,14 +195,14 @@ export default class Board extends Phaser.GameObjects.GameObject {
             } else {
                 distance = colDiff + rowDiff;
             }
-            
-            return distance <= range;
+
+            // Verifica se a distância está dentro do alcance e se o caminho está livre
+            return distance <= range && this.isPathClear(currentHex, hex);
         });
-    }      
+    }     
     
     highlightHexes(hexes) {
-        const gameManager = this.scene.game.gameManager;
-        const turnManager = gameManager.getTurnManager();
+        console.log(hexes);
     
         hexes.forEach(hex => {
             const graphics = this.scene.add.graphics();
@@ -174,18 +211,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
             graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 25), Phaser.Geom.Circle.Contains);
     
-            graphics.on('pointerdown', () => {
-
-                if (!this.selectedCharacter){
-                    console.log('Nenhum personagem selecionado.');
-                    return;
-                } 
-                
-                if (turnManager.currentTurn.hasMoved) {
-                    console.log("Você já moveu um personagem neste turno.");
-                    return;
-                }
-    
+            graphics.on('pointerdown', () => {    
                 this.moveCharacter(this.selectedCharacter, hex);
             });
     
