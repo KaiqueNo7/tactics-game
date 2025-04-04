@@ -146,40 +146,61 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightHexes(this.highlightedHexes);
     }    
     
-    isPathClear(startHex, targetHex) {
-        const colDiff = targetHex.col - startHex.col;
-        const rowDiff = targetHex.row - startHex.row;
-        const steps = Math.max(Math.abs(colDiff), Math.abs(rowDiff));
-
-        if (steps <= 1) return true;
-
-        const colStep = colDiff === 0 ? 0 : colDiff / Math.abs(colDiff);
-        const rowStep = rowDiff === 0 ? 0 : rowDiff / Math.abs(rowDiff);
-
-        let currentCol = startHex.col;
-        let currentRow = startHex.row;
-
-        for (let i = 1; i < steps; i++) {
-            currentCol += colStep;
-            currentRow += rowStep;
-
-            if (startHex.col % 2 === 1 && colStep !== 0) {
-                currentRow = startHex.row + Math.floor(rowStep * i + 0.5);
-            } else if (startHex.col % 2 === 0 && colStep !== 0) {
-                currentRow = startHex.row + Math.ceil(rowStep * i - 0.5);
+    isPathClear(startHex, targetHex, maxSteps) {
+        const directions = [
+            { col: 1, row: 0 },   // Direita
+            { col: -1, row: 0 },  // Esquerda
+            { col: 0, row: 1 },   // Baixo
+            { col: 0, row: -1 },  // Cima
+            { col: 1, row: 1 },   // Diagonal direita-baixo
+            { col: -1, row: 1 },  // Diagonal esquerda-baixo
+            { col: 1, row: -1 },  // Diagonal direita-cima
+            { col: -1, row: -1 }  // Diagonal esquerda-cima
+        ];
+        
+        const visited = new Set();
+        const queue = [{ col: startHex.col, row: startHex.row, steps: 0 }];
+        
+        while (queue.length > 0) {
+            const { col, row, steps } = queue.shift();
+            const key = `${col},${row}`;
+            
+            if (visited.has(key)) continue;
+            visited.add(key);
+    
+            // Se alcançou o destino e está dentro do limite de passos
+            if (col === targetHex.col && row === targetHex.row) {
+                return true;
             }
-
-            const intermediateHex = this.board.find(
-                hex => hex.col === currentCol && hex.row === currentRow
-            );
-
-            if (intermediateHex && intermediateHex.occupied) {
-                return false;
+            
+            // Se exceder o limite de passos, descarta essa rota
+            if (steps >= maxSteps) continue;
+    
+            for (const { col: dCol, row: dRow } of directions) {
+                let nextCol = col + dCol;
+                let nextRow = row + dRow;
+    
+                // Ajuste para tabuleiro hexagonal ímpar/par
+                if (col % 2 === 1 && dCol !== 0) {
+                    nextRow = row + Math.floor(dRow * 0.5);
+                } else if (col % 2 === 0 && dCol !== 0) {
+                    nextRow = row + Math.ceil(dRow * 0.5);
+                }
+    
+                const intermediateHex = this.board.find(
+                    hex => hex.col === nextCol && hex.row === nextRow
+                );
+    
+                if (intermediateHex && !intermediateHex.occupied && !visited.has(`${nextCol},${nextRow}`)) {
+                    queue.push({ col: nextCol, row: nextRow, steps: steps + 1 });
+                }
             }
         }
-        return true;
+        
+        // Se nenhum caminho foi encontrado dentro do limite de passos
+        return false;
     }
-
+        
     getMovableHexes(character, range) {
         const currentHex = this.getHexByLabel(character.state.position);
 
@@ -187,13 +208,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
             console.log('Hex não encontrado.');
             return [];
         }
-
+        
         return this.board.filter(hex => {
             if (hex.occupied || hex.label === currentHex.label) return false;
-
+            
             const colDiff = Math.abs(hex.col - currentHex.col);
             const rowDiff = Math.abs(hex.row - currentHex.row);
-            
+
             let distance;
             if (colDiff === 0) {
                 distance = rowDiff;
@@ -209,7 +230,12 @@ export default class Board extends Phaser.GameObjects.GameObject {
                 distance = colDiff + rowDiff;
             }
 
-            return distance <= range && this.isPathClear(currentHex, hex);
+            let isPathClear = this.isPathClear(currentHex, hex, 2);
+
+            console.log('De ', currentHex.label, 'para', hex.label, 'distância:', distance);
+            console.log('Caminho está livre:', isPathClear);
+
+            return distance <= range && isPathClear;
         });
     }     
     
