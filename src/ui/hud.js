@@ -39,7 +39,7 @@ export default class UIManager {
                      `Jogador: ${currentPlayer.name}`;
         
         this.setTextWithBackground(this.turnPanel, text);
-        this.turnPanel.setStyle({ backgroundColor: '#333333' }); // Cor específica para o painel de turno
+        this.turnPanel.setStyle({ backgroundColor: '#333333' });
     }
 
     updategamePanel(players) {

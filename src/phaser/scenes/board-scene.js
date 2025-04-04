@@ -11,7 +11,12 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     preload() {
-        // Carregar assets, se necessário
+        this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
+            frameWidth: 64,
+            frameHeight: 64
+        });        
+
+        console.log(this.textures.list);
     }
 
     create() {

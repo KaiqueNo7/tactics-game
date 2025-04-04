@@ -1,6 +1,7 @@
 import TurnManager from './turn-manager.js';
 import Player from '../characters/player.js';
-import CharacterFactory from '../characters/character-factory.js';
+import Heroes from './hero.js';
+
 
 export default class GameManager extends Phaser.GameObjects.Container {
     constructor(scene, board) {  
@@ -10,16 +11,16 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
         this.scene.add.existing(this);
 
-        const warrior1 = CharacterFactory.createWarrior(scene, "Guerreiro 1", 0x1E90FF);
-        const archer1 = CharacterFactory.createArcher(scene, "Arqueiro 1", 0x32CD32);
-        const mage1 = CharacterFactory.createMage(scene, "Mago 1", 0x4B0082);
+        const hero1 = new Heroes.GoldNugget(this.scene, 100, 100);
+        const hero2 = new Heroes.SnakeLady(this.scene, 200, 100);
+        const hero3 = new Heroes.BasicShooter(this.scene, 300, 100);
+        
+        const hero4 = new Heroes.IronFist(this.scene, 100, 300);
+        const hero5 = new Heroes.ForestSpirit(this.scene, 200, 300);
+        const hero6 = new Heroes.GiantBlade(this.scene, 300, 300);        
 
-        const warrior2 = CharacterFactory.createWarrior(scene, "Guerreiro 2", 0xDC143C);
-        const archer2 = CharacterFactory.createArcher(scene, "Arqueiro 2", 0xFFD700);
-        const mage2 = CharacterFactory.createMage(scene, "Mago 2", 0xFF4500);
-
-        this.player1 = new Player("Jogador 1", [warrior1, archer1, mage1]);
-        this.player2 = new Player("Jogador 2", [warrior2, archer2, mage2]);
+        this.player1 = new Player("Jogador 1", [hero1, hero2, hero3]);
+        this.player2 = new Player("Jogador 2", [hero4, hero5, hero6]);        
 
         this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);
         this.currentTurn = this.turnManager.currentTurn;   

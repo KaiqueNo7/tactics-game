@@ -8,19 +8,29 @@ export default class CharacterFactory {
             attack: 3,
             abilities: {
                 passive: ['melee'],
-                specialSkills: ['shieldBlock']
+                ranged: false,
+                specialSkills: ['shieldBlock'],
+                moviment: {
+                    sprint: true
+                }
             }
         });
     }
 
     static createArcher(scene, name, color) {
         return new Character(scene, {
-            x: 200, y: 100, name, color,
+            x: 200, y: 100, 
+            name, 
+            color,
             health: 10, 
             attack: 4,
             abilities: {
                 passive: ['ranged'],
-                specialSkills: ['piercingShot']
+                ranged: true,
+                specialSkills: ['piercingShot'],
+                moviment: {
+                    sprint: false
+                }
             }
         });
     }
@@ -34,7 +44,11 @@ export default class CharacterFactory {
             attack: 2,
             abilities: {
                 passive: ['ranged'],
-                specialSkills: ['fireball']
+                ranged: false,
+                specialSkills: ['fireball'],
+                moviment: {
+                    sprint: false
+                }
             }
         });
     }

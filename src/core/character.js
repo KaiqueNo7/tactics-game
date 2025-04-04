@@ -1,38 +1,25 @@
 export default class Character extends Phaser.GameObjects.Graphics {
-    constructor(scene, config) {
-        const { 
-            x = 0, 
-            y = 0, 
-            texture = 'defaultTexture', 
-            name, 
-            health = 30, 
-            attack = 20, 
-            color = 'blue',
-            abilities = {
-                passive: [],
-                specialSkills: [],
-                movement: {
-                    baseRange: 2,
-                    sprint: false
-                }
-            }
-        } = config;
-
+    constructor(scene, x, y, texture, name, attack, hp, ability, skill) {
         super(scene, x, y, texture);
 
         scene.add.existing(this);
+        scene.physics.add.existing(this);
 
-        this.id = Date.now() + Math.random();
         this.name = name;
-        this.color = color;
+        this.attack = attack;
+        this.hp = hp;
+        this.ability = ability;
+        this.skill = skill;
 
+        this.statusEffects = [];
+        this.taunt = ability === 'Taunt';
+
+        // Adiciona os atributos compatíveis com seu sistema antigo
         this.stats = {
-            maxHealth: health,
-            currentHealth: health,
-            attack: attack,
+            maxHealth: hp,
+            currentHealth: hp,
+            attack: attack
         };
-
-        this.abilities = abilities;
 
         this.state = {
             position: null,

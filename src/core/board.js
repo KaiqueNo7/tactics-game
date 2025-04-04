@@ -44,63 +44,49 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
     placeCharacter(character, position, playerColor) {
         const hex = this.getHexByLabel(position);
-
+    
         if (!hex || !this.scene) {
             console.log('Hex ou cena não encontrados.');
             return;
         }
-
+    
         hex.occupied = true;
         this.characters[position] = character;
         character.state.position = position;
-
-        const graphics = this.scene.add.graphics();
-        graphics.fillStyle(character.color || 0x6666ff, 1);
-        graphics.fillCircle(hex.x, hex.y, 20);
-        character.sprite = graphics;
-
-        graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 20), Phaser.Geom.Circle.Contains);
-
-        graphics.on('pointerdown', () => this.selectCharacter(character));
-
-        let hoverTimer;
-
-        graphics.on('pointerover', () => {
-            hoverTimer = this.scene.time.delayedCall(1000, () => {
-                this.scene.uiManager.showDetailedCharacterInfo(character);
-            });
-        });
-
-        graphics.on('pointerout', () => {
-            if (hoverTimer) {
-                hoverTimer.remove();
-                hoverTimer = null;
-            }
-
-            this.scene.uiManager.hideDetailedCharacterInfo();
-        });
-
+    
+        // Remove gráfico antigo se existir
+        if (character.sprite) {
+            character.sprite.destroy();
+        }
+    
+        character.sprite = this.scene.add.sprite(hex.x, hex.y, 'heroes', character.frameIndex);
+        character.sprite.setScale(0.5);
+    
+        // Ativa interatividade no sprite
+        character.sprite.setInteractive();
+        character.sprite.on('pointerdown', () => this.selectCharacter(character));
+    
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
-
+    
+        // Adiciona a HUD com vida e ataque
         const { currentHealth, attack } = character.stats;
-
-        const statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
+        if (character.statsText) {
+            character.statsText.destroy();
+        }
+    
+        character.statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
             font: '12px Arial',
             fill: '#ffffff',
             align: 'center',
             backgroundColor: '#000000',
             padding: { x: 2, y: 2 }
         });
-
-        statsText.setOrigin(0.5);
-
-        graphics.setDepth(5);
-        statsText.setDepth(10); 
-
-        character.statsText = statsText;
+    
+        character.statsText.setOrigin(0.5);
+        character.statsText.setDepth(10);
     }
-
+    
     drawHexBorder(hex, color) {
         if (hex.borderGraphics) {
             hex.borderGraphics.clear();
@@ -141,8 +127,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.selectedCharacter = character;
     
         this.clearHighlights();
-    
-        this.highlightedHexes = this.getMovableHexes(character, 2);
+
+        let movimentRange = 2;
+        
+        this.highlightedHexes = this.getMovableHexes(character, movimentRange);
         this.highlightHexes(this.highlightedHexes);
     }    
     
@@ -168,19 +156,16 @@ export default class Board extends Phaser.GameObjects.GameObject {
             if (visited.has(key)) continue;
             visited.add(key);
     
-            // Se alcançou o destino e está dentro do limite de passos
             if (col === targetHex.col && row === targetHex.row) {
                 return true;
             }
             
-            // Se exceder o limite de passos, descarta essa rota
             if (steps >= maxSteps) continue;
     
             for (const { col: dCol, row: dRow } of directions) {
                 let nextCol = col + dCol;
                 let nextRow = row + dRow;
     
-                // Ajuste para tabuleiro hexagonal ímpar/par
                 if (col % 2 === 1 && dCol !== 0) {
                     nextRow = row + Math.floor(dRow * 0.5);
                 } else if (col % 2 === 0 && dCol !== 0) {
@@ -197,7 +182,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             }
         }
         
-        // Se nenhum caminho foi encontrado dentro do limite de passos
         return false;
     }
         
@@ -230,10 +214,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
                 distance = colDiff + rowDiff;
             }
 
-            let isPathClear = this.isPathClear(currentHex, hex, 2);
-
-            console.log('De ', currentHex.label, 'para', hex.label, 'distância:', distance);
-            console.log('Caminho está livre:', isPathClear);
+            let isPathClear = this.isPathClear(currentHex, hex, range);
 
             return distance <= range && isPathClear;
         });
@@ -285,44 +266,55 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (currentHex) {
             currentHex.occupied = false;
             delete this.characters[currentHex.label];
-            
-            if (currentHex.borderGraphics) {
+    
+            // Apenas remove a borda se ninguém mais estiver lá
+            if (!this.characters[currentHex.label] && currentHex.borderGraphics) {
                 currentHex.borderGraphics.clear();
                 currentHex.borderGraphics.destroy();
                 currentHex.borderGraphics = null;
             }
         }
     
+        // Atualiza o novo hexágono
         targetHex.occupied = true;
         this.characters[targetHex.label] = character;
         character.state.position = targetHex.label;
     
-        character.sprite.clear();
-        character.sprite.destroy();
+        // Em vez de destruir o sprite, apenas move
+        if (character.sprite) {
+            character.sprite.setPosition(targetHex.x, targetHex.y);
+        } else {
+            character.sprite = this.scene.add.sprite(targetHex.x, targetHex.y, 'heroes', character.frameIndex);
+            character.sprite.setScale(1.5);
+        }
     
-        const graphics = this.scene.add.graphics();
-        graphics.fillStyle(character.color || currentPlayer.color, 1);
-        graphics.fillCircle(targetHex.x, targetHex.y, 20);
-        character.sprite = graphics;
+        // Mantém interatividade do sprite
+        if (!character.sprite.input) {
+            character.sprite.setInteractive();
+            character.sprite.on('pointerdown', () => this.selectCharacter(character));
+        }
     
-        graphics.setInteractive(new Phaser.Geom.Circle(targetHex.x, targetHex.y, 20), Phaser.Geom.Circle.Contains);
-    
-        graphics.on('pointerdown', () => this.selectCharacter(character));
-        
+        // Atualiza posição do texto de status
         if (character.statsText) {
             character.statsText.setPosition(targetHex.x, targetHex.y + 25);
+            character.statsText.setDepth(10);
         }
-        
+    
+        // Desenha a borda do novo hexágono
         this.drawHexBorder(targetHex, currentPlayer.color);
+    
+        // Marca o personagem como movido
         turnManager.markCharacterAsMoved(character);
-
-        if(turnManager.currentTurn.movedAll) {
+    
+        // Verifica se todos os personagens do turno já se moveram
+        if (turnManager.currentTurn.movedAll) {
             turnManager.nextTurn();
         }
     
+        // Limpa destaques e deseleciona o personagem atual
         this.clearHighlights();
         this.selectedCharacter = null;
-    }        
+    }     
         
     getHexByLabel(label) {
         return this.board.find(hex => hex.label === label);
