@@ -103,12 +103,6 @@ export default class BoardScene extends Phaser.Scene {
             graphics.fillPath();
             
             this.hexagons.push({ hexData: hex, points });
-            
-            this.add.text(hex.x, hex.y, hex.label, {
-                fontSize: '16px',
-                fill: '#000',
-                align: 'center'
-            }).setOrigin(0.5);
         });
     }
     

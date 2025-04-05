@@ -62,7 +62,14 @@ export default class Board extends Phaser.GameObjects.GameObject {
         character.sprite.setScale(0.7);
 
         character.sprite.setInteractive();
-        character.sprite.on('pointerdown', () => this.selectCharacter(character));
+        character.sprite.setInteractive();
+        character.sprite.on('pointerdown', () => {
+            if (this.selectedCharacter) {
+                this.attackCharacter(this.selectedCharacter, character);
+            } else {
+                this.selectCharacter(character);
+            }
+        });
     
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
@@ -102,7 +109,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
-
+    
         if (this.selectedCharacter === character) {
             this.selectedCharacter = null;
             this.clearHighlights();
@@ -111,24 +118,59 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     
         if (!currentPlayer.characters.includes(character)) {
-            this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover personagens do seu time.');
+            if (this.selectedCharacter && this.selectedCharacter.attackTarget) {
+                this.attackCharacter(this.selectedCharacter, character);
+            } else {
+                this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover ou atacar com personagens do seu time.');
+            }
             return;
         }
-
-        if (turnManager.currentTurn.movedAll) {    
-            this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagem neste turno.');
+    
+        if (turnManager.currentTurn.movedAll) {
+            this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagens neste turno.');
             this.clearHighlights();
             return;
         }
-
-        this.selectedCharacter = character;
     
+        this.selectedCharacter = character;
         this.clearHighlights();
-
-        let movimentRange = 2;
-        
+        const movimentRange = 2;
         this.highlightedHexes = this.getMovableHexes(character, movimentRange);
         this.highlightHexes(this.highlightedHexes);
+    }
+
+    attackCharacter(attacker, target) {
+        if (!attacker || !target || attacker === target) return;
+    
+        const attackerHex = this.getHexByLabel(attacker.state.position);
+        const targetHex = this.getHexByLabel(target.state.position);
+    
+        if (!attackerHex || !targetHex) return;
+    
+        const distance = this.calculateDistance(attackerHex, targetHex);
+    
+        if (distance <= attacker.attackRange) {
+            attacker.attackTarget(target, this);
+            if (!target.state.isAlive) {
+                targetHex.occupied = false;
+                delete this.characters[targetHex.label];
+            }
+        } else {
+            console.log('Alvo fora do alcance.');
+        }
+    }    
+    
+    calculateDistance(hex1, hex2) {
+        const colDiff = Math.abs(hex1.col - hex2.col);
+        const rowDiff = Math.abs(hex1.row - hex2.row);
+    
+        if (colDiff === 0) return rowDiff;
+    
+        if (hex1.col % 2 === 0) {
+            return colDiff + Math.max(0, rowDiff - Math.floor(colDiff / 2));
+        } else {
+            return colDiff + Math.max(0, rowDiff - Math.ceil(colDiff / 2));
+        }
     }    
     
     isPathClear(startHex, targetHex, maxSteps) {

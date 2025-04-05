@@ -9,6 +9,8 @@ class Hero extends Phaser.GameObjects.Sprite {
         this.ability = ability;
         this.skill = skill;
 
+        this.attackRange = ability === 'Ranged' ? 2 : 1;
+
         this.statusEffects = [];
         this.taunt = ability === 'Taunt';
 
@@ -25,6 +27,26 @@ class Hero extends Phaser.GameObjects.Sprite {
         };
     }
 
+    attackTarget(target, board) {
+        const attackerHex = board.getHexByLabel(this.state.position);
+        const targetHex = board.getHexByLabel(target.state.position);
+    
+        if (!attackerHex || !targetHex) {
+            console.log('Hex do atacante ou do alvo não encontrado.');
+            return;
+        }
+    
+        const distance = board.calculateDistance(attackerHex, targetHex);
+    
+        if (distance <= this.attackRange) {
+            console.log(`${this.name} ataca ${target.name} dentro do alcance!`);
+            target.takeDamage(this.attack);
+            this.useSkill(target);
+        } else {
+            console.log(`${this.name} tentou atacar ${target.name}, mas está fora do alcance.`);
+        }
+    }
+    
     takeDamage(amount) {
         let extraDamage = this.statusEffects.filter(effect => effect.type === 'wound').length;
         this.hp -= amount + extraDamage;
