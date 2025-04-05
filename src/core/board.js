@@ -54,22 +54,19 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.characters[position] = character;
         character.state.position = position;
     
-        // Remove gráfico antigo se existir
         if (character.sprite) {
             character.sprite.destroy();
         }
     
         character.sprite = this.scene.add.sprite(hex.x, hex.y, 'heroes', character.frameIndex);
-        character.sprite.setScale(0.5);
-    
-        // Ativa interatividade no sprite
+        character.sprite.setScale(0.7);
+
         character.sprite.setInteractive();
         character.sprite.on('pointerdown', () => this.selectCharacter(character));
     
         hex.playerColor = playerColor;
         this.drawHexBorder(hex, playerColor);
     
-        // Adiciona a HUD com vida e ataque
         const { currentHealth, attack } = character.stats;
         if (character.statsText) {
             character.statsText.destroy();
@@ -275,12 +272,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
             }
         }
     
-        // Atualiza o novo hexágono
         targetHex.occupied = true;
         this.characters[targetHex.label] = character;
         character.state.position = targetHex.label;
     
-        // Em vez de destruir o sprite, apenas move
         if (character.sprite) {
             character.sprite.setPosition(targetHex.x, targetHex.y);
         } else {
@@ -288,30 +283,24 @@ export default class Board extends Phaser.GameObjects.GameObject {
             character.sprite.setScale(1.5);
         }
     
-        // Mantém interatividade do sprite
         if (!character.sprite.input) {
             character.sprite.setInteractive();
             character.sprite.on('pointerdown', () => this.selectCharacter(character));
         }
     
-        // Atualiza posição do texto de status
         if (character.statsText) {
             character.statsText.setPosition(targetHex.x, targetHex.y + 25);
             character.statsText.setDepth(10);
         }
     
-        // Desenha a borda do novo hexágono
         this.drawHexBorder(targetHex, currentPlayer.color);
     
-        // Marca o personagem como movido
         turnManager.markCharacterAsMoved(character);
     
-        // Verifica se todos os personagens do turno já se moveram
         if (turnManager.currentTurn.movedAll) {
             turnManager.nextTurn();
         }
     
-        // Limpa destaques e deseleciona o personagem atual
         this.clearHighlights();
         this.selectedCharacter = null;
     }     

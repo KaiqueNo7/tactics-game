@@ -1,10 +1,8 @@
 class Hero extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, frameIndex, name, attack, hp, ability, skill) {
-        super(scene, x, y, 'heroes', frameIndex || 0); // Usa a spritesheet 'heroes' e o frame correto
+        super(scene, x, y, 'heroes', frameIndex || 0);
 
-        scene.add.existing(this);
-        scene.physics.add.existing(this);
-
+        this.frameIndex = frameIndex || 0;
         this.name = name;
         this.attack = attack;
         this.hp = hp;

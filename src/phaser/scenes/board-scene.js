@@ -15,8 +15,6 @@ export default class BoardScene extends Phaser.Scene {
             frameWidth: 64,
             frameHeight: 64
         });        
-
-        console.log(this.textures.list);
     }
 
     create() {
@@ -53,7 +51,7 @@ export default class BoardScene extends Phaser.Scene {
         }).setOrigin(0.5).setInteractive();
     
         buttonText.on('pointerover', () => {
-            buttonText.setStyle({ fill: '#ffcc00' });  // Mudar a cor do texto quando o mouse está sobre ele
+            buttonText.setStyle({ fill: '#ffcc00' });
         });
     
         buttonText.on('pointerout', () => {

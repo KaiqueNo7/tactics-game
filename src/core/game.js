@@ -2,22 +2,18 @@ import TurnManager from './turn-manager.js';
 import Player from '../characters/player.js';
 import Heroes from './hero.js';
 
-
 export default class GameManager extends Phaser.GameObjects.Container {
     constructor(scene, board) {  
         super(scene);
         this.scene = scene;
         this.board = board; 
 
-        this.scene.add.existing(this);
-
         const hero1 = new Heroes.GoldNugget(this.scene, 100, 100);
         const hero2 = new Heroes.SnakeLady(this.scene, 200, 100);
         const hero3 = new Heroes.BasicShooter(this.scene, 300, 100);
-        
         const hero4 = new Heroes.IronFist(this.scene, 100, 300);
         const hero5 = new Heroes.ForestSpirit(this.scene, 200, 300);
-        const hero6 = new Heroes.GiantBlade(this.scene, 300, 300);        
+        const hero6 = new Heroes.GiantBlade(this.scene, 300, 300);
 
         this.player1 = new Player("Jogador 1", [hero1, hero2, hero3]);
         this.player2 = new Player("Jogador 2", [hero4, hero5, hero6]);        
