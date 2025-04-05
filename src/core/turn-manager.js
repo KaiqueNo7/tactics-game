@@ -34,7 +34,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
         console.log(`${character.name} atacou.`);
         this.currentTurn.attackedCharacters.add(character);
         
-        const aliveCharacters = this.currentTurn.player.characters.filter(char => char.isAlive);
+        const aliveCharacters = this.currentTurn.player.characters.filter(char => char.state.isAlive);
         
         if(this.currentTurn.attackedCharacters.size === aliveCharacters.length) {
             this.currentTurn.attackedAll = true;

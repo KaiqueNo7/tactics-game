@@ -15,6 +15,7 @@ export default class BoardScene extends Phaser.Scene {
             frameWidth: 64,
             frameHeight: 64
         });        
+        this.load.image('hexagon', 'assets/sprites/hexagon.png');
     }
 
     create() {
@@ -76,35 +77,25 @@ export default class BoardScene extends Phaser.Scene {
     }    
     
     createHexagons() {
-        this.hexagons.forEach(hex => hex.graphics.destroy());
-        this.hexagons = [];
-        
-        const graphics = this.add.graphics();
-        graphics.lineStyle(2, 0x000000, 1);
-        
-        const interactiveZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height);
-        interactiveZone.setOrigin(0, 0);
-        interactiveZone.setInteractive();
-        interactiveZone.on('pointerdown', this.handleHexClick, this);
-        
-        this.board.board.forEach(hex => {
-            const points = this.calculateHexPoints(hex.x, hex.y);
-            
-            graphics.fillStyle(0xcccccc, 1);
-            graphics.beginPath();
-            graphics.moveTo(points[0].x, points[0].y);
-            
-            for (let i = 1; i < points.length; i++) {
-                graphics.lineTo(points[i].x, points[i].y);
+        this.hexagons.forEach(hex => {
+            if (hex.image) {
+                hex.image.destroy();
             }
-            
-            graphics.closePath();
-            graphics.strokePath();
-            graphics.fillPath();
-            
-            this.hexagons.push({ hexData: hex, points });
         });
-    }
+        this.hexagons = [];
+    
+        this.board.board.forEach(hex => {
+            const image = this.add.image(hex.x, hex.y, 'hexagon')
+                .setOrigin(0.5)
+                .setDisplaySize(this.board.hexRadius * 2.3, this.board.hexRadius * 2.3)
+                .setAngle(30)
+                .setInteractive();
+    
+            image.setData('hexData', hex);
+    
+            this.hexagons.push({ hexData: hex, image });
+        });
+    }    
     
     calculateHexPoints(x, y) {
         const points = [];

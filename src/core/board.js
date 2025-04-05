@@ -133,7 +133,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightHexes(this.highlightedHexes);
     }
 
-    // Modifique a função attackCharacter no arquivo board.js
     attackCharacter(attacker, target) {
         if (!attacker || !target || attacker === target) return;
     
