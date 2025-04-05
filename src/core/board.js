@@ -125,13 +125,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             }
             return;
         }
-    
-        if (turnManager.currentTurn.movedAll) {
-            this.scene.warningTextPlugin.showTemporaryMessage('Você já moveu todos os personagens neste turno.');
-            this.clearHighlights();
-            return;
-        }
-    
+        
         this.selectedCharacter = character;
         this.clearHighlights();
         const movimentRange = 2;
@@ -139,8 +133,36 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightHexes(this.highlightedHexes);
     }
 
+    // Modifique a função attackCharacter no arquivo board.js
     attackCharacter(attacker, target) {
         if (!attacker || !target || attacker === target) return;
+    
+        const gameManager = this.scene.game.gameManager;
+        const turnManager = gameManager.getTurnManager();
+        const currentPlayer = turnManager.getCurrentPlayer();
+    
+        if (!currentPlayer.characters.includes(attacker)) {
+            this.scene.warningTextPlugin.showTemporaryMessage("Você só pode atacar com seus personagens.");
+            return;
+        }
+    
+        if (!turnManager.currentTurn.attackedCharacters) {
+            turnManager.currentTurn.attackedCharacters = new Set();
+        }
+        
+        if (turnManager.currentTurn.attackedCharacters.has(attacker)) {
+            this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já atacou neste turno.");
+            this.selectedCharacter = null;
+            this.clearHighlights();
+            return;
+        }
+    
+        if (currentPlayer.characters.includes(target)) {
+            this.scene.warningTextPlugin.showTemporaryMessage("Você não pode atacar seus próprios personagens.");
+            this.selectedCharacter = null;
+            this.clearHighlights();
+            return;
+        }
     
         const attackerHex = this.getHexByLabel(attacker.state.position);
         const targetHex = this.getHexByLabel(target.state.position);
@@ -151,14 +173,66 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         if (distance <= attacker.attackRange) {
             attacker.attackTarget(target, this);
+            
+            turnManager.markCharacterAsAttacked(attacker);
+            
+            this.updateCharacterStats(target);
+            
+            this.scene.warningTextPlugin.showTemporaryMessage(
+                `${attacker.name} atacou ${target.name}!`
+            );
+            
             if (!target.state.isAlive) {
-                targetHex.occupied = false;
-                delete this.characters[targetHex.label];
+                this.handleCharacterDeath(target, targetHex);
+                
+                const gameState = turnManager.checkGameState();
+                if (gameState.status === 'finished') {
+                    this.scene.warningTextPlugin.showTemporaryMessage(
+                        `${gameState.winner.name} venceu o jogo!`
+                    );
+                }
             }
+            
+            this.selectedCharacter = null;
+            this.clearHighlights();
         } else {
-            console.log('Alvo fora do alcance.');
+            this.scene.warningTextPlugin.showTemporaryMessage(`${target.name} está fora do alcance de ataque.`);
         }
-    }    
+
+        if (turnManager.currentTurn.attackedAll) {
+            turnManager.nextTurn();
+        }
+    }
+    
+    // Adicione estes métodos auxiliares
+    updateCharacterStats(character) {
+        const hex = this.getHexByLabel(character.state.position);
+        if (!hex || !character.statsText) return;
+        
+        const health = character.stats.currentHealth || character.hp;
+        const attack = character.stats.attack || character.attack;
+        
+        character.statsText.setText(`❤ ${health}  ⚔ ${attack}`);
+    }
+    
+    handleCharacterDeath(character, hex) {
+        hex.occupied = false;
+        delete this.characters[hex.label];
+        
+        if (character.sprite) {
+            character.sprite.destroy();
+        }
+        if (character.statsText) {
+            character.statsText.destroy();
+        }
+        if (hex.borderGraphics) {
+            hex.borderGraphics.clear();
+            hex.borderGraphics.destroy();
+            hex.borderGraphics = null;
+        }
+        
+        this.scene.warningTextPlugin.showTemporaryMessage(`${character.name} foi derrotado!`);
+    }
     
     calculateDistance(hex1, hex2) {
         const colDiff = Math.abs(hex1.col - hex2.col);
@@ -338,10 +412,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.drawHexBorder(targetHex, currentPlayer.color);
     
         turnManager.markCharacterAsMoved(character);
-    
-        if (turnManager.currentTurn.movedAll) {
-            turnManager.nextTurn();
-        }
     
         this.clearHighlights();
         this.selectedCharacter = null;

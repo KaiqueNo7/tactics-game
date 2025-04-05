@@ -9,7 +9,9 @@ export default class TurnManager extends Phaser.Data.DataManager {
             phase: 'start',
             roundNumber: 1,
             movedAll: false,
-            movedCharacters: new Set() 
+            attackedAll: false,
+            movedCharacters: new Set(),
+            attackedCharacters: new Set()
         };
         this.gameState = {
             status: 'active',
@@ -25,6 +27,17 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
         if(this.currentTurn.movedCharacters.size === this.currentTurn.player.characters.length) {
             this.currentTurn.movedAll = true;
+        }
+    }
+
+    markCharacterAsAttacked(character) {
+        console.log(`${character.name} atacou.`);
+        this.currentTurn.attackedCharacters.add(character);
+        
+        const aliveCharacters = this.currentTurn.player.characters.filter(char => char.isAlive);
+        
+        if(this.currentTurn.attackedCharacters.size === aliveCharacters.length) {
+            this.currentTurn.attackedAll = true;
         }
     }
 
@@ -49,17 +62,16 @@ export default class TurnManager extends Phaser.Data.DataManager {
         return currentPlayer.getAliveCharacters()[0] || null;
     }
 
-    nextTurn() {
-        if (this.currentTurn.movedCharacters.size == 0) {
-            this.scene.warningTextPlugin.showTemporaryMessage('Você deve mover um personagem antes de finalizar o turno.');
-            return false;
-        }
-
+    nextTurn() {    
         this.currentTurn.movedCharacters.clear();
-
+        
+        if (this.currentTurn.attackedCharacters) {
+            this.currentTurn.attackedCharacters.clear();
+        }
+    
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
         const currentPlayer = this.players[this.currentPlayerIndex];
-
+    
         const isBackToStarter = (this.currentPlayerIndex === this.whoStarted);
         const newRoundNumber = this.currentTurn.roundNumber + (isBackToStarter ? 1 : 0);
         
@@ -68,25 +80,33 @@ export default class TurnManager extends Phaser.Data.DataManager {
             phase: 'start',
             roundNumber: newRoundNumber,
             movedAll: false,
-            movedCharacters: new Set()
+            movedCharacters: new Set(),
+            attackedCharacters: new Set()
         };
     
         this.checkGameState();
+    
+        this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
+        
+        this.scene.warningTextPlugin.showTemporaryMessage(`Turno de ${currentPlayer.name}!`);
 
-        this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber)
-
+        this.scene.board.selectedCharacter = null;
+        this.scene.board.clearHighlights();
+    
         return this.currentTurn;
-    }    
+    }
 
     resolveCombat(attacker, defender) {
-        const baseDamage = Math.max(0, attacker.stats.attack - defender.stats.defense);
-        const extraDamage = attacker.abilities.active.reduce((total, ability) => {
-            return total + (ability.effect(defender) || 0);
-        }, 0);
-
+        const baseDamage = attacker.stats.attack - defender.stats.defense;
+        const extraDamage = attacker.abilities && attacker.abilities.active 
+            ? attacker.abilities.active.reduce((total, ability) => {
+                return total + (ability.effect(defender) || 0);
+            }, 0)
+            : 0;
+    
         const totalDamage = baseDamage + extraDamage;
         defender.takeDamage(totalDamage);
-
+    
         return {
             attacker: attacker.name,
             defender: defender.name,

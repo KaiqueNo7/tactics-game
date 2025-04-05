@@ -28,32 +28,28 @@ class Hero extends Phaser.GameObjects.Sprite {
     }
 
     attackTarget(target, board) {
-        const attackerHex = board.getHexByLabel(this.state.position);
-        const targetHex = board.getHexByLabel(target.state.position);
-    
-        if (!attackerHex || !targetHex) {
-            console.log('Hex do atacante ou do alvo não encontrado.');
-            return;
-        }
-    
-        const distance = board.calculateDistance(attackerHex, targetHex);
-    
-        if (distance <= this.attackRange) {
-            console.log(`${this.name} ataca ${target.name} dentro do alcance!`);
-            target.takeDamage(this.attack);
-            this.useSkill(target);
-        } else {
-            console.log(`${this.name} tentou atacar ${target.name}, mas está fora do alcance.`);
-        }
-    }
+        console.log(`${this.name} ataca ${target.name}!`);
+        
+        this.useSkill(target);
+        
+        return true;
+    }    
     
     takeDamage(amount) {
-        let extraDamage = this.statusEffects.filter(effect => effect.type === 'wound').length;
-        this.hp -= amount + extraDamage;
-
-        if (this.hp <= 0) {
+        let extraDamage = this.statusEffects && this.statusEffects.filter ?
+            this.statusEffects.filter(effect => effect.type === 'wound').length : 0;
+        
+        const totalDamage = amount + extraDamage;
+        
+        this.stats.currentHealth -= totalDamage;
+    
+        console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
+    
+        if (this.stats.currentHealth <= 0) {
             this.die();
         }
+        
+        return totalDamage;
     }
 
     heal(amount) {
@@ -65,8 +61,8 @@ class Hero extends Phaser.GameObjects.Sprite {
     }
 
     die() {
-        console.log(`${this.name} has been defeated!`);
-        this.destroy();
+        console.log(`${this.name} foi derrotado!`);
+        this.state.isAlive = false;
     }
 
     useSkill(target) {
@@ -110,6 +106,11 @@ class GoldNugget extends Hero {
             hero.heal(3);
             hero.increaseAttack(1);
         });
+    }
+
+    attackTarget(target) {
+        target.takeDamage(this.attack);
+        this.useSkill(target);
     }
 
     startTurn() {
@@ -163,6 +164,11 @@ class ForestSpirit extends Hero {
     startTurn() {
         super.startTurn();
         this.useSkill();
+    }
+
+    attackTarget(target) {
+        target.takeDamage(this.attack);
+        this.useSkill(target);
     }
 }
 
