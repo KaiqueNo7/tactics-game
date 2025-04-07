@@ -48,7 +48,7 @@ export default class UIManager {
         players.forEach(player => {
             panelText += `\nJogador: ${player.name}\n`;
             
-            player.characters.forEach(character => {
+            player.heros.forEach(character => {
                 const isAlive = character.state.isAlive;
                 const statusIcon = isAlive ? '🟢' : '❌';
                 panelText += `${statusIcon} ${character.name}\n`;

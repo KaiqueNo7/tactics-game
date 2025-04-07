@@ -4,6 +4,7 @@ class Hero extends Phaser.GameObjects.Sprite {
     constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = []) {
         super(scene, x, y, 'heroes', frameIndex || 0);
 
+        this.scene = scene;
         this.frameIndex = frameIndex || 0;
         this.name = name;
         this.attack = attack;
@@ -21,21 +22,67 @@ class Hero extends Phaser.GameObjects.Sprite {
         this.state = {
             position: null,
             isAlive: true,
-            statusEffects: []
+            statusEffects: [],
+            canCounterAttack: true,
         };
 
         this.setInteractive();
     }
 
+    placeOnBoard(scene, hex) {
+        this.setPosition(hex.x, hex.y);
+        
+        this.sprite = scene.add.sprite(hex.x, hex.y, 'heroes', this.frameIndex);
+        this.sprite.setScale(0.7);
+        this.sprite.setInteractive();
+        
+        this.sprite.on('pointerdown', () => {
+            if (scene.board.selectedHero) {
+                scene.board.attackHero(scene.board.selectedHero, this);
+            } else {
+                scene.board.selectHero(this);
+            }
+        });
+
+        this.createStatsText(scene, hex);
+        this.updateHeroStats();
+    }
+
+    createStatsText(scene, hex) { 
+        if (this.statsText) this.statsText.destroy();
+
+        this.statsText = scene.add.text(hex.x, hex.y + 25, '', {
+            font: '12px Arial',
+            fill: '#ffffff',
+            align: 'center',
+            backgroundColor: '#000000',
+            padding: { x: 2, y: 2 }
+        });
+
+        this.statsText.setOrigin(0.5);
+        this.statsText.setDepth(10);
+    }
+
+    triggerSkills(triggerType, target = null) {
+        if (!this.skills || this.skills.length === 0) return;
+        if (!Array.isArray(this.skills)) return;
+
+        this.skills.forEach(skill => {
+            if (skill.triggers.includes(triggerType)) {
+                skill.apply(this, target);
+                this.updateHeroStats();
+            }
+        });
+    }
+
     attackTarget(target) {
         console.log(`${this.name} ataca ${target.name}!`);
-        
-        this.skills.forEach(skill => skill.apply(this, target));
-        
+        this.triggerSkills('onAttack', target);
+        this.updateHeroStats();
         return true;
     }    
     
-    takeDamage(amount) {
+    takeDamage(amount, attacker = null) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
         const totalDamage = amount + extraDamage;
@@ -47,35 +94,32 @@ class Hero extends Phaser.GameObjects.Sprite {
         if (this.stats.currentHealth <= 0) {
             this.die();
         }
+
+        this.triggerSkills('onDamage', attacker);
+        this.updateHeroStats();
         
         return totalDamage;
     }
 
-    counterAttack(attacker, damage, turnManager) {
-        if (!turnManager.currentTurn.counterAttack) {
-            console.log(`${this.name} contra-ataca ${attacker.name}!`);
-            attacker.takeDamage(damage);
-            turnManager.currentTurn.counterAttack = true;
-        } else {
-            console.log(`Contra-ataque já foi usado neste turno.`);
-        }
-    }
-
     heal(amount) {
         this.stats.currentHealth = Math.min(this.stats.currentHealth + amount, this.stats.maxHealth);
+        this.updateHeroStats();
     }
 
     increaseAttack(amount) {
-        this.attack += amount;
+        this.stats.attack += amount;
+        this.updateHeroStats();
     }
 
     die() {
         console.log(`${this.name} foi derrotado!`);
         this.state.isAlive = false;
+        this.updateHeroStats();
     }
 
     applyStatusEffect(effect) {
         this.state.statusEffects.push(effect);
+        this.updateHeroStats();
     }
 
     processStatusEffects() {
@@ -87,10 +131,40 @@ class Hero extends Phaser.GameObjects.Sprite {
             }
             return false;
         });
+        this.updateHeroStats();
     }
 
     startTurn() {
         this.processStatusEffects();
+        this.triggerSkills('onTurnStart');
+        this.state.canCounterAttack = true;  // ✅ Reseta a habilidade de contra-atacar no início do turno
+        this.updateHeroStats();
+    }
+
+    endTurn() {
+        this.triggerSkills('onTurnEnd');
+        this.updateHeroStats();
+    }
+
+    counterAttack(attacker) {
+        if (this.state.canCounterAttack && this.state.isAlive) {
+            console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
+            attacker.takeDamage(this.stats.attack);
+            this.state.canCounterAttack = false;
+            this.updateHeroStats();
+        }
+    }
+
+    updateHeroStats() {
+        if (!this.statsText) return;
+
+        const { currentHealth, attack } = this.stats;
+
+        this.statsText.setText(`⚔ ${attack} ❤ ${currentHealth}`);
+        
+        if (this.sprite) {
+            this.statsText.setPosition(this.sprite.x, this.sprite.y + 25);
+        }
     }
 }
 

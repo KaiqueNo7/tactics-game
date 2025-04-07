@@ -45,10 +45,10 @@ export class BoardRenderer {
         });
     }
 
-    drawCharacters(characters) {
+    drawheros(heros) {
         this.board.board.forEach(hex => hex.occupied = false);
 
-        characters.forEach(character => {
+        heros.forEach(character => {
             if (character.position) {
                 const hex = this.board.getHexByLabel(character.position);
                 if (hex) {

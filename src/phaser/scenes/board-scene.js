@@ -121,7 +121,7 @@ export default class BoardScene extends Phaser.Scene {
     
         console.log(`Hexágono ${hexData.label} foi clicado`);
     
-        this.scene.get('CharacterScene').events.emit('boardClicked', hexData);
+        this.scene.get('heroscene').events.emit('boardClicked', hexData);
     }  
     
     update() {

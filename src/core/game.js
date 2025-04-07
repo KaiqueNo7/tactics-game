@@ -1,5 +1,5 @@
 import TurnManager from './turn-manager.js';
-import Player from '../characters/player.js';
+import Player from './player.js';
 import { GoldNugget, SnakeLady, BasicShooter, IronFist, ForestSpirit, GiantBlade } from '../heroes/heroes.js';
 
 export default class GameManager extends Phaser.GameObjects.Container {
@@ -23,28 +23,30 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
         this.setupInitialPositions();
 
-        this.add([...this.player1.characters, ...this.player2.characters]);
+        this.add([...this.player1.heros, ...this.player2.heros]);
+
+        this.turnManager.triggerStartOfTurnSkills(this.currentTurn.player);
     }
     
     setupInitialPositions() {
-        this.player1.characters[0].state.position = 'D1';
-        this.player1.characters[1].state.position = 'B1';
-        this.player1.characters[2].state.position = 'C1';
+        this.player1.heros[0].state.position = 'D1';
+        this.player1.heros[1].state.position = 'B1';
+        this.player1.heros[2].state.position = 'C1';
         
-        this.player2.characters[0].state.position = 'C6';
-        this.player2.characters[1].state.position = 'D7';
-        this.player2.characters[2].state.position = 'B7';
+        this.player2.heros[0].state.position = 'C6';
+        this.player2.heros[1].state.position = 'D7';
+        this.player2.heros[2].state.position = 'B7';
 
         this.player1.color = 0x0000ff;
         this.player2.color = 0xff0000;
 
-        this.player1.characters.forEach(character => this.board.placeCharacter(
+        this.player1.heros.forEach(character => this.board.placeHero(
             character, 
             character.state.position, 
             this.player1.color
         ));
 
-        this.player2.characters.forEach(character => this.board.placeCharacter(
+        this.player2.heros.forEach(character => this.board.placeHero(
             character, 
             character.state.position, 
             this.player2.color

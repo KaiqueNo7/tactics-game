@@ -11,8 +11,8 @@ export default class TurnManager extends Phaser.Data.DataManager {
             movedAll: false,
             attackedAll: false,
             counterAttack: false,
-            movedCharacters: new Set(),
-            attackedCharacters: new Set()
+            movedHeros: new Set(),
+            attackedHeros: new Set()
         };
         this.gameState = {
             status: 'active',
@@ -22,28 +22,27 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.determineStartingPlayer();
     }
 
-    markCharacterAsMoved(character) {
-        console.log(`${character.name} se moveu.`);
-        this.currentTurn.movedCharacters.add(character);
+    markHeroAsMoved(hero) {
+        console.log(`${hero.name} se moveu.`);
+        this.currentTurn.movedHeros.add(hero);
 
-        if(this.currentTurn.movedCharacters.size === this.currentTurn.player.characters.length) {
+        if(this.currentTurn.movedHeros.size === this.currentTurn.player.heros.length) {
             this.currentTurn.movedAll = true;
         }
     }
 
-    markCharacterAsAttacked(character) {
-        console.log(`${character.name} atacou.`);
-        this.currentTurn.attackedCharacters.add(character);
+    markHeroAsAttacked(hero) {
+        this.currentTurn.attackedHeros.add(hero);
         
-        const aliveCharacters = this.currentTurn.player.characters.filter(char => char.state.isAlive);
+        const aliveHeros = this.currentTurn.player.heros.filter(char => char.state.isAlive);
         
-        if(this.currentTurn.attackedCharacters.size === aliveCharacters.length) {
+        if(this.currentTurn.attackedHeros.size === aliveHeros.length) {
             this.currentTurn.attackedAll = true;
         }
     }
 
-    canMoveCharacter(character) {
-        return !this.currentTurn.movedCharacters.has(character);
+    canMoveHero(hero) {
+        return !this.currentTurn.movedHeros.has(hero);
     }
 
     determineStartingPlayer() {
@@ -57,10 +56,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
     }
 
     nextTurn() {    
-        this.currentTurn.movedCharacters.clear();
+        this.triggerEndOfTurnSkills();
+
+        this.currentTurn.movedHeros.clear();
         
-        if (this.currentTurn.attackedCharacters) {
-            this.currentTurn.attackedCharacters.clear();
+        if (this.currentTurn.attackedHeros) {
+            this.currentTurn.attackedHeros.clear();
         }
     
         this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
@@ -74,8 +75,10 @@ export default class TurnManager extends Phaser.Data.DataManager {
             phase: 'start',
             roundNumber: newRoundNumber,
             movedAll: false,
-            movedCharacters: new Set(),
-            attackedCharacters: new Set()
+            attackedAll: false,
+            counterAttack: false,
+            movedHeros: new Set(),
+            attackedHeros: new Set()
         };
     
         this.checkGameState();
@@ -84,15 +87,35 @@ export default class TurnManager extends Phaser.Data.DataManager {
         
         this.scene.warningTextPlugin.showTemporaryMessage(`Turno de ${currentPlayer.name}!`);
 
-        this.scene.board.selectedCharacter = null;
+        this.scene.board.selectedhero = null;
         this.scene.board.clearHighlights();
+
+        // ⚡ Trigger `onTurnStart` para o jogador atual
+        this.triggerStartOfTurnSkills(currentPlayer);
     
         return this.currentTurn;
     }
 
+    triggerStartOfTurnSkills(currentPlayer) {
+        currentPlayer.heros.forEach(hero => {
+            if (hero.state.isAlive) {
+                hero.startTurn(); // Método `startTurn()` já chama as habilidades `onTurnStart`
+            }
+        });
+    }
+
+    triggerEndOfTurnSkills() {
+        const currentPlayer = this.players[this.currentPlayerIndex];
+        currentPlayer.heros.forEach(hero => {
+            if (hero.state.isAlive) {
+                hero.endTurn(); // Método `endTurn()` agora chama habilidades `onTurnEnd`
+            }
+        });
+    }
+
     checkGameState() {
         const alivePlayers = this.players.filter(player => 
-            player.characters.some(char => char.state.isAlive)
+            player.heros.some(char => char.state.isAlive)
         );
 
         if (alivePlayers.length === 1) {
@@ -116,7 +139,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
             gameState: this.gameState,
             players: this.players.map(player => ({
                 name: player.name,
-                characters: player.characters.map(char => char.toJSON())
+                heros: player.heros.map(char => char.toJSON())
             }))
         };
     }
