@@ -10,6 +10,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
             roundNumber: 1,
             movedAll: false,
             attackedAll: false,
+            counterAttack: false,
             movedCharacters: new Set(),
             attackedCharacters: new Set()
         };
@@ -55,13 +56,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.whoStarted = startingPlayerIndex;
     }
 
-    getCurrentCharacter() {
-        const currentPlayer = this.currentTurn.player;
-        if (!currentPlayer) return null;
-
-        return currentPlayer.getAliveCharacters()[0] || null;
-    }
-
     nextTurn() {    
         this.currentTurn.movedCharacters.clear();
         
@@ -94,25 +88,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.scene.board.clearHighlights();
     
         return this.currentTurn;
-    }
-
-    resolveCombat(attacker, defender) {
-        const baseDamage = attacker.stats.attack - defender.stats.defense;
-        const extraDamage = attacker.abilities && attacker.abilities.active 
-            ? attacker.abilities.active.reduce((total, ability) => {
-                return total + (ability.effect(defender) || 0);
-            }, 0)
-            : 0;
-    
-        const totalDamage = baseDamage + extraDamage;
-        defender.takeDamage(totalDamage);
-    
-        return {
-            attacker: attacker.name,
-            defender: defender.name,
-            damage: totalDamage,
-            defenderHealthRemaining: defender.stats.currentHealth
-        };
     }
 
     checkGameState() {

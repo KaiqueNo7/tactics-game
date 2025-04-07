@@ -65,7 +65,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         character.sprite.setInteractive();
         character.sprite.on('pointerdown', () => {
             if (this.selectedCharacter) {
-                this.attackCharacter(this.selectedCharacter, character);
+                this.attackHero(this.selectedCharacter, character);
             } else {
                 this.selectCharacter(character);
             }
@@ -79,7 +79,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             character.statsText.destroy();
         }
     
-        character.statsText = this.scene.add.text(hex.x, hex.y + 25, `❤ ${currentHealth}  ⚔ ${attack}`, {
+        character.statsText = this.scene.add.text(hex.x, hex.y + 25, `⚔ ${attack} ❤ ${currentHealth}`, {
             font: '12px Arial',
             fill: '#ffffff',
             align: 'center',
@@ -119,7 +119,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         if (!currentPlayer.characters.includes(character)) {
             if (this.selectedCharacter && this.selectedCharacter.attackTarget) {
-                this.attackCharacter(this.selectedCharacter, character);
+                this.attackHero(this.selectedCharacter, character);
             } else {
                 this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover ou atacar com personagens do seu time.');
             }
@@ -133,7 +133,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightHexes(this.highlightedHexes);
     }
 
-    attackCharacter(attacker, target) {
+    attackHero(attacker, target) {
         if (!attacker || !target || attacker === target) return;
     
         const gameManager = this.scene.game.gameManager;
@@ -148,7 +148,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (!turnManager.currentTurn.attackedCharacters) {
             turnManager.currentTurn.attackedCharacters = new Set();
         }
-        
+    
         if (turnManager.currentTurn.attackedCharacters.has(attacker)) {
             this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já atacou neste turno.");
             this.selectedCharacter = null;
@@ -157,7 +157,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     
         if (currentPlayer.characters.includes(target)) {
-            this.scene.warningTextPlugin.showTemporaryMessage("Você não pode atacar seus próprios personagens.");
             this.selectedCharacter = null;
             this.clearHighlights();
             return;
@@ -171,39 +170,59 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const distance = this.calculateDistance(attackerHex, targetHex);
     
         if (distance <= attacker.attackRange) {
+            attacker.skills.forEach(skill => skill.apply(attacker, target));
+    
             attacker.attackTarget(target, this);
-            
+    
             turnManager.markCharacterAsAttacked(attacker);
-            
+    
             this.updateCharacterStats(target);
-            
-            this.scene.warningTextPlugin.showTemporaryMessage(
-                `${attacker.name} atacou ${target.name}!`
-            );
-            
+    
+            this.scene.warningTextPlugin.showTemporaryMessage(`${attacker.name} atacou ${target.name}!`);
+    
             if (!target.state.isAlive) {
                 this.handleCharacterDeath(target, targetHex);
-                
                 const gameState = turnManager.checkGameState();
                 if (gameState.status === 'finished') {
-                    this.scene.warningTextPlugin.showTemporaryMessage(
-                        `${gameState.winner.name} venceu o jogo!`
-                    );
+                    this.scene.warningTextPlugin.showTemporaryMessage(`${gameState.winner.name} venceu o jogo!`);
+                    return;
                 }
             }
-            
+    
+            if (!turnManager.currentTurn.counterAttack) {
+                const distanceTarget = this.calculateDistance(targetHex, attackerHex);
+    
+                if (distanceTarget <= target.attackRange) {
+                    target.counterAttack(attacker, target.attack, turnManager);
+                    this.updateCharacterStats(attacker);
+    
+                    if (!attacker.state.isAlive) {
+                        this.handleCharacterDeath(attacker, attackerHex);
+                        const gameState = turnManager.checkGameState();
+                        if (gameState.status === 'finished') {
+                            this.scene.warningTextPlugin.showTemporaryMessage(`${gameState.winner.name} venceu o jogo!`);
+                            return;
+                        }
+                    }
+                }
+            }
+    
+            const allCharactersAttacked = currentPlayer.characters.every(character => 
+                turnManager.currentTurn.attackedCharacters.has(character)
+            );
+    
+            if (allCharactersAttacked) {
+                turnManager.currentTurn.attackedAll = true;
+                turnManager.nextTurn();
+            }
+    
             this.selectedCharacter = null;
             this.clearHighlights();
         } else {
             this.scene.warningTextPlugin.showTemporaryMessage(`${target.name} está fora do alcance de ataque.`);
         }
-
-        if (turnManager.currentTurn.attackedAll) {
-            turnManager.nextTurn();
-        }
-    }
+    }    
     
-    // Adicione estes métodos auxiliares
     updateCharacterStats(character) {
         const hex = this.getHexByLabel(character.state.position);
         if (!hex || !character.statsText) return;
@@ -211,7 +230,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const health = character.stats.currentHealth || character.hp;
         const attack = character.stats.attack || character.attack;
         
-        character.statsText.setText(`❤ ${health}  ⚔ ${attack}`);
+        character.statsText.setText(`⚔ ${attack} ❤ ${health}`);
     }
     
     handleCharacterDeath(character, hex) {

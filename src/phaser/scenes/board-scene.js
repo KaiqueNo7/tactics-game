@@ -12,7 +12,7 @@ export default class BoardScene extends Phaser.Scene {
 
     preload() {
         this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
-            frameWidth: 64,
+            frameWidth: 59,
             frameHeight: 64
         });        
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
@@ -23,12 +23,10 @@ export default class BoardScene extends Phaser.Scene {
 
         this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
         
-        this.board = new Board(this, 40);  
+        this.board = new Board(this, 45);  
         this.board.initializeBoard();
         
         this.createHexagons();
-        
-        this.events.emit('boardReady', this.board);
         
         this.createInteractiveZone();
 
