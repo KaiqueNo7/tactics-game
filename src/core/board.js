@@ -240,15 +240,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     isPathClear(startHex, targetHex, maxSteps) {
         const directions = [
-            { col: 1, row: 0 },   // Direita
-            { col: -1, row: 0 },  // Esquerda
             { col: 0, row: 1 },   // Baixo
             { col: 0, row: -1 },  // Cima
             { col: 1, row: 1 },   // Diagonal direita-baixo
             { col: -1, row: 1 },  // Diagonal esquerda-baixo
             { col: 1, row: -1 },  // Diagonal direita-cima
             { col: -1, row: -1 }  // Diagonal esquerda-cima
-        ];
+        ];  
         
         const visited = new Set();
         const queue = [{ col: startHex.col, row: startHex.row, steps: 0 }];
@@ -326,15 +324,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     getHexesInLine(fromHex, toHex, maxSteps = 2) {
         const directions = [
-            { col: 1, row: 0 },   // Direita
-            { col: -1, row: 0 },  // Esquerda
             { col: 0, row: 1 },   // Baixo
             { col: 0, row: -1 },  // Cima
             { col: 1, row: 1 },   // Diagonal direita-baixo
             { col: -1, row: 1 },  // Diagonal esquerda-baixo
             { col: 1, row: -1 },  // Diagonal direita-cima
             { col: -1, row: -1 }  // Diagonal esquerda-cima
-        ];
+        ];        
 
         function getNeighborHex(fromHex, direction) {
             let col = fromHex.col + direction.col;
@@ -363,16 +359,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             
             if (neighbor.col === toHex.col && neighbor.row === toHex.row) {
                 direction = d;
-
-                if(direction.col == -1 && direction.row == 0) {
-                    direction.col = -1;
-                    direction.row = 1;
-                }
-
-                if(direction.col == 1 && direction.row == 0) {
-                    direction.col = 1;
-                    direction.row = 1;
-                }
 
                 console.log("Direção detectada:", direction);
                 break;
