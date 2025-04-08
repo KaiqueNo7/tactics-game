@@ -322,7 +322,70 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
             return distance <= range && isPathClear;
         });
-    }     
+    }    
+    
+    getHexesInLine(fromHex, toHex, maxSteps = 2) {
+        const directions = [
+            { col: 1, row: 0 },   // Direita
+            { col: -1, row: 0 },  // Esquerda
+            { col: 0, row: 1 },   // Baixo
+            { col: 0, row: -1 },  // Cima
+            { col: 1, row: 1 },   // Diagonal direita-baixo
+            { col: -1, row: 1 },  // Diagonal esquerda-baixo
+            { col: 1, row: -1 },  // Diagonal direita-cima
+            { col: -1, row: -1 }  // Diagonal esquerda-cima
+        ];
+    
+        const deltaCol = toHex.col - fromHex.col;
+        const deltaRow = toHex.row - fromHex.row;
+    
+        // Determina a direção "unitária" mais próxima
+        let direction = null;
+        for (const d of directions) {
+            let expectedCol = fromHex.col + d.col;
+            let expectedRow = fromHex.row + d.row;
+    
+            if (fromHex.col % 2 === 1 && d.col !== 0) {
+                expectedRow = fromHex.row + Math.floor(d.row * 0.5);
+            } else if (fromHex.col % 2 === 0 && d.col !== 0) {
+                expectedRow = fromHex.row + Math.ceil(d.row * 0.5);
+            }
+    
+            if (expectedCol === toHex.col && expectedRow === toHex.row) {
+                direction = d;
+                break;
+            }
+        }
+    
+        if (!direction) return []; // Direção inválida
+    
+        const lineHexes = [];
+        let currentCol = toHex.col;
+        let currentRow = toHex.row;
+    
+        for (let i = 0; i < maxSteps; i++) {
+            let nextCol = currentCol + direction.col;
+            let nextRow = currentRow + direction.row;
+    
+            if (currentCol % 2 === 1 && direction.col !== 0) {
+                nextRow = currentRow + Math.floor(direction.row * 0.5);
+            } else if (currentCol % 2 === 0 && direction.col !== 0) {
+                nextRow = currentRow + Math.ceil(direction.row * 0.5);
+            }
+    
+            const nextHex = this.board.find(hex => hex.col === nextCol && hex.row === nextRow);
+            if (!nextHex) break;
+    
+            lineHexes.push(nextHex);
+    
+            currentCol = nextCol;
+            currentRow = nextRow;
+    
+            if (!nextHex.occupied) break; // Parou onde não tem ninguém
+        }
+    
+        return lineHexes;
+    }    
     
     highlightHexes(hexes) {
         hexes.forEach(hex => {
@@ -354,7 +417,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
     
-        if (!hero || !targetHex) ruturn;
+        if (!hero || !targetHex) return;
     
         if (!turnManager.canMoveHero(hero)) {
             this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
@@ -391,7 +454,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         if (!hero.sprite.input) {
             hero.sprite.setInteractive();
-            hero.sprite.on('pointerdown', () => this.selecthero(hero));
+            hero.sprite.on('pointerdown', () => this.selectHero(hero));
         }
     
         if (hero.statsText) {

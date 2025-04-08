@@ -21,6 +21,34 @@ export const skills = {
             }
         }
     },
+    beyondFront: {
+        name: 'Beyond Front',
+        description: 'Causa dano nas 3 casas em sequência da direção do ataque se estiverem ocupadas.',
+        triggers: ['onAttack'],
+        apply: (hero, target) => {
+            const board = hero.scene.board;
+        
+            const fromHex = board.getHexByLabel(hero.state.position);
+            const toHex = board.getHexByLabel(target.state.position);
+        
+            const hits = [target];
+            const line = board.getHexesInLine(fromHex, toHex, 2);
+        
+            for (const hex of line) {
+                const maybeHero = board.heros[hex.label];
+                if (maybeHero && maybeHero !== hero && maybeHero.state.isAlive) {
+                    hits.push(maybeHero);
+                } else {
+                    break; // Parar se não tem inimigo
+                }
+            }
+        
+            hits.forEach((h, index) => {
+                const dmg = index === 0 ? hero.stats.attack : Math.floor(hero.stats.attack * 0.5);
+                h.takeDamage(dmg, hero);
+            });
+        }
+    },           
     brokenDefense: {
         name: 'Broken Defense',
         description: 'Causa mais dano em inimigos com "Taunt". (+2)',
