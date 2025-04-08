@@ -76,27 +76,26 @@ class Hero extends Phaser.GameObjects.Sprite {
 
     attackTarget(target) {
         console.log(`${this.name} ataca ${target.name}!`);
-        this.takeDamage(this.stats.attack, target);
         this.triggerSkills('onAttack', target);
         this.updateHeroStats();
         return true;
     }    
     
-    takeDamage(amount, target = null) {
+    takeDamage(amount, attacker = null) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
         const totalDamage = amount + extraDamage;
         
-        target.stats.currentHealth -= totalDamage;
+        this.stats.currentHealth -= totalDamage;
     
-        console.log(`${target.name} recebeu ${totalDamage} de dano. Vida restante: ${target.stats.currentHealth}`);
+        console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
     
-        if (target.stats.currentHealth <= 0) {
-            target.die();
+        if (this.stats.currentHealth <= 0) {
+            this.die();
         }
 
-        target.triggerSkills('onDamage', target);
-        target.updateHeroStats();
+        this.triggerSkills('onDamage', attacker);
+        this.updateHeroStats();
         
         return totalDamage;
     }
@@ -145,9 +144,9 @@ class Hero extends Phaser.GameObjects.Sprite {
         this.updateHeroStats();
     }
 
-    counterAttack(attacker) {
-        console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
-        this.takeDamage(this.stats.attack, attacker);
+    counterAttack(target) {
+        console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
+        target.takeDamage(this.stats.attack, this);
         this.updateHeroStats();
     }
 

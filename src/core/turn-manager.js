@@ -47,6 +47,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
     determineStartingPlayer() {
         const startingPlayerIndex = Math.random() > 0.5 ? 0 : 1;
+        
         this.currentPlayerIndex = startingPlayerIndex;
         this.currentTurn.player = this.players[startingPlayerIndex];
 

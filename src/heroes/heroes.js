@@ -1,8 +1,8 @@
 import Hero from '../core/hero.js';
 
-export class IronFist extends Hero {
+export class Ralph extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 2, 'Iron Fist', 3, 16, null, ['firstPunch']);
+        super(scene, x, y, 2, 'Ralph', 3, 17, null, ['firstPunch']);
         this.state.hasPunched = false;
         this.state.firstPunchApplied = false    
     }
@@ -20,32 +20,32 @@ export class IronFist extends Hero {
     }
 }
 
-export class SnakeLady extends Hero {
+export class Vic extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 1, 'Snake Lady', 1, 20, null, ['poisonAttack']);
+        super(scene, x, y, 1, 'Vic', 1, 19, null, ['poisonAttack']);
     }
 }
 
-export class GoldNugget extends Hero {
+export class Gold extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 0, 'Gold Nugget', 2, 18, 'Sprint', []);
+        super(scene, x, y, 0, 'Gold', 1, 18, 'Sprint', ['goodLuck']);
     }
 }
 
-export class GiantBlade extends Hero {
+export class Blade extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 4, 'Giant Blade', 4, 12, 'Taunt', []);
+        super(scene, x, y, 4, 'Blade', 4, 16, null, ['beyondFront']);
     }
 }
 
-export class BasicShooter extends Hero {
+export class Dante extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 5, 'Basic Shooter', 2, 14, 'Ranged', ['brokenDefense']);
+        super(scene, x, y, 5, 'Dante', 2, 18, 'Ranged', ['brokenDefense']);
     }
 }
 
-export class ForestSpirit extends Hero {
+export class Ceos extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 3, 'Forest Spirit', 1, 13, null, []);
+        super(scene, x, y, 3, 'Ceos', 1, 22, 'Taunt', ['absorbRoots']);
     }
 }
