@@ -195,7 +195,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     }
       
-    
     handleHeroDeath(hero, hex) {
         hex.occupied = false;
         delete this.heros[hex.label];
@@ -355,18 +354,15 @@ export default class Board extends Phaser.GameObjects.GameObject {
         let direction = null;
         for (const d of directions) {
             const neighbor = getNeighborHex(fromHex, d);
-            console.log(`Testando direção: col=${d.col}, row=${d.row} => esperado: col=${neighbor.col}, row=${neighbor.row}`);
             
             if (neighbor.col === toHex.col && neighbor.row === toHex.row) {
                 direction = d;
 
-                console.log("Direção detectada:", direction);
                 break;
             }
         }
     
         if (!direction) {
-            console.warn("Nenhuma direção encontrada.");
             return [];
         }
     
@@ -385,7 +381,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             }
     
             const nextHex = this.board.find(hex => hex.col === nextCol && hex.row === nextRow);
-            console.log(`Verificando hex col=${nextCol}, row=${nextRow}`, nextHex);
     
             if (!nextHex) break;
     

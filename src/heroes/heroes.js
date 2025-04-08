@@ -7,9 +7,9 @@ export class Ralph extends Hero {
         this.state.firstPunchApplied = false    
     }
 
-    counterAttack(attacker) {
-        console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
-        this.takeDamage(this.stats.attack, attacker);
+    counterAttack(target) {
+        console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
+        target.takeDamage(this.stats.attack, this);
 
         if (!this.state.hasPunched) {
             this.increaseAttack(-2);
@@ -46,6 +46,6 @@ export class Dante extends Hero {
 
 export class Ceos extends Hero {
     constructor(scene, x, y) {
-        super(scene, x, y, 3, 'Ceos', 1, 22, 'Taunt', ['absorbRoots']);
+        super(scene, x, y, 3, 'Ceos', 1, 26, 'Taunt', ['absorbRoots']);
     }
 }

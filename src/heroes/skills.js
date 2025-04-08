@@ -78,7 +78,7 @@ export const skills = {
 
             if (target && !hero.state.hasPunched) {
                 console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
-                target.takeDamage(hero.attack, hero);
+                target.takeDamage(hero.stats.attack, hero);
                 hero.increaseAttack(-2);
                 hero.state.hasPunched = true;
                 return;
@@ -93,13 +93,19 @@ export const skills = {
     goodLuck: {
         name: 'Good Luck',
         description: 'Tem 50% de chance de aumentar um de ataque.',
-        triggers: ['onTurnEnd'],
-        apply: (hero) => {
-            if(Math.random() < 0.5) {
-                console.log(`${hero.name} teve sorte! (+1 ataque)`);
-                hero.increaseAttack(1);
-            } else {
-                console.log(`${hero.name} não teve sorte!`);
+        triggers: ['onTurnEnd', 'onAttack'],
+        apply: (hero, target) => {
+            if(!target) {
+                if(Math.random() < 0.5) {
+                    console.log(`${hero.name} teve sorte! (+1 ataque)`);
+                    hero.increaseAttack(1);
+                } else {
+                    console.log(`${hero.name} não teve sorte!`);
+                }
+            } 
+
+            if(target) {
+                target.takeDamage(hero.stats.attack, hero);
             }
         }
     },
@@ -110,14 +116,21 @@ export const skills = {
         apply: (hero, target) => {
             console.log(`${hero.name} envenena ${target.name}!`);
             target.takeDamage(hero.attack, hero);
-            target.applyStatusEffect({
-                type: 'poison',
-                duration: Infinity,
-                effect: (target) => {
-                    console.log(`${target.name} recebe 1 de dano por veneno!`); 
-                    target.takeDamage(1);
-                }
-            });
-        }
+        
+            const alreadyPoisoned = target.state.statusEffects?.some(
+                (effect) => effect.type === 'poison'
+            );
+        
+            if (!alreadyPoisoned) {
+                target.applyStatusEffect({
+                    type: 'poison',
+                    duration: Infinity,
+                    effect: (target) => {
+                        console.log(`${target.name} recebe 1 de dano por veneno!`); 
+                        target.takeDamage(1);
+                    }
+                });
+            }
+        }        
     }
 };
