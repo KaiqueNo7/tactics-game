@@ -23,7 +23,6 @@ class Hero extends Phaser.GameObjects.Sprite {
             position: null,
             isAlive: true,
             statusEffects: [],
-            canCounterAttack: true,
         };
 
         this.setInteractive();
@@ -77,26 +76,27 @@ class Hero extends Phaser.GameObjects.Sprite {
 
     attackTarget(target) {
         console.log(`${this.name} ataca ${target.name}!`);
+        this.takeDamage(this.stats.attack, target);
         this.triggerSkills('onAttack', target);
         this.updateHeroStats();
         return true;
     }    
     
-    takeDamage(amount, attacker = null) {
+    takeDamage(amount, target = null) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
         const totalDamage = amount + extraDamage;
         
-        this.stats.currentHealth -= totalDamage;
+        target.stats.currentHealth -= totalDamage;
     
-        console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
+        console.log(`${target.name} recebeu ${totalDamage} de dano. Vida restante: ${target.stats.currentHealth}`);
     
-        if (this.stats.currentHealth <= 0) {
-            this.die();
+        if (target.stats.currentHealth <= 0) {
+            target.die();
         }
 
-        this.triggerSkills('onDamage', attacker);
-        this.updateHeroStats();
+        target.triggerSkills('onDamage', target);
+        target.updateHeroStats();
         
         return totalDamage;
     }
@@ -137,7 +137,6 @@ class Hero extends Phaser.GameObjects.Sprite {
     startTurn() {
         this.processStatusEffects();
         this.triggerSkills('onTurnStart');
-        this.state.canCounterAttack = true;  // ✅ Reseta a habilidade de contra-atacar no início do turno
         this.updateHeroStats();
     }
 
@@ -147,12 +146,9 @@ class Hero extends Phaser.GameObjects.Sprite {
     }
 
     counterAttack(attacker) {
-        if (this.state.canCounterAttack && this.state.isAlive) {
-            console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
-            attacker.takeDamage(this.stats.attack);
-            this.state.canCounterAttack = false;
-            this.updateHeroStats();
-        }
+        console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
+        this.takeDamage(this.stats.attack, attacker);
+        this.updateHeroStats();
     }
 
     updateHeroStats() {

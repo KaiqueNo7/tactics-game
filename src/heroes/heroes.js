@@ -4,22 +4,19 @@ export class IronFist extends Hero {
     constructor(scene, x, y) {
         super(scene, x, y, 2, 'Iron Fist', 3, 16, null, ['firstPunch']);
         this.state.hasPunched = false;
-        this.state.firstPunchApplied = false;        
+        this.state.firstPunchApplied = false    
     }
 
     counterAttack(attacker) {
-        if (this.state.canCounterAttack && this.state.isAlive) {
-            console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
-            attacker.takeDamage(this.stats.attack);
+        console.log(`${this.name} realiza um contra-ataque em ${attacker.name}!`);
+        this.takeDamage(this.stats.attack, attacker);
 
-            if (!this.hasPunched && this.firstPunchApplied) {
-                this.increaseAttack(-2);
-                this.hasPunched = true;
-                this.state.firstPunchApplied = false;
-            }
-
-            this.updateHeroStats();
+        if (!this.state.hasPunched) {
+            this.increaseAttack(-2);
+            this.state.hasPunched = true;                
         }
+
+        this.updateHeroStats();
     }
 }
 

@@ -25,7 +25,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
         this.add([...this.player1.heros, ...this.player2.heros]);
 
-        this.turnManager.triggerStartOfTurnSkills(this.currentTurn.player);
+        this.turnManager.triggerStartOfTurnSkills(this.turnManager.players);
     }
     
     setupInitialPositions() {

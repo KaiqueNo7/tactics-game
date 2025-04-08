@@ -15,8 +15,6 @@ export const skills = {
     description: 'Primeiro ataque da partida causa mais dano (+2)',
     triggers: ['onTurnStart', 'onAttack'],
     apply: (hero, target = null) => {
-        
-        // ✅ Buff de ataque aplicado no início do turno
         if (!hero.state.firstPunchApplied && hero.state.isAlive && !hero.state.hasPunched && target === null) {
             hero.increaseAttack(2);
             hero.state.firstPunchApplied = true;
@@ -24,20 +22,12 @@ export const skills = {
             return;
         }
 
-        // ✅ Ataque usando o First Punch (com bônus)
-        if (hero.state.firstPunchApplied && target && !hero.state.hasPunched) {
+        if (target && !hero.state.hasPunched) {
             console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
-            target.takeDamage(hero.stats.attack); 
-            hero.increaseAttack(-2);  // Remove o bônus
+            hero.increaseAttack(-2);
             hero.state.hasPunched = true;
-            hero.state.firstPunchApplied = false;  // Marca que o bônus foi usad
             return;
         } 
-
-        if (!hero.state.firstPunchApplied && target && !hero.state.hasPunched) {
-            console.log(`${hero.name} soca o inimigo!`);
-            target.takeDamage(hero.stats.attack);
-        }
     }
 },
   brokenDefense: {

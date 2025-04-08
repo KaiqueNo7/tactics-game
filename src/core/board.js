@@ -97,8 +97,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
                     turnManager.markHeroAsAttacked(this.selectedHero);
                 }
             } else {
-                this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover ou atacar com personagens do seu time.');
+                this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover ou atacar com heróis do seu time.');
             }
+
             return;
         }
         
@@ -117,7 +118,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const currentPlayer = turnManager.getCurrentPlayer();
     
         if (!currentPlayer.heros.includes(attacker)) {
-            this.scene.warningTextPlugin.showTemporaryMessage("Você só pode atacar com seus personagens.");
+            this.scene.warningTextPlugin.showTemporaryMessage("Você só pode atacar com seus heróis.");
             return;
         }
     
@@ -146,11 +147,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const distance = this.calculateDistance(attackerHex, targetHex);
     
         if (distance <= attacker.attackRange) {
-            attacker.skills.forEach(skill => skill.apply(attacker, target));
-    
-            if (!attacker.attackTarget(target, this)) {  // ✅ Certifica que o ataque só acontece se permitido
-                return;
-            }
+            attacker.attackTarget(target);
     
             turnManager.markHeroAsAttacked(attacker);
     
@@ -167,9 +164,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
             if (!turnManager.currentTurn.counterAttack) {
                 const distanceTarget = this.calculateDistance(targetHex, attackerHex);
-
                 if (distanceTarget <= target.attackRange) { 
                     target.counterAttack(attacker); 
+                    turnManager.currentTurn.counterAttack = true;
     
                     if (!attacker.state.isAlive) {
                         this.handleHeroDeath(attacker, attackerHex);
@@ -179,7 +176,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
                             return;
                         }
                     }
-                }
+                }                
             }
     
             const allherosAttacked = currentPlayer.heros.every(hero => 
@@ -218,17 +215,27 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.scene.warningTextPlugin.showTemporaryMessage(`${hero.name} foi derrotado!`);
     }
     
-    calculateDistance(hex1, hex2) {
-        const colDiff = Math.abs(hex1.col - hex2.col);
-        const rowDiff = Math.abs(hex1.row - hex2.row);
+    calculateDistance(attackerHex, targetHex) {
+        const colDiff = Math.abs(attackerHex.col - targetHex.col);
+        const rowDiff = Math.abs(attackerHex.row - targetHex.row);
     
-        if (colDiff === 0) return rowDiff;
-    
-        if (hex1.col % 2 === 0) {
-            return colDiff + Math.max(0, rowDiff - Math.floor(colDiff / 2));
+        let distance;
+        
+        if (colDiff === 0) {
+            distance = rowDiff;
+        } else if (colDiff === 1) {
+            if (attackerHex.col % 2 === 0) {
+                distance = (targetHex.row >= attackerHex.row) ? rowDiff : rowDiff + 1;
+            } else {
+                distance = (targetHex.row <= attackerHex.row) ? rowDiff : rowDiff + 1;
+            }
+        } else if (colDiff === 2) {
+            distance = rowDiff <= 1 ? 2 : 3;
         } else {
-            return colDiff + Math.max(0, rowDiff - Math.ceil(colDiff / 2));
+            distance = colDiff + rowDiff;
         }
+
+        return distance;
     }    
     
     isPathClear(startHex, targetHex, maxSteps) {
@@ -347,13 +354,12 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
     
-        if (!hero || !targetHex) {
-            console.log('Personagem ou hex inválidos.');
-            return;
-        }
+        if (!hero || !targetHex) ruturn;
     
         if (!turnManager.canMoveHero(hero)) {
             this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
+            this.clearHighlights();
+            this.selectedHero = null;    
             return;
         }
     

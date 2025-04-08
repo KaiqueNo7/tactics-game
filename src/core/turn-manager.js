@@ -90,17 +90,18 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.scene.board.selectedhero = null;
         this.scene.board.clearHighlights();
 
-        // ⚡ Trigger `onTurnStart` para o jogador atual
-        this.triggerStartOfTurnSkills(currentPlayer);
+        this.triggerStartOfTurnSkills(this.players);
     
         return this.currentTurn;
     }
 
-    triggerStartOfTurnSkills(currentPlayer) {
-        currentPlayer.heros.forEach(hero => {
-            if (hero.state.isAlive) {
-                hero.startTurn(); // Método `startTurn()` já chama as habilidades `onTurnStart`
-            }
+    triggerStartOfTurnSkills(players) {
+        players.forEach(player => {
+            player.heros.forEach(hero => {
+                if (hero.state.isAlive) {
+                    hero.startTurn(); // Método `startTurn()` agora chama habilidades `onTurnStart`
+                }
+            });
         });
     }
 
