@@ -153,29 +153,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
             this.scene.warningTextPlugin.showTemporaryMessage(`${attacker.name} atacou ${target.name}!`);
     
-            if (!target.state.isAlive) {
-                this.handleHeroDeath(target, targetHex);
-                const gameState = turnManager.checkGameState();
-                if (gameState.status === 'finished') {
-                    this.scene.warningTextPlugin.showTemporaryMessage(`${gameState.winner.name} venceu o jogo!`);
-                    return;
-                }
-            }
-    
             if (!turnManager.currentTurn.counterAttack) {
                 const distanceTarget = this.calculateDistance(targetHex, attackerHex);
                 if (distanceTarget <= target.attackRange) { 
                     target.counterAttack(attacker); 
                     turnManager.currentTurn.counterAttack = true;
-    
-                    if (!attacker.state.isAlive) {
-                        this.handleHeroDeath(attacker, attackerHex);
-                        const gameState = turnManager.checkGameState();
-                        if (gameState.status === 'finished') {
-                            this.scene.warningTextPlugin.showTemporaryMessage(`${gameState.winner.name} venceu o jogo!`);
-                            return;
-                        }
-                    }
                 }                
             }
     
@@ -196,6 +178,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
       
     handleHeroDeath(hero, hex) {
+        this.scene.gameManager.turnManager.checkGameState();
+
         hex.occupied = false;
         delete this.heros[hex.label];
         

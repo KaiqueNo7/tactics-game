@@ -21,7 +21,11 @@ export default class BoardScene extends Phaser.Scene {
     create() {
         this.uiManager = new UIManager(this);
 
-        this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
+        if (!this.textures.exists('boardCanvas')) {
+            this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
+        } else {
+            this.canvas = this.textures.get('boardCanvas');
+        }
         
         this.board = new Board(this, 45);  
         this.board.initializeBoard();

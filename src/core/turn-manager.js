@@ -121,11 +121,16 @@ export default class TurnManager extends Phaser.Data.DataManager {
         );
 
         if (alivePlayers.length === 1) {
-            this.gameState = {
+            const winner = alivePlayers[0];
+        
+            this.scene.gameManager.setGameState({
                 status: 'finished',
-                winner: alivePlayers[0]
-            };
+                winner
+            });
+        
+            this.scene.gameManager.finishGame();
         }
+        
 
         return this.gameState;
     }

@@ -20,6 +20,8 @@ export default class UIManager {
             fill: '#ffffff',
             padding: { x: 10, y: 10 }
         }).setScrollFactor(0);
+    
+        this.victory
     }
 
     // Métodos auxiliares para configurar o estilo do texto com ou sem fundo
@@ -72,4 +74,49 @@ export default class UIManager {
         this.setTextWithBackground(this.characterPanel, '');
         this.characterPanel.setVisible(false);
     }
+
+    showVictoryUI(winner) {
+        const overlay = this.scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6);
+        overlay.setDepth(99);
+    
+        const victoryText = this.scene.add.text(400, 200, `${winner.name} venceu!`, {
+            fontSize: '40px',
+            fill: '#ffffff',
+            fontStyle: 'bold',
+            stroke: '#000',
+            strokeThickness: 4,
+        }).setOrigin(0.5);
+        victoryText.setDepth(100);
+    
+        const playAgainBtn = this.scene.add.text(400, 300, '🔁 Jogar novamente', {
+            fontSize: '28px',
+            fill: '#00ff00',
+            backgroundColor: '#222',
+            padding: { x: 15, y: 10 },
+        })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+        playAgainBtn.setDepth(100);
+    
+        playAgainBtn.on('pointerover', () => {
+            playAgainBtn.setStyle({ fill: '#ffffff', backgroundColor: '#00aa00' });
+        });
+    
+        playAgainBtn.on('pointerout', () => {
+            playAgainBtn.setStyle({ fill: '#00ff00', backgroundColor: '#222' });
+        });
+    
+        playAgainBtn.on('pointerdown', () => {
+            this.scene.scene.restart(); // Aqui sim, agora reinicia a cena atual corretamente
+        });
+    
+        this.scene.tweens.add({
+            targets: [victoryText, playAgainBtn],
+            alpha: { from: 0, to: 1 },
+            y: '+=20',
+            ease: 'Power1',
+            duration: 500,
+            delay: 100,
+        });
+    }    
 }

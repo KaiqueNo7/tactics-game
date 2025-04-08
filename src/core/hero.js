@@ -89,11 +89,11 @@ class Hero extends Phaser.GameObjects.Sprite {
         this.stats.currentHealth -= totalDamage;
     
         console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
-    
+        
         if (this.stats.currentHealth <= 0) {
             this.die();
         }
-
+        
         this.triggerSkills('onDamage', attacker);
         this.updateHeroStats();
         
@@ -113,7 +113,8 @@ class Hero extends Phaser.GameObjects.Sprite {
     die() {
         console.log(`${this.name} foi derrotado!`);
         this.state.isAlive = false;
-        this.updateHeroStats();
+        const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
+        this.scene.board.handleHeroDeath(this, hexHeroDie);
     }
 
     applyStatusEffect(effect) {
@@ -152,6 +153,7 @@ class Hero extends Phaser.GameObjects.Sprite {
 
     updateHeroStats() {
         if (!this.statsText) return;
+        if (this.state.isAlive === false) return;
 
         const { currentHealth, attack } = this.stats;
 

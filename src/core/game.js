@@ -53,6 +53,16 @@ export default class GameManager extends Phaser.GameObjects.Container {
         ));
    }
 
+    setGameState(gameState) {
+        this.gameState = gameState;
+    }
+
+   finishGame() {
+        const { winner } = this.gameState;
+        this.isGameOver = true;
+        this.scene.uiManager.showVictoryUI(winner);
+    }
+
     getTurnManager() {
         return this.turnManager;
     }
