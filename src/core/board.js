@@ -335,29 +335,54 @@ export default class Board extends Phaser.GameObjects.GameObject {
             { col: 1, row: -1 },  // Diagonal direita-cima
             { col: -1, row: -1 }  // Diagonal esquerda-cima
         ];
+
+        function getNeighborHex(fromHex, direction) {
+            let col = fromHex.col + direction.col;
+            let row = fromHex.row;
+        
+            if (direction.col !== 0) {
+                if (fromHex.col % 2 === 0) {
+                    row += Math.ceil(direction.row * 0.5);
+                } else {
+                    row += Math.floor(direction.row * 0.5);
+                }
+            } else {
+                row += direction.row;
+            }
+        
+            return { col, row };
+        }        
     
         const deltaCol = toHex.col - fromHex.col;
         const deltaRow = toHex.row - fromHex.row;
     
-        // Determina a direção "unitária" mais próxima
         let direction = null;
         for (const d of directions) {
-            let expectedCol = fromHex.col + d.col;
-            let expectedRow = fromHex.row + d.row;
-    
-            if (fromHex.col % 2 === 1 && d.col !== 0) {
-                expectedRow = fromHex.row + Math.floor(d.row * 0.5);
-            } else if (fromHex.col % 2 === 0 && d.col !== 0) {
-                expectedRow = fromHex.row + Math.ceil(d.row * 0.5);
-            }
-    
-            if (expectedCol === toHex.col && expectedRow === toHex.row) {
+            const neighbor = getNeighborHex(fromHex, d);
+            console.log(`Testando direção: col=${d.col}, row=${d.row} => esperado: col=${neighbor.col}, row=${neighbor.row}`);
+            
+            if (neighbor.col === toHex.col && neighbor.row === toHex.row) {
                 direction = d;
+
+                if(direction.col == -1 && direction.row == 0) {
+                    direction.col = -1;
+                    direction.row = 1;
+                }
+
+                if(direction.col == 1 && direction.row == 0) {
+                    direction.col = 1;
+                    direction.row = 1;
+                }
+
+                console.log("Direção detectada:", direction);
                 break;
             }
         }
     
-        if (!direction) return []; // Direção inválida
+        if (!direction) {
+            console.warn("Nenhuma direção encontrada.");
+            return [];
+        }
     
         const lineHexes = [];
         let currentCol = toHex.col;
@@ -374,6 +399,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
             }
     
             const nextHex = this.board.find(hex => hex.col === nextCol && hex.row === nextRow);
+            console.log(`Verificando hex col=${nextCol}, row=${nextRow}`, nextHex);
+    
             if (!nextHex) break;
     
             lineHexes.push(nextHex);
@@ -381,11 +408,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
             currentCol = nextCol;
             currentRow = nextRow;
     
-            if (!nextHex.occupied) break; // Parou onde não tem ninguém
+            if (!nextHex.occupied) break;
         }
     
         return lineHexes;
-    }    
+    }     
     
     highlightHexes(hexes) {
         hexes.forEach(hex => {
