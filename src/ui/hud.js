@@ -54,14 +54,12 @@ export default class UIManager {
         }).setDepth(2).setOrigin(0.4, 0.5);
         hero.add(hero.attackText);
     
-        // Ícone do coração (vida)
         hero.healthIcon = this.scene.add.image(30, offsetY, 'heart');
         hero.healthIcon.setScale(1.9);
         hero.healthIcon.setDepth(1);
         hero.healthIcon.setOrigin(1, 0.5);
         hero.add(hero.healthIcon);
     
-        // Texto de vida
         hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
             fontFamily: 'Verdana',
             fontSize: '18px',
@@ -81,7 +79,6 @@ export default class UIManager {
         hero.add(hero.healthText);
     }       
 
-    // Métodos auxiliares para configurar o estilo do texto com ou sem fundo
     setTextWithBackground(textObject, content) {
         textObject.setText(content);
         if (content && content.trim() !== '') {

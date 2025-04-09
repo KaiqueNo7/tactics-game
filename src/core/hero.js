@@ -174,8 +174,8 @@ class Hero extends Phaser.GameObjects.Container {
     addPoisonEffect() {
         if (this.effectSprites.poison) return;
 
-        const poison = this.scene.add.image(0, -40, 'poison');
-        poison.setScale(0.5);
+        const poison = this.scene.add.image(-20, -20, 'poison');
+        poison.setScale(0.1);
         poison.setDepth(10);
         this.add(poison);
         this.effectSprites.poison = poison;

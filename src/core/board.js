@@ -64,7 +64,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             hex.borderGraphics.destroy();
         }
     
-        // Criar um novo gráfico para a borda
         const borderGraphics = this.scene.add.graphics();
         borderGraphics.lineStyle(3, color, 1);
         borderGraphics.strokeCircle(hex.x, hex.y, 30);
