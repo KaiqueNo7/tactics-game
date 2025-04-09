@@ -1,10 +1,19 @@
 import { skills } from '../heroes/skills.js';
 
-class Hero extends Phaser.GameObjects.Sprite {
+class Hero extends Phaser.GameObjects.Container {
     constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = []) {
-        super(scene, x, y, 'heroes', frameIndex || 0);
+        super(scene, x, y);
 
         this.scene = scene;
+        scene.add.existing(this);
+
+        const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
+        sprite.setScale(0.7);
+        this.add(sprite);
+
+        this.sprite = sprite;
+
+        this.isSelected = false;
         this.frameIndex = frameIndex || 0;
         this.name = name;
         this.attack = attack;
@@ -25,17 +34,17 @@ class Hero extends Phaser.GameObjects.Sprite {
             statusEffects: [],
         };
 
+        this.effectSprites = {};
+        this.setSize(sprite.displayWidth, sprite.displayHeight);
         this.setInteractive();
     }
 
     placeOnBoard(scene, hex) {
         this.setPosition(hex.x, hex.y);
-        
-        this.sprite = scene.add.sprite(hex.x, hex.y, 'heroes', this.frameIndex);
-        this.sprite.setScale(0.7);
-        this.sprite.setInteractive();
-        
-        this.sprite.on('pointerdown', () => {
+    
+        scene.uiManager.createStatsUI(this);
+    
+        this.on('pointerdown', () => {
             if (scene.board.selectedHero) {
                 scene.board.attackHero(scene.board.selectedHero, this);
             } else {
@@ -43,9 +52,15 @@ class Hero extends Phaser.GameObjects.Sprite {
             }
         });
 
-        this.createStatsText(scene, hex);
-        this.updateHeroStats();
+        if (!this.scene.children.list.includes(this)) {
+            scene.add.existing(this);
+        }
     }
+    
+
+    setSelected(selected) {
+        this.isSelected = selected;
+    }    
 
     createStatsText(scene, hex) { 
         if (this.statsText) this.statsText.destroy();
@@ -119,6 +134,11 @@ class Hero extends Phaser.GameObjects.Sprite {
 
     applyStatusEffect(effect) {
         this.state.statusEffects.push(effect);
+
+        if (effect.type === 'poison') {
+            this.addPoisonEffect(this);
+        }
+
         this.updateHeroStats();
     }
 
@@ -151,16 +171,27 @@ class Hero extends Phaser.GameObjects.Sprite {
         this.updateHeroStats();
     }
 
+    addPoisonEffect() {
+        if (this.effectSprites.poison) return;
+
+        const poison = this.scene.add.image(0, -40, 'poison');
+        poison.setScale(0.5);
+        poison.setDepth(10);
+        this.add(poison);
+        this.effectSprites.poison = poison;
+    }
+    
     updateHeroStats() {
-        if (!this.statsText) return;
-        if (this.state.isAlive === false) return;
-
+        if (!this.state.isAlive) return;
+    
         const { currentHealth, attack } = this.stats;
-
-        this.statsText.setText(`⚔ ${attack} ❤ ${currentHealth}`);
-        
-        if (this.sprite) {
-            this.statsText.setPosition(this.sprite.x, this.sprite.y + 25);
+    
+        if (this.attackText) {
+            this.attackText.setText(`${attack}`);
+        }
+    
+        if (this.healthText) {
+            this.healthText.setText(`${currentHealth}`);
         }
     }
 }

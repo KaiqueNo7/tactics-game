@@ -16,6 +16,9 @@ export default class BoardScene extends Phaser.Scene {
             frameHeight: 64
         });        
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
+        this.load.image('heart', 'assets/ui/heart.png');
+        this.load.image('swords', 'assets/ui/swords.png');
+        this.load.image('poison', 'assets/ui/poison.png');
     }
 
     create() {

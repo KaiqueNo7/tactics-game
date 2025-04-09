@@ -78,37 +78,52 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const currentPlayer = turnManager.getCurrentPlayer();
     
         if (this.selectedHero === hero) {
+            this.selectedHero.setSelected(false);
             this.selectedHero = null;
             this.clearHighlights();
-            this.scene.uiManager.updategamePanel(null);
             return;
         }
     
         if (!currentPlayer.heros.includes(hero)) {
             if (this.selectedHero && this.selectedHero.attackTarget) {
-                if (!turnManager.currentTurn.attackedHeros) {
-                    turnManager.currentTurn.attackedHeros = new Set();
-                }
-    
                 if (turnManager.currentTurn.attackedHeros.has(this.selectedHero)) {
                     this.scene.warningTextPlugin.showTemporaryMessage('Este personagem já atacou neste turno.');
                 } else {
                     this.attackHero(this.selectedHero, hero);
                     turnManager.markHeroAsAttacked(this.selectedHero);
+    
+                    // Desseleciona depois de atacar
+                    this.selectedHero.setSelected(false);
+                    this.selectedHero = null;
+                    this.clearHighlights();
                 }
             } else {
                 this.scene.warningTextPlugin.showTemporaryMessage('Você só pode mover ou atacar com heróis do seu time.');
             }
-
+    
             return;
         }
-        
+    
+        if (this.selectedHero) {
+            this.selectedHero.setSelected(false);
+        }
+    
         this.selectedHero = hero;
+        this.selectedHero.setSelected(true);
         this.clearHighlights();
+    
         const movimentRange = 2;
         this.highlightedHexes = this.getMovableHexes(hero, movimentRange);
         this.highlightHexes(this.highlightedHexes);
-    }
+    }    
+
+    clearSelectedHero() {
+        if (this.selectedHero) {
+            this.selectedHero.setSelected(false);
+            this.clearHighlights();
+            this.selectedHero = null;
+        }
+    }    
 
     attackHero(attacker, target) {
         if (!attacker || !target || attacker === target) return;
@@ -169,8 +184,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
                 turnManager.currentTurn.attackedAll = true;
                 turnManager.nextTurn();
             }
-    
-            this.selectedHero = null;
+            
+            this.clearSelectedHero();
             this.clearHighlights();
         } else {
             this.scene.warningTextPlugin.showTemporaryMessage(`${target.name} está fora do alcance de ataque.`);
@@ -412,7 +427,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (!hero || !targetHex) return;
     
         if (!turnManager.canMoveHero(hero)) {
-            this.scene.warningTextPlugin.showTemporaryMessage("Este personagem já se moveu neste turno.");
+            this.scene.warningTextPlugin.showTemporaryMessage("Este héroi não pode se mover.");
             this.clearHighlights();
             this.selectedHero = null;    
             return;
@@ -437,22 +452,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.heros[targetHex.label] = hero;
         hero.state.position = targetHex.label;
     
-        if (hero.sprite) {
-            hero.sprite.setPosition(targetHex.x, targetHex.y);
-        } else {
-            hero.sprite = this.scene.add.sprite(targetHex.x, targetHex.y, 'heroes', hero.frameIndex);
-            hero.sprite.setScale(1.5);
-        }
-    
-        if (!hero.sprite.input) {
-            hero.sprite.setInteractive();
-            hero.sprite.on('pointerdown', () => this.selectHero(hero));
-        }
-    
-        if (hero.statsText) {
-            hero.statsText.setPosition(targetHex.x, targetHex.y + 25);
-            hero.statsText.setDepth(10);
-        }
+        hero.setPosition(targetHex.x, targetHex.y);
     
         this.drawHexBorder(targetHex, currentPlayer.color);
     

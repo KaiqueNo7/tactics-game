@@ -42,7 +42,19 @@ export default class TurnManager extends Phaser.Data.DataManager {
     }
 
     canMoveHero(hero) {
-        return !this.currentTurn.movedHeros.has(hero);
+        if (this.currentTurn.movedHeros.has(hero)) {
+            return false;
+        }
+
+        if (this.currentTurn.attackedHeros.has(hero)) {
+            return false;
+        }
+
+        if (this.currentTurn.movedAll) {
+            return false;
+        }
+
+        return true;
     }
 
     determineStartingPlayer() {
@@ -82,13 +94,13 @@ export default class TurnManager extends Phaser.Data.DataManager {
             attackedHeros: new Set()
         };
     
+        this.scene.board.clearSelectedHero();
         this.checkGameState();
     
         this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
         
         this.scene.warningTextPlugin.showTemporaryMessage(`Turno de ${currentPlayer.name}!`);
 
-        this.scene.board.selectedhero = null;
         this.scene.board.clearHighlights();
 
         this.triggerStartOfTurnSkills(this.players);

@@ -20,9 +20,66 @@ export default class UIManager {
             fill: '#ffffff',
             padding: { x: 10, y: 10 }
         }).setScrollFactor(0);
-    
+
         this.victory
     }
+
+    createStatsUI(hero) {
+        if (!hero.sprite) return;
+    
+        const offsetY = 20;
+    
+        hero.attackIcon = this.scene.add.image(-30, offsetY, 'swords');
+        hero.attackIcon.setScale(0.2);
+        hero.attackIcon.setDepth(1);
+        hero.attackIcon.setOrigin(0, 0.5);
+        hero.add(hero.attackIcon);
+    
+        // Texto de ataque
+        hero.attackText = this.scene.add.text(-18, offsetY, `${hero.stats.attack}`, {
+            fontFamily: 'Verdana',
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 2,
+            shadow: {
+                offsetX: 1,
+                offsetY: 1,
+                color: '#000000',
+                blur: 2,
+                fill: true
+            },
+            align: 'center'
+        }).setDepth(2).setOrigin(0.4, 0.5);
+        hero.add(hero.attackText);
+    
+        // Ícone do coração (vida)
+        hero.healthIcon = this.scene.add.image(30, offsetY, 'heart');
+        hero.healthIcon.setScale(1.9);
+        hero.healthIcon.setDepth(1);
+        hero.healthIcon.setOrigin(1, 0.5);
+        hero.add(hero.healthIcon);
+    
+        // Texto de vida
+        hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
+            fontFamily: 'Verdana',
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 2,
+            shadow: {
+                offsetX: 1,
+                offsetY: 1,
+                color: '#000000',
+                blur: 2,
+                fill: true
+            },
+            align: 'center'
+        }).setDepth(2).setOrigin(0.6, 0.5);
+        hero.add(hero.healthText);
+    }       
 
     // Métodos auxiliares para configurar o estilo do texto com ou sem fundo
     setTextWithBackground(textObject, content) {

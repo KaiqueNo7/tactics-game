@@ -23,8 +23,6 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
         this.setupInitialPositions();
 
-        this.add([...this.player1.heros, ...this.player2.heros]);
-
         this.turnManager.triggerStartOfTurnSkills(this.turnManager.players);
     }
     
@@ -40,15 +38,15 @@ export default class GameManager extends Phaser.GameObjects.Container {
         this.player1.color = 0x0000ff;
         this.player2.color = 0xff0000;
 
-        this.player1.heros.forEach(character => this.board.placeHero(
-            character, 
-            character.state.position, 
+        this.player1.heros.forEach(hero => this.board.placeHero(
+            hero, 
+            hero.state.position, 
             this.player1.color
         ));
 
-        this.player2.heros.forEach(character => this.board.placeHero(
-            character, 
-            character.state.position, 
+        this.player2.heros.forEach(hero => this.board.placeHero(
+            hero, 
+            hero.state.position, 
             this.player2.color
         ));
    }
