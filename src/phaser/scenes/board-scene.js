@@ -15,10 +15,13 @@ export default class BoardScene extends Phaser.Scene {
             frameWidth: 59,
             frameHeight: 64
         });        
+        this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
+        this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
         this.load.image('heart', 'assets/ui/heart.png');
         this.load.image('swords', 'assets/ui/swords.png');
         this.load.image('poison', 'assets/ui/poison.png');
+        this.load.image('shield', 'assets/ui/shield.png');
     }
 
     create() {
@@ -83,9 +86,8 @@ export default class BoardScene extends Phaser.Scene {
     
     createHexagons() {
         this.hexagons.forEach(hex => {
-            if (hex.image) {
-                hex.image.destroy();
-            }
+            if (hex.image) hex.image.destroy();
+            if (hex.borderSprite) hex.borderSprite.destroy();
         });
         this.hexagons = [];
     
@@ -95,10 +97,19 @@ export default class BoardScene extends Phaser.Scene {
                 .setDisplaySize(this.board.hexRadius * 2.3, this.board.hexRadius * 2.3)
                 .setAngle(30)
                 .setInteractive();
-    
             image.setData('hexData', hex);
     
-            this.hexagons.push({ hexData: hex, image });
+            const borderSprite = this.add.image(hex.x, hex.y, 'hexagon_blue') 
+                .setOrigin(0.5)
+                .setDisplaySize(this.board.hexRadius * 2.3, this.board.hexRadius * 2.3)
+                .setAngle(30)
+                .setVisible(false);
+    
+            this.hexagons.push({
+                hexData: hex,
+                image,
+                borderSprite
+            });
         });
     }    
     

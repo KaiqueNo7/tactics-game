@@ -29,51 +29,36 @@ export default class UIManager {
     
         const offsetY = 20;
     
-        hero.attackIcon = this.scene.add.image(-30, offsetY, 'swords');
-        hero.attackIcon.setScale(0.2);
+        hero.attackIcon = this.scene.add.image(-29, offsetY, 'swords');
+        hero.attackIcon.setScale(0.8);
         hero.attackIcon.setDepth(1);
         hero.attackIcon.setOrigin(0, 0.5);
         hero.add(hero.attackIcon);
     
-        // Texto de ataque
         hero.attackText = this.scene.add.text(-18, offsetY, `${hero.stats.attack}`, {
-            fontFamily: 'Verdana',
+            fontFamily: 'Arial',
             fontSize: '18px',
             fontStyle: 'bold',
             color: '#FFFFFF',
             stroke: '#000000',
-            strokeThickness: 2,
-            shadow: {
-                offsetX: 1,
-                offsetY: 1,
-                color: '#000000',
-                blur: 2,
-                fill: true
-            },
+            strokeThickness: 1.4, 
             align: 'center'
         }).setDepth(2).setOrigin(0.4, 0.5);
         hero.add(hero.attackText);
     
-        hero.healthIcon = this.scene.add.image(30, offsetY, 'heart');
-        hero.healthIcon.setScale(1.9);
+        hero.healthIcon = this.scene.add.image(28, offsetY, 'heart');
+        hero.healthIcon.setScale(0.8);
         hero.healthIcon.setDepth(1);
         hero.healthIcon.setOrigin(1, 0.5);
         hero.add(hero.healthIcon);
     
         hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
-            fontFamily: 'Verdana',
+            fontFamily: 'Arial',
             fontSize: '18px',
             fontStyle: 'bold',
             color: '#FFFFFF',
             stroke: '#000000',
-            strokeThickness: 2,
-            shadow: {
-                offsetX: 1,
-                offsetY: 1,
-                color: '#000000',
-                blur: 2,
-                fill: true
-            },
+            strokeThickness: 1.4, 
             align: 'center'
         }).setDepth(2).setOrigin(0.6, 0.5);
         hero.add(hero.healthText);

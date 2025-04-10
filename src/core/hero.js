@@ -10,9 +10,8 @@ class Hero extends Phaser.GameObjects.Container {
         const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
         sprite.setScale(0.7);
         this.add(sprite);
-
         this.sprite = sprite;
-
+        
         this.isSelected = false;
         this.frameIndex = frameIndex || 0;
         this.name = name;
@@ -36,28 +35,47 @@ class Hero extends Phaser.GameObjects.Container {
 
         this.effectSprites = {};
         this.setSize(sprite.displayWidth, sprite.displayHeight);
+        this.applyTaunt();
         this.setInteractive();
     }
 
-    placeOnBoard(scene, hex) {
-        this.setPosition(hex.x, hex.y);
-    
-        scene.uiManager.createStatsUI(this);
-    
-        this.on('pointerdown', () => {
-            if (scene.board.selectedHero) {
-                scene.board.attackHero(scene.board.selectedHero, this);
-            } else {
-                scene.board.selectHero(this);
-            }
-        });
+    attackTarget(target) {
+        console.log(`${this.name} ataca ${target.name}!`);
+        this.triggerSkills('onAttack', target);
+        this.updateHeroStats();
+        return true;
+    } 
 
-        if (!this.scene.children.list.includes(this)) {
-            scene.add.existing(this);
+    applyTaunt() {
+        if (this.ability === 'Taunt') {
+            this.addTauntEffect();
         }
     }
-    
 
+    addTauntEffect() {
+        if (this.shieldSprite) return;
+    
+        const shield = this.scene.add.image(0, 0, 'shield');
+        shield.setScale(0.5);
+        shield.setDepth(10);
+        shield.setY(-20);
+        shield.setX(-20);
+        shield.setOrigin(0.5, 0.5);
+    
+        this.add(shield);
+        this.shieldSprite = shield;
+    }
+
+    applyStatusEffect(effect) {
+        this.state.statusEffects.push(effect);
+
+        if (effect.type === 'poison') {
+            this.addPoisonEffect(this);
+        }
+
+        this.updateHeroStats();
+    }
+    
     setSelected(selected) {
         this.isSelected = selected;
     }    
@@ -87,14 +105,7 @@ class Hero extends Phaser.GameObjects.Container {
                 this.updateHeroStats();
             }
         });
-    }
-
-    attackTarget(target) {
-        console.log(`${this.name} ataca ${target.name}!`);
-        this.triggerSkills('onAttack', target);
-        this.updateHeroStats();
-        return true;
-    }    
+    }   
     
     takeDamage(amount, attacker = null) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
@@ -132,16 +143,6 @@ class Hero extends Phaser.GameObjects.Container {
         this.scene.board.handleHeroDeath(this, hexHeroDie);
     }
 
-    applyStatusEffect(effect) {
-        this.state.statusEffects.push(effect);
-
-        if (effect.type === 'poison') {
-            this.addPoisonEffect(this);
-        }
-
-        this.updateHeroStats();
-    }
-
     processStatusEffects() {
         this.state.statusEffects = this.state.statusEffects.filter(effect => {
             if (effect.effect) effect.effect(this);
@@ -152,6 +153,34 @@ class Hero extends Phaser.GameObjects.Container {
             return false;
         });
         this.updateHeroStats();
+    }
+
+    placeOnBoard(scene, hex, player) {
+        this.setPosition(hex.x, hex.y);
+
+        const hexColor = player == 1 ? 'hexagon_blue' : 'hexagon_red';
+
+        this.hexBg = scene.add.image(0, 0, hexColor)
+            .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
+            .setAngle(30);
+    
+        this.add(this.hexBg);
+    
+        scene.uiManager.createStatsUI(this);
+    
+        this.on('pointerdown', () => {
+            if (scene.board.selectedHero) {
+                scene.board.attackHero(scene.board.selectedHero, this);
+            } else {
+                scene.board.selectHero(this);
+            }
+        });
+
+        if (!this.scene.children.list.includes(this)) {
+            scene.add.existing(this);
+        }
+
+        this.setDepth(2);
     }
 
     startTurn() {

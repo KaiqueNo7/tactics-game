@@ -42,33 +42,15 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     }
 
-    placeHero(hero, position, playerColor) {
+    placeHero(hero, position, player) {
         const hex = this.getHexByLabel(position);
-    
         if (!hex || !this.scene) return;
     
         hex.occupied = true;
         this.heros[position] = hero;
         hero.state.position = position;
     
-        hex.playerColor = playerColor;
-        this.drawHexBorder(hex, playerColor);
-    
-        // ✅ Agora o herói é responsável por se posicionar e atualizar seu próprio status visual
-        hero.placeOnBoard(this.scene, hex);
-    }    
-    
-    drawHexBorder(hex, color) {
-        if (hex.borderGraphics) {
-            hex.borderGraphics.clear();
-            hex.borderGraphics.destroy();
-        }
-    
-        const borderGraphics = this.scene.add.graphics();
-        borderGraphics.lineStyle(3, color, 1);
-        borderGraphics.strokeCircle(hex.x, hex.y, 30);
-        
-        hex.borderGraphics = borderGraphics;
+        hero.placeOnBoard(this.scene, hex, player);
     }
     
     selectHero(hero) {
@@ -421,7 +403,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
     moveHero(hero, targetHex) {   
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
-        const currentPlayer = turnManager.getCurrentPlayer();
     
         if (!hero || !targetHex) return;
     
@@ -453,10 +434,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
         hero.setPosition(targetHex.x, targetHex.y);
     
-        this.drawHexBorder(targetHex, currentPlayer.color);
-    
         turnManager.markHeroAsMoved(hero);
-    
         this.clearHighlights();
         this.selectedHero = null;
     }     

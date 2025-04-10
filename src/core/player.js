@@ -5,6 +5,7 @@ export default class Player {
       this.heros = heros;
       this.strategy = 'default';
       this.color = 0x000000;
+      this.number = 1;
   }
 
   addHero(heros) {
