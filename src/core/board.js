@@ -377,28 +377,30 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     highlightHexes(hexes) {
         hexes.forEach(hex => {
-            const graphics = this.scene.add.graphics();
-            graphics.lineStyle(2, 0xffff00, 1);
-            graphics.strokeCircle(hex.x, hex.y, 25);
+            const highlight = this.scene.add.image(hex.x, hex.y, 'hex_highlight');
+            highlight.setOrigin(0.5);
+            highlight.setDepth(1);
+            highlight.setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
+            highlight.setAlpha(0.4);
+            highlight.setAngle(30)
+            highlight.setInteractive();
     
-            graphics.setInteractive(new Phaser.Geom.Circle(hex.x, hex.y, 25), Phaser.Geom.Circle.Contains);
-    
-            graphics.on('pointerdown', () => {    
+            highlight.on('pointerdown', () => {    
                 this.moveHero(this.selectedHero, hex);
             });
-    
-            this.highlightedHexes.push(graphics);
+
+            this.highlightedHexes.push(highlight);
         });
     }
-
+    
     clearHighlights() {
-        this.highlightedHexes.forEach(graphics => {
-            if (graphics && graphics.destroy) {
-                graphics.destroy(true);
+        this.highlightedHexes.forEach(h => {
+            if (h && typeof h.destroy === 'function') {
+                h.destroy();
             }
         });
         this.highlightedHexes = [];
-    }    
+    }     
 
     moveHero(hero, targetHex) {   
         const gameManager = this.scene.game.gameManager;

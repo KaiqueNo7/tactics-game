@@ -17,7 +17,7 @@ export default class BoardScene extends Phaser.Scene {
         });        
         this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
         this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
-        this.load.image('hexagon_free', 'assets/sprites/hexagon_free.png');
+        this.load.image('hex_highlight', 'assets/sprites/hexagon_free.png');
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
         this.load.image('heart', 'assets/ui/heart.png');
         this.load.image('swords', 'assets/ui/swords.png');
