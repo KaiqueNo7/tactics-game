@@ -24,6 +24,30 @@ export default class UIManager {
         this.victory
     }
 
+    showFloatingAmount(hero, amount, x = 30, color = '#ff0000') {
+        if (!hero || !hero.add) return;
+    
+        const damageText = this.scene.add.text(x, 0, `-${amount}`, {
+            font: '20px Arial',
+            fill: color,
+            stroke: '#000000',
+            strokeThickness: 2
+        }).setOrigin(0.5).setDepth(10);
+    
+        hero.add(damageText);
+    
+        this.scene.tweens.add({
+            targets: damageText,
+            y: damageText.y - 20,
+            alpha: 0,
+            duration: 3000,
+            ease: 'Power1',
+            onComplete: () => {
+                damageText.destroy();
+            }
+        });
+    }    
+
     createStatsUI(hero) {
         if (!hero.sprite) return;
     

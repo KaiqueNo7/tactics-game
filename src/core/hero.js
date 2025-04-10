@@ -113,6 +113,8 @@ class Hero extends Phaser.GameObjects.Container {
         const totalDamage = amount + extraDamage;
         
         this.stats.currentHealth -= totalDamage;
+
+        this.scene.uiManager.showFloatingAmount(this, totalDamage);
     
         console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
         
@@ -128,6 +130,7 @@ class Hero extends Phaser.GameObjects.Container {
 
     heal(amount) {
         this.stats.currentHealth = Math.min(this.stats.currentHealth + amount, this.stats.maxHealth);
+        this.scene.uiManager.showFloatingAmount(this, amount, -20, '#00ff00');
         this.updateHeroStats();
     }
 
@@ -203,7 +206,7 @@ class Hero extends Phaser.GameObjects.Container {
     addPoisonEffect() {
         if (this.effectSprites.poison) return;
 
-        const poison = this.scene.add.image(-20, -20, 'poison');
+        const poison = this.scene.add.image(20, -20, 'poison');
         poison.setScale(0.1);
         poison.setDepth(10);
         this.add(poison);
