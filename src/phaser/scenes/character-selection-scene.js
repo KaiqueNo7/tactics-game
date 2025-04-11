@@ -46,11 +46,18 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       const spacing = 100;
       const y = 200;
 
+      this.heroSprites = [];
+
       this.HERO_DATA.forEach((hero, index) => {
           const sprite = this.add.sprite(startX + index * spacing, y, 'heroes', hero.frame)
               .setInteractive()
               .setScale(2)
               .setData('heroName', hero.name);
+
+          const highlight = this.add.rectangle(sprite.x, sprite.y + 45, 20, 20, 0x00ff00)
+              .setVisible(false);
+
+          this.heroSprites.push({ name: hero.name, sprite, highlight });
 
           sprite.on('pointerdown', () => this.selectHero(hero.name));
       });
@@ -61,8 +68,18 @@ export default class CharacterSelectionScene extends Phaser.Scene {
 
       if (currentSelection.length >= 3) return;
 
+      // Impede seleção duplicada
+      if (this.selectedHeroesP1.includes(heroName) || this.selectedHeroesP2.includes(heroName)) return;
+
       currentSelection.push(heroName);
       this.updateStatusText();
+
+      // Aplica efeito visual
+      const heroSpriteObj = this.heroSprites.find(h => h.name === heroName);
+      if (heroSpriteObj) {
+          heroSpriteObj.sprite.setTint(0x555555).disableInteractive();
+          heroSpriteObj.highlight.setVisible(true);
+      }
 
       if (currentSelection.length === 3) {
           if (this.currentPlayer === 1) {
