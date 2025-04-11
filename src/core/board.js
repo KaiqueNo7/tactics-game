@@ -189,8 +189,19 @@ export default class Board extends Phaser.GameObjects.GameObject {
         const distance = this.calculateDistance(attackerHex, targetHex);
     
         if (distance <= attacker.attackRange) {
+            const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
+            const tauntEnemies = enemyHexes
+                .map(hex => this.heros[hex.label])
+                .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
+            
+            if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
+                this.scene.warningTextPlugin.showTemporaryMessage("Você deve atacar o inimigo com TAUNT");
+                this.clearSelectedHero();
+                this.clearHighlights();
+                return;
+            }
+
             attacker.attackTarget(target);
-    
             turnManager.markHeroAsAttacked(attacker);
     
             this.scene.warningTextPlugin.showTemporaryMessage(`${attacker.name} atacou ${target.name}!`);
@@ -451,7 +462,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             highlight.setOrigin(0.5);
             highlight.setDepth(1);
             highlight.setDisplaySize(this.spriteSize || 92, this.spriteSize || 92);
-            highlight.setAlpha(0.6);
+            highlight.setAlpha(0.4);
             highlight.setAngle(30);
             highlight.setInteractive();
     
