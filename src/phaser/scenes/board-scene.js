@@ -36,7 +36,7 @@ export default class BoardScene extends Phaser.Scene {
         this.board.initializeBoard();
         this.board.createHexagons();
 
-        this.gameManager = new GameManager(this, this.board); 
+        this.gameManager = new GameManager(this, this.board, this.selectedHeroesP1, this.selectedHeroesP2);
         this.game.gameManager = this.gameManager;
 
         const turnManager = this.game.gameManager.getTurnManager();
@@ -45,6 +45,11 @@ export default class BoardScene extends Phaser.Scene {
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
         this.uiManager.updategamePanel(turnManager.players);
     }  
+
+    init(data) {
+        this.selectedHeroesP1 = data.player1; // Ex: ['Gold', 'Vic', 'Dante']
+        this.selectedHeroesP2 = data.player2; // Ex: ['Ralph', 'Ceos', 'Blade']
+    }    
     
     update() {
         // Lógica de atualização, se necessário

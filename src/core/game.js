@@ -2,21 +2,31 @@ import TurnManager from './turn-manager.js';
 import Player from './player.js';
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 
+const HERO_CLASSES = {
+    Ralph,
+    Vic,
+    Gold,
+    Blade,
+    Dante,
+    Ceos,
+};
+
 export default class GameManager extends Phaser.GameObjects.Container {
-    constructor(scene, board) {  
+    constructor(scene, board, selectedHeroesP1, selectedHeroesP2) {  
         super(scene);
         this.scene = scene;
         this.board = board; 
 
-        const hero1 = new Gold(this.scene, 100, 100);
-        const hero2 = new Vic(this.scene, 200, 100);
-        const hero3 = new Dante(this.scene, 300, 100);
-        const hero4 = new Ralph(this.scene, 100, 300);
-        const hero5 = new Ceos(this.scene, 200, 300);
-        const hero6 = new Blade(this.scene, 300, 300);
+        const player1Heroes = selectedHeroesP1.map((name, i) => {
+            return new HERO_CLASSES[name](scene, 0, 0);
+        });
+    
+        const player2Heroes = selectedHeroesP2.map((name, i) => {
+            return new HERO_CLASSES[name](scene, 0, 0);
+        });
 
-        this.player1 = new Player("Jogador 1", [hero1, hero2, hero3]);
-        this.player2 = new Player("Jogador 2", [hero4, hero5, hero6]);        
+        this.player1 = new Player("Jogador 1", player1Heroes);
+        this.player2 = new Player("Jogador 2", player2Heroes);        
 
         this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);
         this.currentTurn = this.turnManager.currentTurn;   
@@ -27,13 +37,13 @@ export default class GameManager extends Phaser.GameObjects.Container {
     }
     
     setupInitialPositions() {
-        this.player2.heros[0].state.position = 'B3';
-        this.player2.heros[1].state.position = 'C3';
-        this.player2.heros[2].state.position = 'D3';
+        this.player2.heros[0].state.position = 'B1';
+        this.player2.heros[1].state.position = 'C1';
+        this.player2.heros[2].state.position = 'D1';
         
-        this.player1.heros[0].state.position = 'C4';
-        this.player1.heros[1].state.position = 'D4';
-        this.player1.heros[2].state.position = 'B4';
+        this.player1.heros[0].state.position = 'C6';
+        this.player1.heros[1].state.position = 'D7';
+        this.player1.heros[2].state.position = 'B7';
 
         this.player1.color = 0x0000ff;
         this.player2.color = 0xff0000;

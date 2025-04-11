@@ -1,4 +1,6 @@
 import BoardScene from './scenes/board-scene.js';
+import MainMenuScene from './scenes/main-menu-scene.js';
+import CharacterSelectionScene from './scenes/character-selection-scene.js';
 import WarningTextPlugin from './plugins/warning-text-plugin.js';
 
 const config = {
@@ -9,7 +11,7 @@ const config = {
     backgroundColor: '#ffffff',
     justifyContent: 'center',
     alignContent: 'center',
-    scene: [BoardScene],
+    scene: [MainMenuScene, CharacterSelectionScene, BoardScene],
     physics: {
         default: 'arcade',
         arcade: {
