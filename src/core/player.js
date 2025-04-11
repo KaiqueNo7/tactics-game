@@ -3,21 +3,8 @@ export default class Player {
       this.id = Date.now() + Math.random();
       this.name = name;
       this.heros = heros;
-      this.strategy = 'default';
       this.color = 0x000000;
       this.number = 1;
-  }
-
-  addHero(heros) {
-      this.heros.push(heros);
-  }
-
-  removeHero(herosId) {
-      this.heros = this.heros.filter(char => char.id !== herosId);
-  }
-
-  getAliveheros() {
-      return this.heros.filter(char => char.state.isAlive);
   }
 
   toJSON() {

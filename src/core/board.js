@@ -32,6 +32,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
                     x: xOffset, 
                     y: currentYOffset, 
                     occupied: false, 
+                    occupiedBy: null,
                     label: label, 
                     col, 
                     row 
@@ -43,15 +44,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     }
 
-    placeHero(hero, position, player) {
+    placeHero(hero, position, playerNumber) {
         const hex = this.getHexByLabel(position);
         if (!hex || !this.scene) return;
     
         hex.occupied = true;
+        hex.occupiedBy = playerNumber;
         this.heros[position] = hero;
         hero.state.position = position;
-    
-        hero.placeOnBoard(this.scene, hex, player);
+        hero.state.playerId = playerNumber;
+
+        hero.placeOnBoard(this.scene, hex, playerNumber);
     }
     
     selectHero(hero) {
@@ -94,9 +97,21 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.selectedHero.setSelected(true);
         this.clearHighlights();
     
-        const movimentRange = 2;
-        this.highlightedHexes = this.getMovableHexes(hero, movimentRange);
+        const movimentRange = hero.ability == 'Sprint' ? 3 : 2;
+        const rangeHero = hero.attackRange;
+        const movableHexes = this.getMovableHexes(hero, movimentRange);
+        const enemyHexes = this.getEnemiesInRange(hero, rangeHero);
+        
+        const allHexes = [...movableHexes.map(hex => ({ hex, type: 'move' })), 
+                          ...enemyHexes.map(hex => ({ hex, type: 'enemy' }))];
+        
+        const uniqueHexes = allHexes.filter((item, index, self) =>
+            index === self.findIndex(h => h.hex.label === item.hex.label)
+        );
+        
+        this.highlightedHexes = uniqueHexes;
         this.highlightHexes(this.highlightedHexes);
+        
     }    
 
     clearSelectedHero() {
@@ -240,30 +255,30 @@ export default class Board extends Phaser.GameObjects.GameObject {
         return distance;
     }    
     
-    isPathClear(startHex, targetHex, maxSteps) {
+    isPathClear(startHex, targetHex, maxSteps, allowTargetOccupied = false) {
         const directions = [
-            { col: 0, row: 1 },   // Baixo
-            { col: 0, row: -1 },  // Cima
-            { col: 1, row: 1 },   // Diagonal direita-baixo
-            { col: -1, row: 1 },  // Diagonal esquerda-baixo
-            { col: 1, row: -1 },  // Diagonal direita-cima
-            { col: -1, row: -1 }  // Diagonal esquerda-cima
-        ];  
-        
+            { col: 0, row: 1 },
+            { col: 0, row: -1 },
+            { col: 1, row: 1 },
+            { col: -1, row: 1 },
+            { col: 1, row: -1 },
+            { col: -1, row: -1 }
+        ];
+    
         const visited = new Set();
         const queue = [{ col: startHex.col, row: startHex.row, steps: 0 }];
-        
+    
         while (queue.length > 0) {
             const { col, row, steps } = queue.shift();
             const key = `${col},${row}`;
-            
+    
             if (visited.has(key)) continue;
             visited.add(key);
     
             if (col === targetHex.col && row === targetHex.row) {
                 return true;
             }
-            
+    
             if (steps >= maxSteps) continue;
     
             for (const { col: dCol, row: dRow } of directions) {
@@ -276,33 +291,37 @@ export default class Board extends Phaser.GameObjects.GameObject {
                     nextRow = row + Math.ceil(dRow * 0.5);
                 }
     
-                const intermediateHex = this.board.find(
+                const neighbor = this.board.find(
                     hex => hex.col === nextCol && hex.row === nextRow
                 );
     
-                if (intermediateHex && !intermediateHex.occupied && !visited.has(`${nextCol},${nextRow}`)) {
+                const isTarget = (nextCol === targetHex.col && nextRow === targetHex.row);
+                const isBlocked = neighbor?.occupied && (!isTarget || !allowTargetOccupied);
+    
+                if (neighbor && !isBlocked && !visited.has(`${nextCol},${nextRow}`)) {
                     queue.push({ col: nextCol, row: nextRow, steps: steps + 1 });
                 }
             }
         }
-        
+    
         return false;
     }
-        
-    getMovableHexes(hero, range) {
-        const currentHex = this.getHexByLabel(hero.state.position);
+    
 
+    getHexesInRange(hero, range, filterFn = () => true, checkPath = false, allowTargetOccupied = false) {
+        const currentHex = this.getHexByLabel(hero.state.position);
+    
         if (!currentHex) {
             console.log('Hex não encontrado.');
             return [];
         }
-        
+    
         return this.board.filter(hex => {
-            if (hex.occupied || hex.label === currentHex.label) return false;
-            
+            if (hex.label === currentHex.label) return false;
+    
             const colDiff = Math.abs(hex.col - currentHex.col);
             const rowDiff = Math.abs(hex.row - currentHex.row);
-
+    
             let distance;
             if (colDiff === 0) {
                 distance = rowDiff;
@@ -317,12 +336,38 @@ export default class Board extends Phaser.GameObjects.GameObject {
             } else {
                 distance = colDiff + rowDiff;
             }
-
-            let isPathClear = this.isPathClear(currentHex, hex, range);
-
-            return distance <= range && isPathClear;
+    
+            if (distance > range) return false;
+    
+            if (checkPath && !this.isPathClear(currentHex, hex, range, allowTargetOccupied)) return false;
+    
+            return filterFn(hex, currentHex);
         });
     }    
+        
+    getMovableHexes(hero, range) {
+        return this.getHexesInRange(
+            hero,
+            range,
+            (hex) => !hex.occupied,
+            true
+        );
+    }
+    
+    getEnemiesInRange(hero, range) {
+        const turnManager = this.scene.game.gameManager.getTurnManager();
+
+        return this.getHexesInRange(
+            hero,
+            range,
+            (hex) => {
+                if (!hex.occupied || !hex.occupiedBy) return false;
+                return hex.occupiedBy !== hero.state.playerId;
+            },
+            true,
+            true 
+        );
+    }     
     
     getHexesInLine(fromHex, toHex, maxSteps = 2) {
         const directions = [
@@ -398,24 +443,50 @@ export default class Board extends Phaser.GameObjects.GameObject {
         return lineHexes;
     }     
     
-    highlightHexes(hexes) {
-        hexes.forEach(hex => {
-            const highlight = this.scene.add.image(hex.x, hex.y, 'hex_highlight');
+    highlightHexes(hexEntries) {
+        hexEntries.forEach(({ hex, type }) => {
+            const texture = type === 'enemy' ? 'hex_highlight_enemy' : 'hex_highlight';
+    
+            const highlight = this.scene.add.image(hex.x, hex.y, texture);
             highlight.setOrigin(0.5);
             highlight.setDepth(1);
-            highlight.setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
-            highlight.setAlpha(0.4);
-            highlight.setAngle(30)
+            highlight.setDisplaySize(this.spriteSize || 92, this.spriteSize || 92);
+            highlight.setAlpha(0.6);
+            highlight.setAngle(30);
             highlight.setInteractive();
     
-            highlight.on('pointerdown', () => {    
-                this.moveHero(this.selectedHero, hex);
-            });
+            if (type === 'move') {
+                highlight.on('pointerover', () => {
+                    highlight.setAlpha(0.6);
+                });
+    
+                highlight.on('pointerout', () => {
+                    highlight.setAlpha(0.4);
+                });
+    
+                highlight.on('pointerdown', () => {
+                    this.moveHero(this.selectedHero, hex);
+                });
+            }
 
+            if (type === 'enemy') {
+                highlight.on('pointerover', () => {
+                    highlight.setAlpha(0.6);
+                });
+    
+                highlight.on('pointerout', () => {
+                    highlight.setAlpha(0.4);
+                });
+    
+                highlight.on('pointerdown', () => {
+                    this.attackHero(this.selectedHero, this.heros[hex.label]);
+                });
+            }
+    
             this.highlightedHexes.push(highlight);
         });
     }
-    
+        
     clearHighlights() {
         this.highlightedHexes.forEach(h => {
             if (h && typeof h.destroy === 'function') {
@@ -454,6 +525,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     
         targetHex.occupied = true;
+        targetHex.occupiedBy = hero.state.playerId;
+
         this.heros[targetHex.label] = hero;
         hero.state.position = targetHex.label;
     

@@ -31,6 +31,7 @@ class Hero extends Phaser.GameObjects.Container {
             position: null,
             isAlive: true,
             statusEffects: [],
+            playerId: null,
         };
 
         this.effectSprites = {};

@@ -68,6 +68,19 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.whoStarted = startingPlayerIndex;
     }
 
+    createNewTurn(player, roundNumber) {
+        return {
+            player,
+            phase: 'start',
+            roundNumber,
+            movedAll: false,
+            attackedAll: false,
+            counterAttack: false,
+            movedHeros: new Set(),
+            attackedHeros: new Set()
+        };
+    }    
+
     nextTurn() {    
         this.triggerEndOfTurnSkills();
 
@@ -83,16 +96,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
         const isBackToStarter = (this.currentPlayerIndex === this.whoStarted);
         const newRoundNumber = this.currentTurn.roundNumber + (isBackToStarter ? 1 : 0);
         
-        this.currentTurn = {
-            player: currentPlayer,
-            phase: 'start',
-            roundNumber: newRoundNumber,
-            movedAll: false,
-            attackedAll: false,
-            counterAttack: false,
-            movedHeros: new Set(),
-            attackedHeros: new Set()
-        };
+        this.currentTurn = this.createNewTurn(currentPlayer, newRoundNumber);
     
         this.scene.board.clearSelectedHero();
         this.checkGameState();
