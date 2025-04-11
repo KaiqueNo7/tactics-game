@@ -5,9 +5,6 @@ import UIManager from '../../ui/hud.js';
 export default class BoardScene extends Phaser.Scene {
     constructor() {
         super('BoardScene');
-        this.selectedHex = null;
-        this.highlightedHexes = [];
-        this.hexagons = [];
     }
 
     preload() {
@@ -36,111 +33,16 @@ export default class BoardScene extends Phaser.Scene {
         
         this.board = new Board(this, 45);  
         this.board.initializeBoard();
-        
-        this.createHexagons();
-        
-        this.createInteractiveZone();
+        this.board.createHexagons();
 
         this.gameManager = new GameManager(this, this.board); 
         this.game.gameManager = this.gameManager;
 
         const turnManager = this.game.gameManager.getTurnManager();
 
-        this.createEndTurnButton(turnManager);
+        this.uiManager.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
         this.uiManager.updategamePanel(turnManager.players);
-    }
-
-    createEndTurnButton(turnManager) {
-        const buttonText = this.add.text(this.cameras.main.width - 150, 20, 'Próximo Turno', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
-            fill: '#ffffff',
-            backgroundColor: '#ccc',
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
-    
-        buttonText.on('pointerover', () => {
-            buttonText.setStyle({ fill: '#ffcc00' });
-        });
-    
-        buttonText.on('pointerout', () => {
-            buttonText.setStyle({ fill: '#ffffff' });
-        });
-    
-        buttonText.on('pointerdown', () => {
-            turnManager.nextTurn();
-        });
-    }
-    
-    createInteractiveZone() {
-        if (this.interactiveZone) {
-            this.interactiveZone.off('pointerdown', this.handleHexClick, this);
-        }
-    
-        this.interactiveZone = this.add.zone(0, 0, this.cameras.main.width, this.cameras.main.height);
-        this.interactiveZone.setOrigin(0, 0);
-        this.interactiveZone.setInteractive();
-    
-        this.interactiveZone.on('pointerdown', this.handleHexClick, this);
-    }    
-    
-    createHexagons() {
-        this.hexagons.forEach(hex => {
-            if (hex.image) hex.image.destroy();
-            if (hex.borderSprite) hex.borderSprite.destroy();
-        });
-        this.hexagons = [];
-    
-        this.board.board.forEach(hex => {
-            const image = this.add.image(hex.x, hex.y, 'hexagon')
-                .setOrigin(0.5)
-                .setDisplaySize(this.board.hexRadius * 2.3, this.board.hexRadius * 2.3)
-                .setAngle(30)
-                .setInteractive();
-            image.setData('hexData', hex);
-    
-            const borderSprite = this.add.image(hex.x, hex.y, 'hexagon_blue') 
-                .setOrigin(0.5)
-                .setDisplaySize(this.board.hexRadius * 2.3, this.board.hexRadius * 2.3)
-                .setAngle(30)
-                .setVisible(false);
-    
-            this.hexagons.push({
-                hexData: hex,
-                image,
-                borderSprite
-            });
-        });
-    }    
-    
-    calculateHexPoints(x, y) {
-        const points = [];
-        const radius = this.board.hexRadius;
-        
-        for (let i = 0; i < 6; i++) {
-            const angle = (Math.PI / 3) * i + Math.PI / 3;
-            points.push({
-                x: x + radius * Math.cos(angle),
-                y: y + radius * Math.sin(angle)
-            });
-        }
-        
-        return points;
-    }
-    
-    handleHexClick(pointer, gameObject) {
-        if (!gameObject || !gameObject.getData) return;
-    
-        const hexData = gameObject.getData('hexData');
-        if(!hexData) {
-            console.log('Clique fora do hexágono');
-            return;
-        } 
-    
-        console.log(`Hexágono ${hexData.label} foi clicado`);
-    
-        this.scene.get('heroscene').events.emit('boardClicked', hexData);
     }  
     
     update() {

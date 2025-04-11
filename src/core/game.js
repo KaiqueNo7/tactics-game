@@ -27,13 +27,13 @@ export default class GameManager extends Phaser.GameObjects.Container {
     }
     
     setupInitialPositions() {
-        this.player2.heros[0].state.position = 'B1';
-        this.player2.heros[1].state.position = 'C1';
-        this.player2.heros[2].state.position = 'D1';
+        this.player2.heros[0].state.position = 'B3';
+        this.player2.heros[1].state.position = 'C3';
+        this.player2.heros[2].state.position = 'D3';
         
-        this.player1.heros[0].state.position = 'C6';
-        this.player1.heros[1].state.position = 'D7';
-        this.player1.heros[2].state.position = 'B7';
+        this.player1.heros[0].state.position = 'C4';
+        this.player1.heros[1].state.position = 'D4';
+        this.player1.heros[2].state.position = 'B4';
 
         this.player1.color = 0x0000ff;
         this.player2.color = 0xff0000;

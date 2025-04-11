@@ -46,7 +46,29 @@ export default class UIManager {
                 damageText.destroy();
             }
         });
-    }    
+    } 
+    
+    createEndTurnButton(turnManager) {
+        const buttonText = this.scene.add.text(this.scene.cameras.main.width - 150, 20, 'Próximo Turno', {
+            fontFamily: 'Arial',
+            fontSize: '24px',
+            fill: '#ffffff',
+            backgroundColor: '#ccc',
+            padding: { x: 10, y: 5 }
+        }).setOrigin(0.5).setInteractive();
+    
+        buttonText.on('pointerover', () => {
+            buttonText.setStyle({ fill: '#ffcc00' });
+        });
+    
+        buttonText.on('pointerout', () => {
+            buttonText.setStyle({ fill: '#ffffff' });
+        });
+    
+        buttonText.on('pointerdown', () => {
+            turnManager.nextTurn();
+        });
+    }
 
     createStatsUI(hero) {
         if (!hero.sprite) return;

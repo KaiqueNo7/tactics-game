@@ -9,6 +9,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.heros = {};
         this.highlightedHexes = [];
         this.selectedHero = null;
+        this.hexagons = [];
     }
 
     initializeBoard() {
@@ -106,6 +107,36 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     }    
 
+    createHexagons() {
+        this.hexagons.forEach(hex => {
+            if (hex.image) hex.image.destroy();
+            if (hex.borderSprite) hex.borderSprite.destroy();
+        });
+
+        this.hexagons = [];
+    
+        this.board.forEach(hex => {
+            const image = this.scene.add.image(hex.x, hex.y, 'hexagon')
+                .setOrigin(0.5)
+                .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
+                .setAngle(30)
+                .setInteractive();
+            image.setData('hexData', hex);
+    
+            const borderSprite = this.scene.add.image(hex.x, hex.y, 'hexagon_blue') 
+                .setOrigin(0.5)
+                .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
+                .setAngle(30)
+                .setVisible(false);
+    
+            this.hexagons.push({
+                hexData: hex,
+                image,
+                borderSprite
+            });
+        });
+    }   
+
     attackHero(attacker, target) {
         if (!attacker || !target || attacker === target) return;
     
@@ -157,11 +188,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
                 }                
             }
     
-            const allherosAttacked = currentPlayer.heros.every(hero => 
-                turnManager.currentTurn.attackedHeros.has(hero)
-            );
-    
-            if (allherosAttacked) {
+            const allHerosAttacked = currentPlayer.heros
+            .filter(hero => hero.state.isAlive)
+            .every(hero => turnManager.currentTurn.attackedHeros.has(hero));        
+
+            if (allHerosAttacked) {
                 turnManager.currentTurn.attackedAll = true;
                 turnManager.nextTurn();
             }
@@ -180,15 +211,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         delete this.heros[hex.label];
         
         if (hero.sprite) {
-            hero.sprite.destroy();
-        }
-        if (hero.statsText) {
-            hero.statsText.destroy();
-        }
-        if (hex.borderGraphics) {
-            hex.borderGraphics.clear();
-            hex.borderGraphics.destroy();
-            hex.borderGraphics = null;
+            hero.destroy();
         }
         
         this.scene.warningTextPlugin.showTemporaryMessage(`${hero.name} foi derrotado!`);
