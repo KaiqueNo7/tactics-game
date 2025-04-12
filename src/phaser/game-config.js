@@ -8,7 +8,7 @@ const config = {
     width: 800,
     height: 600,
     parent: 'game-container',
-    backgroundColor: '#ffffff',
+    backgroundColor: '#333333',
     justifyContent: 'center',
     alignContent: 'center',
     scene: [MainMenuScene, CharacterSelectionScene, BoardScene],

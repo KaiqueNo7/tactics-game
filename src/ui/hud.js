@@ -192,7 +192,7 @@ export default class UIManager {
         });
     
         playAgainBtn.on('pointerdown', () => {
-            this.scene.scene.restart(); // Aqui sim, agora reinicia a cena atual corretamente
+            this.scene.scene.start('CharacterSelectionScene');
         });
     
         this.scene.tweens.add({
