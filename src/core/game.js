@@ -15,9 +15,6 @@ export default class GameManager extends Phaser.GameObjects.Container {
     constructor(scene, board, selectedHeroesP1, selectedHeroesP2) {  
         super(scene);
 
-        console.log('Player 1:', selectedHeroesP1);
-        console.log('Player 2:', selectedHeroesP2);
-
         this.scene = scene;
         this.board = board; 
 

@@ -15,7 +15,16 @@ export default class CharacterSelectionScene extends Phaser.Scene {
 
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];
-    this.currentPlayer = 1;
+
+    // Ordem personalizada de seleção
+    this.selectionOrder = [
+      { player: 1, count: 1 },
+      { player: 2, count: 2 },
+      { player: 1, count: 2 },
+      { player: 2, count: 1 }
+    ];
+    this.currentStep = 0;
+    this.currentStepCount = 0;
   }
 
   preload() {
@@ -23,10 +32,13 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       frameWidth: 59,
       frameHeight: 64
     });
+
+    // Imagem para a caixa de detalhes (você pode substituir por uma sua)
+    this.load.image('character-box', 'assets/ui/character-box.png');
   }
 
   create() {
-    const { width, height } = this.scale;
+    const { width } = this.scale;
 
     // Título
     this.add.text(width / 2, 40, 'Selecione seus Heróis', {
@@ -36,7 +48,7 @@ export default class CharacterSelectionScene extends Phaser.Scene {
     }).setOrigin(0.5);
 
     // Status do jogador
-    this.statusText = this.add.text(width / 2, 90, `Jogador 1: escolha seu herói (0/3)`, {
+    this.statusText = this.add.text(width / 2, 90, '', {
       fontSize: '24px',
       color: '#dddddd',
       fontFamily: 'Arial'
@@ -44,6 +56,11 @@ export default class CharacterSelectionScene extends Phaser.Scene {
 
     this.drawHeroOptions();
     this.createHeroDetailUI();
+    this.updateStatusText();
+
+    // Grupos visuais para mostrar heróis escolhidos
+    this.heroDisplayP1 = this.add.group();
+    this.heroDisplayP2 = this.add.group();
   }
 
   drawHeroOptions() {
@@ -69,10 +86,12 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   createHeroDetailUI() {
-    const { width, height } = this.scale;
+    const { width } = this.scale;
 
     // Caixa de detalhes personalizada
-    this.detailBox = this.add.image(width / 2, 400, 'character-box').setOrigin(0.5).setVisible(false);
+    this.detailBox = this.add.image(width / 2, 400, 'character-box')
+      .setOrigin(0.5)
+      .setVisible(false);
 
     // Nome do herói
     this.heroNameText = this.add.text(width / 2, 340, '', {
@@ -108,7 +127,6 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   previewHero(hero) {
-    // Evita re-selecionar um já escolhido
     if (
       this.selectedHeroesP1.includes(hero.name) ||
       this.selectedHeroesP2.includes(hero.name)
@@ -129,12 +147,14 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   confirmSelection(hero) {
-    const currentSelection = this.currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
+    const currentPlayer = this.selectionOrder[this.currentStep].player;
+    const currentSelection = currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
 
-    if (currentSelection.length >= 3) return;
+    if (currentSelection.includes(hero.name)) return;
+
     currentSelection.push(hero.name);
 
-    this.updateStatusText();
+    this.updateSelectedHeroDisplay(currentPlayer, hero);
 
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
     if (heroSpriteObj) {
@@ -142,19 +162,45 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       heroSpriteObj.highlight.setVisible(true);
     }
 
-    if (currentSelection.length === 3) {
-      if (this.currentPlayer === 1) {
-        this.currentPlayer = 2;
-        this.updateStatusText();
-      } else {
-        this.startGame();
-      }
+    this.currentStepCount++;
+    const expectedCount = this.selectionOrder[this.currentStep].count;
+
+    if (this.currentStepCount >= expectedCount) {
+      this.currentStep++;
+      this.currentStepCount = 0;
+    }
+
+    if (this.currentStep >= this.selectionOrder.length) {
+      this.startGame();
+    } else {
+      this.updateStatusText();
     }
   }
 
   updateStatusText() {
-    const currentSelection = this.currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
-    this.statusText.setText(`Jogador ${this.currentPlayer}: escolha seu herói (${currentSelection.length}/3)`);
+    const current = this.selectionOrder[this.currentStep];
+    const currentSelection = current.player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
+    const selected = currentSelection.length;
+    const total = current.count;
+
+    this.statusText.setText(`Jogador ${current.player}: escolha seu herói (${selected}/${total})`);
+  }
+
+  updateSelectedHeroDisplay(player, hero) {
+    const spacing = 60;
+    const baseY = 550;
+    const baseX_P1 = 60;
+    const baseX_P2 = this.scale.width - 60;
+
+    const index = player === 1 ? this.selectedHeroesP1.length - 1 : this.selectedHeroesP2.length - 1;
+    const x = player === 1 ? baseX_P1 + index * spacing : baseX_P2 - index * spacing;
+
+    const sprite = this.add.sprite(x, baseY, 'heroes', hero.frame).setScale(1.2);
+    if (player === 1) {
+      this.heroDisplayP1.add(sprite);
+    } else {
+      this.heroDisplayP2.add(sprite);
+    }
   }
 
   startGame() {
