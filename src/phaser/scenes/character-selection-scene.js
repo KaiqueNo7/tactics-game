@@ -5,12 +5,12 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       super({ key: 'CharacterSelectionScene' });
 
       this.HERO_DATA = [
-          { name: 'Ralph', frame: 0 },
+          { name: 'Gold', frame: 0 },
           { name: 'Vic', frame: 1 },
-          { name: 'Gold', frame: 2 },
-          { name: 'Blade', frame: 3 },
-          { name: 'Dante', frame: 4 },
-          { name: 'Ceos', frame: 5 },
+          { name: 'Ralph', frame: 2 },
+          { name: 'Ceos', frame: 3 },
+          { name: 'Blade', frame: 4 },
+          { name: 'Dante', frame: 5 },
       ];
 
       this.selectedHeroesP1 = [];
@@ -68,13 +68,11 @@ export default class CharacterSelectionScene extends Phaser.Scene {
 
       if (currentSelection.length >= 3) return;
 
-      // Impede seleção duplicada
       if (this.selectedHeroesP1.includes(heroName) || this.selectedHeroesP2.includes(heroName)) return;
 
       currentSelection.push(heroName);
       this.updateStatusText();
 
-      // Aplica efeito visual
       const heroSpriteObj = this.heroSprites.find(h => h.name === heroName);
       if (heroSpriteObj) {
           heroSpriteObj.sprite.setTint(0x555555).disableInteractive();

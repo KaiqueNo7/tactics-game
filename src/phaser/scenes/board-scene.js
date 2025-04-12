@@ -47,8 +47,8 @@ export default class BoardScene extends Phaser.Scene {
     }  
 
     init(data) {
-        this.selectedHeroesP1 = data.player1; // Ex: ['Gold', 'Vic', 'Dante']
-        this.selectedHeroesP2 = data.player2; // Ex: ['Ralph', 'Ceos', 'Blade']
+        this.selectedHeroesP1 = data.player1;
+        this.selectedHeroesP2 = data.player2;
     }    
     
     update() {
