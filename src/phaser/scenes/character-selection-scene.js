@@ -32,9 +32,6 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       frameWidth: 59,
       frameHeight: 64
     });
-
-    // Imagem para a caixa de detalhes (você pode substituir por uma sua)
-    this.load.image('character-box', 'assets/ui/character-box.png');
   }
 
   create() {
@@ -132,11 +129,34 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       this.selectedHeroesP2.includes(hero.name)
     ) return;
 
+    if (this.previewedSprite) {
+      this.previewedSprite.setScale(2); // Volta ao tamanho normal
+    }
+  
     this.previewedHero = hero;
 
-    this.heroNameText.setText(hero.name).setVisible(true);
-    this.abilitiesText.setText(`Habilidades:\n- ${hero.abilities.map(a => `${a.name}: ${a.description}`).join('\n- ')}`).setVisible(true);
-    this.confirmButton.setVisible(true);
+    const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
+    if (heroSpriteObj) {
+      this.previewedSprite = heroSpriteObj.sprite;
+      this.previewedSprite.setScale(2.5);
+    }
+
+    const abilitiesFormatted = hero.abilities.map(a => `${a.name}: ${a.description}`).join('\n');
+
+
+    this.heroNameText.setText(`${hero.name}  |  🧡 ${hero.stats.hp}  |  ⚔️ ${hero.stats.attack}`)
+    .setVisible(true)
+    .setY(330); // mais acima
+  
+  this.abilitiesText.setText(`Habilidades:\n${abilitiesFormatted}`)
+    .setVisible(true)
+    .setY(420); // mais abaixo
+  
+    
+  
+    this.confirmButton
+      .setVisible(true)
+      .setY(500);
   }
 
   hideHeroDetail() {
