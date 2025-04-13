@@ -63,8 +63,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.currentPlayerIndex = startingPlayerIndex;
         this.currentTurn.player = this.players[startingPlayerIndex];
 
-        this.scene.warningTextPlugin.showTemporaryMessage(`${this.currentTurn.player.name} começa o jogo!`);
-
         this.whoStarted = startingPlayerIndex;
     }
 
@@ -102,12 +100,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.checkGameState();
     
         this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
-        
-        this.scene.warningTextPlugin.showTemporaryMessage(`Turno de ${currentPlayer.name}!`);
 
         this.scene.board.clearHighlights();
 
         this.triggerStartOfTurnSkills(this.players);
+
+        this.scene.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
     
         return this.currentTurn;
     }

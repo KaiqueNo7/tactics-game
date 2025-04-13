@@ -1,6 +1,7 @@
 import Board from '../../core/board.js';
 import GameManager from '../../core/game.js';
 import UIManager from '../../ui/hud.js';
+import GameUI from '../../ui/game-ui.js';
 
 export default class BoardScene extends Phaser.Scene {
     constructor() {
@@ -16,15 +17,18 @@ export default class BoardScene extends Phaser.Scene {
         this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
         this.load.image('hex_highlight', 'assets/sprites/hexagon_free.png');
         this.load.image('hex_highlight_enemy', 'assets/sprites/hex_enemy.png');
+        this.load.image('next_turn', 'assets/ui/next_turn.png')
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
         this.load.image('heart', 'assets/ui/heart.png');
         this.load.image('swords', 'assets/ui/swords.png');
         this.load.image('poison', 'assets/ui/poison.png');
         this.load.image('shield', 'assets/ui/shield.png');
+        this.load.image('ui_box_brown', 'assets/ui/ui_box_brown.png');
     }
 
     create() {
         this.uiManager = new UIManager(this);
+        this.gameUI = new GameUI(this);
 
         if (!this.textures.exists('boardCanvas')) {
             this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
@@ -32,9 +36,7 @@ export default class BoardScene extends Phaser.Scene {
             this.canvas = this.textures.get('boardCanvas');
         }
         
-        this.board = new Board(this, 45);  
-        this.board.initializeBoard();
-        this.board.createHexagons();
+        this.board = new Board(this, 43);  
 
         this.gameManager = new GameManager(this, this.board, this.selectedHeroesP1, this.selectedHeroesP2);
         this.game.gameManager = this.gameManager;
@@ -44,6 +46,8 @@ export default class BoardScene extends Phaser.Scene {
         this.uiManager.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
         this.uiManager.updategamePanel(turnManager.players);
+
+        this.gameUI.showMessage(turnManager.currentTurn.player.name + ' - Começa o jogo!');
     }  
 
     init(data) {

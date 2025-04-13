@@ -115,7 +115,7 @@ class Hero extends Phaser.GameObjects.Container {
         
         this.stats.currentHealth -= totalDamage;
 
-        this.scene.uiManager.showFloatingAmount(this, totalDamage);
+        this.scene.uiManager.showFloatingAmount(this, `-${totalDamage}`);
     
         console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
         
@@ -131,12 +131,13 @@ class Hero extends Phaser.GameObjects.Container {
 
     heal(amount) {
         this.stats.currentHealth = Math.min(this.stats.currentHealth + amount, this.stats.maxHealth);
-        this.scene.uiManager.showFloatingAmount(this, amount, -20, '#00ff00');
+        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#00ff00');
         this.updateHeroStats();
     }
 
     increaseAttack(amount) {
         this.stats.attack += amount;
+        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#0000FF');
         this.updateHeroStats();
     }
 
@@ -159,11 +160,11 @@ class Hero extends Phaser.GameObjects.Container {
         this.updateHeroStats();
     }
 
-    placeOnBoard(scene, hex, player) {
+    placeOnBoard(scene, hex, player, container) {
         this.setPosition(hex.x, hex.y);
-
-        const hexColor = player == 1 ? 'hexagon_blue' : 'hexagon_red';
-
+    
+        const hexColor = player === 1 ? 'hexagon_blue' : 'hexagon_red';
+    
         this.hexBg = scene.add.image(0, 0, hexColor)
             .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
             .setAngle(30);
@@ -179,13 +180,12 @@ class Hero extends Phaser.GameObjects.Container {
                 scene.board.selectHero(this);
             }
         });
-
-        if (!this.scene.children.list.includes(this)) {
-            scene.add.existing(this);
-        }
-
+    
+        container.add(this);
+    
         this.setDepth(2);
     }
+    
 
     startTurn() {
         this.processStatusEffects();
@@ -217,14 +217,28 @@ class Hero extends Phaser.GameObjects.Container {
     updateHeroStats() {
         if (!this.state.isAlive) return;
     
+        const health = this.hp;
+        const attackBase = this.attack;
         const { currentHealth, attack } = this.stats;
     
         if (this.attackText) {
             this.attackText.setText(`${attack}`);
+
+            if (attack > attackBase) {
+                this.attackText.setColor('#87CEFA');
+            } else {
+                this.attackText.setColor('#FFFFFF');
+            }
         }
     
         if (this.healthText) {
             this.healthText.setText(`${currentHealth}`);
+    
+            if (currentHealth < health) {
+                this.healthText.setColor('#FF6666');
+            } else {
+                this.healthText.setColor('#FFFFFF');
+            }
         }
     }
 }

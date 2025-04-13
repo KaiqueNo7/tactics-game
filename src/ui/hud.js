@@ -24,51 +24,54 @@ export default class UIManager {
         this.victory
     }
 
-    showFloatingAmount(hero, amount, x = 30, color = '#ff0000') {
+    showFloatingAmount(hero, amount, x = 0, color = '#ff0000') {
         if (!hero || !hero.add) return;
     
-        const damageText = this.scene.add.text(x, 0, `-${amount}`, {
-            font: '20px Arial',
+        const amountText = this.scene.add.text(x, 0, `${amount}`, {
+            fontSize: '40px',
             fill: color,
-            stroke: '#000000',
-            strokeThickness: 2
+            fontFamily: 'Arial Black',
+            fontStyle: 'bold'
         }).setOrigin(0.5).setDepth(10);
     
-        hero.add(damageText);
+        hero.add(amountText);
     
         this.scene.tweens.add({
-            targets: damageText,
-            y: damageText.y - 20,
+            targets: amountText,
+            y: amountText.y - 20,
             alpha: 0,
             duration: 3000,
             ease: 'Power1',
             onComplete: () => {
-                damageText.destroy();
+                amountText.destroy();
             }
         });
     } 
     
     createEndTurnButton(turnManager) {
-        const buttonText = this.scene.add.text(this.scene.cameras.main.width - 150, 20, 'Próximo Turno', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
-            fill: '#ffffff',
-            backgroundColor: '#ccc',
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
+        this.container = this.scene.add.container(this.scene.scale.width - 120, this.scene.scale.height - 60); // canto inferior direito
     
-        buttonText.on('pointerover', () => {
-            buttonText.setStyle({ fill: '#ffcc00' });
-        });
+        this.background = this.scene.add.image(0, 0, 'next_turn')
+            .setOrigin(0.5)
+            .setScale(2)
+            .setAngle(30)
+            .setInteractive({ useHandCursor: true });
     
-        buttonText.on('pointerout', () => {
-            buttonText.setStyle({ fill: '#ffffff' });
-        });
-    
-        buttonText.on('pointerdown', () => {
+        this.background.on('pointerdown', () => {
             turnManager.nextTurn();
         });
+    
+        this.background.on('pointerover', () => {
+            this.background.setTint(0xaaaaaa);
+        });
+    
+        this.background.on('pointerout', () => {
+            this.background.clearTint();
+        });
+    
+        this.container.add(this.background);
     }
+    
 
     createStatsUI(hero) {
         if (!hero.sprite) return;
