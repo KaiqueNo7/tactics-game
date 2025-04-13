@@ -128,43 +128,66 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       this.selectedHeroesP1.includes(hero.name) ||
       this.selectedHeroesP2.includes(hero.name)
     ) return;
-
+  
+    // Animação para voltar o anterior ao tamanho normal
     if (this.previewedSprite) {
-      this.previewedSprite.setScale(2); // Volta ao tamanho normal
+      this.tweens.add({
+        targets: this.previewedSprite,
+        scale: 2,
+        duration: 150,
+        ease: 'Power1'
+      });
     }
   
     this.previewedHero = hero;
-
+  
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
     if (heroSpriteObj) {
       this.previewedSprite = heroSpriteObj.sprite;
-      this.previewedSprite.setScale(2.5);
+  
+      // Animação para dar destaque ao novo sprite
+      this.tweens.add({
+        targets: this.previewedSprite,
+        scale: 2.5,
+        duration: 200,
+        ease: 'Power2'
+      });
     }
-
+  
     const abilitiesFormatted = hero.abilities.map(a => `${a.name}: ${a.description}`).join('\n');
-
-
-    this.heroNameText.setText(`${hero.name}  |  🧡 ${hero.stats.hp}  |  ⚔️ ${hero.stats.attack}`)
-    .setVisible(true)
-    .setY(330); // mais acima
   
-  this.abilitiesText.setText(`Habilidades:\n${abilitiesFormatted}`)
-    .setVisible(true)
-    .setY(420); // mais abaixo
+    this.heroNameText
+      .setText(`${hero.name}  |  🧡 ${hero.stats.hp}  |  ⚔️ ${hero.stats.attack}`)
+      .setVisible(true)
+      .setY(330);
   
-    
+    this.abilitiesText
+      .setText(`Habilidades:\n${abilitiesFormatted}`)
+      .setVisible(true)
+      .setY(420);
   
     this.confirmButton
       .setVisible(true)
       .setY(500);
-  }
+  }  
 
   hideHeroDetail() {
     this.heroNameText.setVisible(false);
     this.abilitiesText.setVisible(false);
     this.confirmButton.setVisible(false);
     this.previewedHero = null;
+  
+    if (this.previewedSprite) {
+      this.tweens.add({
+        targets: this.previewedSprite,
+        scale: 2,
+        duration: 150,
+        ease: 'Power1'
+      });
+      this.previewedSprite = null;
+    }
   }
+  
 
   confirmSelection(hero) {
     const currentPlayer = this.selectionOrder[this.currentStep].player;
