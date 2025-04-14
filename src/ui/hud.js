@@ -2,36 +2,19 @@ export default class UIManager {
     constructor(scene) {
         this.scene = scene;
 
-        this.turnPanel = this.scene.add.text(600, 150, '', { 
-            font: '18px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 },
-            wordWrap: { width: 300 }
-        }).setScrollFactor(0);
-
-        this.gamePanel = this.scene.add.text(600, 300, '', { 
-            font: '16px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 }
-        }).setScrollFactor(0);
-
-        this.characterPanel = this.scene.add.text(385, 300, '', { 
-            font: '16px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 }
-        }).setScrollFactor(0);
-
         this.victory
     }
 
-    showFloatingAmount(hero, amount, x = 0, color = '#ff0000') {
+    showFloatingAmount(hero, amount, x = 0, color = '#FF6666') {
         if (!hero || !hero.add) return;
     
         const amountText = this.scene.add.text(x, 0, `${amount}`, {
             fontSize: '40px',
             fill: color,
-            fontFamily: 'Arial Black',
-            fontStyle: 'bold'
+            fontStyle: 'bold',
+            stroke: '#000000',
+            strokeThickness: 1.4,
+            align: 'center'
         }).setOrigin(0.5).setDepth(10);
     
         hero.add(amountText);
@@ -49,29 +32,30 @@ export default class UIManager {
     } 
     
     createEndTurnButton(turnManager) {
-        this.container = this.scene.add.container(this.scene.scale.width - 120, this.scene.scale.height - 60); // canto inferior direito
+        this.endTurnButtonContainer = this.scene.add.container(
+            this.scene.scale.width - 145,
+            this.scene.scale.height / 2
+        );
     
-        this.background = this.scene.add.image(0, 0, 'next_turn')
+        this.endTurnBackground = this.scene.add.image(0, 0, 'next_turn')
             .setOrigin(0.5)
-            .setScale(2)
-            .setAngle(30)
+            .setScale(1.5)
             .setInteractive({ useHandCursor: true });
     
-        this.background.on('pointerdown', () => {
+        this.endTurnBackground.on('pointerdown', () => {
             turnManager.nextTurn();
         });
     
-        this.background.on('pointerover', () => {
-            this.background.setTint(0xaaaaaa);
+        this.endTurnBackground.on('pointerover', () => {
+            this.endTurnBackground.setTint(0xaaaaaa);
         });
     
-        this.background.on('pointerout', () => {
-            this.background.clearTint();
+        this.endTurnBackground.on('pointerout', () => {
+            this.endTurnBackground.clearTint();
         });
     
-        this.container.add(this.background);
+        this.endTurnButtonContainer.add(this.endTurnBackground);
     }
-    
 
     createStatsUI(hero) {
         if (!hero.sprite) return;
@@ -125,28 +109,77 @@ export default class UIManager {
     }
 
     updateTurnPanel(currentPlayer, roundNumber) {
-        const text = `Turno Atual: ${roundNumber}\n` + 
-                     `Jogador: ${currentPlayer.name}`;
-        
-        this.setTextWithBackground(this.turnPanel, text);
-        this.turnPanel.setStyle({ backgroundColor: '#333333' });
-    }
+        this.turnPanelContainer = this.scene.add.container(
+            this.scene.scale.width - 145,
+            this.scene.scale.height / 2 - 60
+        );
+    
+        const hexTile = currentPlayer.color == 255 ? 'hex_tile_p1' : 'hex_tile_p2';
+    
+        this.turnPanelBackground = this.scene.add.image(0, 0, hexTile)
+            .setOrigin(0.5)
+            .setScale(1.5)
+            .setInteractive({ useHandCursor: true });
+    
+        this.roundNumberText = this.scene.add.text(0, 0, roundNumber, {
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 1.4,
+            align: 'center'
+        }).setOrigin(0.5);
+    
+        this.turnLabelText = this.scene.add.text(0, -40, 'Turno Atual', {
+            fontSize: '14px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 1.4,
+            align: 'center'
+        }).setOrigin(0.5);
+    
+        this.turnPanelContainer.add(this.turnPanelBackground);
+        this.turnPanelContainer.add(this.turnLabelText);
+        this.turnPanelContainer.add(this.roundNumberText);
+    }    
 
-    updategamePanel(players) {
-        let panelText = '';
-        
-        players.forEach(player => {
-            panelText += `\nJogador: ${player.name}\n`;
-            
-            player.heros.forEach(character => {
+    updateGamePanel(players) {
+        const tileSize = 90;
+        const spriteScale = 0.4;
+        const spacingY = 50;
+        const startX = this.scene.scale.width - 145;
+    
+        players.forEach((player, playerIndex) => {
+            player.heros.forEach((character, index) => {
+                const y = playerIndex === 0
+                    ? this.scene.scale.height / 2 + 120 + index * spacingY
+                    : this.scene.scale.height / 2 - 160 - index * spacingY;
+    
                 const isAlive = character.state.isAlive;
-                const statusIcon = isAlive ? '🟢' : '❌';
-                panelText += `${statusIcon} ${character.name}\n`;
+    
+                // Cria container para agrupar tile + herói
+                const heroContainer = this.scene.add.container(startX, y);
+    
+                // Tile de fundo
+                const tile = this.scene.add.image(0, 0, 'hex_tile')
+                    .setOrigin(0.5)
+                    .setScale(tileSize / 64);
+    
+                if (!isAlive) {
+                    tile.setTint(0x808080);
+                }
+    
+                // Sprite do herói
+                const sprite = this.scene.add.sprite(0, 0, 'heroes', character.frameIndex)
+                    .setOrigin(0.5)
+                    .setScale(spriteScale);
+    
+                // Adiciona ambos ao container
+                heroContainer.add([tile, sprite]);
             });
         });
-        
-        this.setTextWithBackground(this.gamePanel, panelText);
-    }
+    }       
 
     showDetailedCharacterInfo(character) {
         const text = `Personagem: ${character.name}\n` +
@@ -176,7 +209,7 @@ export default class UIManager {
         }).setOrigin(0.5);
         victoryText.setDepth(100);
     
-        const playAgainBtn = this.scene.add.text(400, 300, '🔁 Jogar novamente', {
+        const playAgainBtn = this.scene.add.text(400, 300, 'Jogar novamente', {
             fontSize: '28px',
             fill: '#00ff00',
             backgroundColor: '#222',

@@ -8,7 +8,7 @@ class Hero extends Phaser.GameObjects.Container {
         scene.add.existing(this);
 
         const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
-        sprite.setScale(1);
+        sprite.setScale(0.8);
         this.add(sprite);
         this.sprite = sprite;
         
@@ -58,9 +58,9 @@ class Hero extends Phaser.GameObjects.Container {
     
         const shield = this.scene.add.image(0, 0, 'shield');
         shield.setScale(0.5);
-        shield.setDepth(10);
-        shield.setY(-20);
-        shield.setX(-20);
+        shield.setDepth(15);
+        shield.setY(-13);
+        shield.setX(-13);
         shield.setOrigin(0.5, 0.5);
     
         this.add(shield);
@@ -131,13 +131,13 @@ class Hero extends Phaser.GameObjects.Container {
 
     heal(amount) {
         this.stats.currentHealth = Math.min(this.stats.currentHealth + amount, this.stats.maxHealth);
-        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#00ff00');
+        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#80ff80');
         this.updateHeroStats();
     }
 
     increaseAttack(amount) {
         this.stats.attack += amount;
-        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#0000FF');
+        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#87CEFA');
         this.updateHeroStats();
     }
 
@@ -145,6 +145,7 @@ class Hero extends Phaser.GameObjects.Container {
         console.log(`${this.name} foi derrotado!`);
         this.state.isAlive = false;
         const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
+        this.scene.uiManager.updateGamePanel(this.scene.game.gameManager.turnManager.players);
         this.scene.board.handleHeroDeath(this, hexHeroDie);
     }
 
@@ -185,7 +186,6 @@ class Hero extends Phaser.GameObjects.Container {
     
         this.setDepth(2);
     }
-    
 
     startTurn() {
         this.processStatusEffects();

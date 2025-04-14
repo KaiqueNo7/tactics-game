@@ -13,12 +13,16 @@ export default class BoardScene extends Phaser.Scene {
             frameWidth: 59,
             frameHeight: 64
         });        
+        this.load.image('background', 'assets/background/01.jpg')
         this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
         this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
         this.load.image('hex_highlight', 'assets/sprites/hexagon_free.png');
         this.load.image('hex_highlight_enemy', 'assets/sprites/hex_enemy.png');
         this.load.image('next_turn', 'assets/ui/next_turn.png')
         this.load.image('hexagon', 'assets/sprites/hexagon.png');
+        this.load.image('hex_tile', 'assets/ui/hex_tile.png');
+        this.load.image('hex_tile_p1', 'assets/ui/hex_tile_p1.png');
+        this.load.image('hex_tile_p2', 'assets/ui/hex_tile_p2.png');
         this.load.image('heart', 'assets/ui/heart.png');
         this.load.image('swords', 'assets/ui/swords.png');
         this.load.image('poison', 'assets/ui/poison.png');
@@ -27,6 +31,11 @@ export default class BoardScene extends Phaser.Scene {
     }
 
     create() {
+        const bg = this.add.image(0, 0, 'background');
+
+        bg.setOrigin(0);
+        bg.setDisplaySize(this.scale.width, this.scale.height);
+
         this.uiManager = new UIManager(this);
         this.gameUI = new GameUI(this);
 
@@ -36,7 +45,10 @@ export default class BoardScene extends Phaser.Scene {
             this.canvas = this.textures.get('boardCanvas');
         }
         
-        this.board = new Board(this, 43);  
+        this.board = new Board(this, 45);  
+
+        this.board.initializeBoard();
+        this.board.createHexagons();
 
         this.gameManager = new GameManager(this, this.board, this.selectedHeroesP1, this.selectedHeroesP2);
         this.game.gameManager = this.gameManager;
@@ -45,7 +57,7 @@ export default class BoardScene extends Phaser.Scene {
 
         this.uiManager.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
-        this.uiManager.updategamePanel(turnManager.players);
+        this.uiManager.updateGamePanel(turnManager.players);
 
         this.gameUI.showMessage(turnManager.currentTurn.player.name + ' - Começa o jogo!');
     }  

@@ -10,9 +10,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.highlightedHexes = [];
         this.selectedHero = null;
         this.hexagons = [];
-
-        this.initializeBoard();
-        this.createHexagons();
     }
 
     initializeBoard() {
@@ -220,7 +217,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             attacker.attackTarget(target);
             turnManager.markHeroAsAttacked(attacker);
     
-            this.scene.gameUI.showMessage(`${attacker.name} atacou ${target.name}!`);
+            console.log(`${attacker.name} atacou ${target.name}!`);
     
             if (!turnManager.currentTurn.counterAttack) {
                 const distanceTarget = this.calculateDistance(targetHex, attackerHex);
