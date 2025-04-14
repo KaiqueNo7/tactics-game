@@ -30,6 +30,28 @@ export default class UIManager {
             }
         });
     } 
+
+    playDamageAnimation(target) {
+        const sprite = target.sprite || target; // Ajuste se necessário
+    
+        // Tween de piscar
+        this.scene.tweens.add({
+            targets: sprite,
+            alpha: 0.3,
+            yoyo: true,
+            repeat: 3,
+            duration: 100,
+            onComplete: () => {
+                sprite.alpha = 1;
+            }
+        });
+    
+        // Efeito de cor vermelha
+        // sprite.setTint(0xff0000);
+        // this.scene.time.delayedCall(300, () => {
+        //     sprite.clearTint();
+        // });
+    }
     
     createEndTurnButton(turnManager) {
         this.endTurnButtonContainer = this.scene.add.container(

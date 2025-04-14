@@ -108,7 +108,7 @@ class Hero extends Phaser.GameObjects.Container {
         });
     }   
     
-    takeDamage(amount, attacker = null) {
+    takeDamage(amount, attacker = null, isCounterAttack = false) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
         const totalDamage = amount + extraDamage;
@@ -118,6 +118,8 @@ class Hero extends Phaser.GameObjects.Container {
         this.scene.uiManager.showFloatingAmount(this, `-${totalDamage}`);
     
         console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
+        
+        this.scene.uiManager.playDamageAnimation(this);
         
         if (this.stats.currentHealth <= 0) {
             this.die();
@@ -200,7 +202,7 @@ class Hero extends Phaser.GameObjects.Container {
 
     counterAttack(target) {
         console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
-        target.takeDamage(this.stats.attack, this);
+        target.takeDamage(this.stats.attack, this, true);
         this.updateHeroStats();
     }
 

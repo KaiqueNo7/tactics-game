@@ -42,6 +42,32 @@ export class Ralph extends Hero {
 
         this.updateHeroStats();
     }
+
+    takeDamage(amount, attacker = null, isCounterAttack = false) {
+        let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
+        
+
+        let totalDamage = amount + extraDamage;
+
+        if(isCounterAttack){
+            totalDamage -= 1;
+        }
+        
+        this.stats.currentHealth -= totalDamage;
+
+        this.scene.uiManager.showFloatingAmount(this, `-${totalDamage}`);
+    
+        console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
+        
+        if (this.stats.currentHealth <= 0) {
+            this.die();
+        }
+        
+        this.triggerSkills('onDamage', attacker);
+        this.updateHeroStats();
+        
+        return totalDamage;
+    }
 }
 
 export class Vic extends Hero {
