@@ -1,6 +1,8 @@
 export default class GameUI {
     constructor(scene) {
         this.scene = scene;
+        this.messageQueue = [];
+        this.isShowingMessage = false;
 
         this.container = this.scene.add.container(this.scene.scale.width / 2, -50);
         
@@ -20,8 +22,22 @@ export default class GameUI {
     }
 
     showMessage(message) {
+        this.messageQueue.push(message);
+        if (!this.isShowingMessage) {
+            this.displayNextMessage();
+        }
+    }
+
+    displayNextMessage() {
+        if (this.messageQueue.length === 0) {
+            this.isShowingMessage = false;
+            return;
+        }
+
+        const message = this.messageQueue.shift();
+        this.isShowingMessage = true;
+
         this.text.setText(message);
-        
         this.container.setY(-50);
         this.container.setAlpha(0);
         this.container.setDepth(100);
@@ -39,10 +55,14 @@ export default class GameUI {
                         y: this.finalY - 20,
                         alpha: 0,
                         ease: 'Power2',
-                        duration: 400
+                        duration: 400,
+                        onComplete: () => {
+                            this.isShowingMessage = false;
+                            this.displayNextMessage();
+                        }
                     });
                 });
             }
-        });        
+        });
     }
 }

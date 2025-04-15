@@ -13,7 +13,7 @@ export default class BoardScene extends Phaser.Scene {
             frameWidth: 59,
             frameHeight: 64
         });        
-        this.load.image('background', 'assets/background/01.jpg')
+        this.load.image('background', 'assets/background/01.png');
         this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
         this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
         this.load.image('hex_highlight', 'assets/sprites/hexagon_free.png');

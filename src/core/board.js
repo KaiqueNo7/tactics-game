@@ -51,15 +51,16 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (!hex || !this.scene) return;
     
         hex.occupied = true;
-        hex.occupiedBy = playerNumber;
+        hex.occupiedBy = hero;
         this.heros[position] = hero;
         hero.state.position = position;
-        hero.state.playerId = playerNumber;
 
         hero.placeOnBoard(this.scene, hex, playerNumber, this.boardContainer);
     }
     
     selectHero(hero) {
+        if(!hero.state.isAlive) return;
+
         const gameManager = this.scene.game.gameManager;
         const turnManager = gameManager.getTurnManager();
         const currentPlayer = turnManager.getCurrentPlayer();
@@ -74,7 +75,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (!currentPlayer.heros.includes(hero)) {
             if (this.selectedHero && this.selectedHero.attackTarget) {
                 if (turnManager.currentTurn.attackedHeros.has(this.selectedHero)) {
-                    this.scene.gameUI.showMessage('Este personagem já atacou neste turno.');
+                    this.scene.gameUI.showMessage('Este herói já atacou neste turno.');
                 } else {
                     this.attackHero(this.selectedHero, hero);
                     turnManager.markHeroAsAttacked(this.selectedHero);
@@ -182,7 +183,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     
         if (turnManager.currentTurn.attackedHeros.has(attacker)) {
-            this.scene.gameUI.showMessage("Este personagem já atacou neste turno.");
+            this.scene.gameUI.showMessage("Este herói já atacou neste turno.");
             this.selectedHero = null;
             this.clearHighlights();
             return;
@@ -245,16 +246,26 @@ export default class Board extends Phaser.GameObjects.GameObject {
       
     handleHeroDeath(hero, hex) {
         this.scene.gameManager.turnManager.checkGameState();
-
-        hex.occupied = false;
+    
         delete this.heros[hex.label];
-        
+    
+        if (hero.healthIcon) hero.healthIcon.destroy();
+        if (hero.healthText) hero.healthText.destroy();
+        if (hero.attackIcon) hero.attackIcon.destroy();
+        if (hero.attackText) hero.attackText.destroy();
+
         if (hero.sprite) {
-            hero.destroy();
+            hero.sprite.setAngle(90);
+            hero.sprite.setTint(0x808080);
+            hero.sprite.setScale(0.8);
         }
-        
+
+        if (hero.hexBg) {
+            hero.hexBg.destroy();
+        }
+
         this.scene.gameUI.showMessage(`${hero.name} foi derrotado!`);
-    }
+    }    
     
     calculateDistance(attackerHex, targetHex) {
         const colDiff = Math.abs(attackerHex.col - targetHex.col);
@@ -378,21 +389,34 @@ export default class Board extends Phaser.GameObjects.GameObject {
             true
         );
     }
-    
-    getEnemiesInRange(hero, range) {
-        const turnManager = this.scene.game.gameManager.getTurnManager();
 
+    getEnemiesInRange(hero, range) {
         return this.getHexesInRange(
             hero,
             range,
             (hex) => {
                 if (!hex.occupied || !hex.occupiedBy) return false;
-                return hex.occupiedBy !== hero.state.playerId;
+                if(!hex.occupiedBy.state.isAlive) return false;
+                return hex.occupiedBy.playerId !== hero.playerId;
             },
             true,
             true 
         );
     }     
+
+    getAlliesInRange(hero, range) {
+        return this.getHexesInRange(
+            hero,
+            range,
+            (hex) => {
+                if (!hex.occupied || !hex.occupiedBy) return false;
+                if(!hex.occupiedBy.state.isAlive) return false;
+                return hex.occupiedBy.playerId === hero.playerId;
+            },
+            true,
+            true 
+        );
+    }    
     
     getHexesInLine(fromHex, toHex, maxSteps = 2) {
         const directions = [
@@ -553,7 +577,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         }
     
         targetHex.occupied = true;
-        targetHex.occupiedBy = hero.state.playerId;
+        targetHex.occupiedBy = hero;
 
         this.heros[targetHex.label] = hero;
         hero.state.position = targetHex.label;

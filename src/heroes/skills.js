@@ -1,7 +1,7 @@
 export const skills = {
     absorbRoots: {
         name: 'Absorb Roots',
-        description: 'Se cura o dano causado.',
+        description: 'Recupera vida equivalente ao dano causado.',
         triggers: ['onAttack'],
         apply: (hero, target) => {
             if(target){
@@ -12,18 +12,15 @@ export const skills = {
     },
     autoDefense: {
         name: 'Auto Defense',
-        description: 'Sofre menos dano do counterAttack (-1)',
-        triggers: [],
+        description: 'Recebe 1 ponto a menos de dano ao sofrer contra-ataques.',
+        triggers: [''],
         apply: (hero, target) => {
-            if (hero.ability === 'Auto Defense') {
-                console.log(`${hero.name} reduz o dano do contra-ataque!`);
-                target.takeDamage(Math.max(0, target.attack - 1));
-            }
+            //
         }
     },
     beyondFront: {
         name: 'Beyond Front',
-        description: 'Causa dano nas 3 casas em sequência da direção do ataque se estiverem ocupadas.',
+        description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas.',
         triggers: ['onAttack'],
         apply: (hero, target) => {
             const board = hero.scene.board;
@@ -36,10 +33,15 @@ export const skills = {
         
             for (const hex of line) {
                 const maybeHero = board.heros[hex.label];
-                if (maybeHero && maybeHero !== hero && maybeHero.state.isAlive) {
+                if (
+                    maybeHero &&
+                    maybeHero !== hero &&
+                    maybeHero.state.isAlive &&
+                    maybeHero.playerId !== hero.playerId
+                ) {
                     hits.push(maybeHero);
                 } else {
-                    break; // Parar se não tem inimigo
+                    break;
                 }
             }
         
@@ -48,14 +50,34 @@ export const skills = {
                 h.takeDamage(dmg, hero);
             });
         }
-    },           
+    },
+    trustInTeam: {
+        name: 'Trusted in Team',
+        description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
+        triggers: ['onMove', 'onTurnStart'],
+        apply: (hero, target) => {
+            const board = hero.scene.board;
+            const allies = board.getAlliesInRange(hero, 1);
+
+            const baseAttack = hero.attack;
+            const buffed = hero.stats.attack > baseAttack;
+
+            if (allies.length > 0 && !buffed) {
+                console.log(`${hero.name} está com aliados próximos! (+1 ataque)`);
+                hero.increaseAttack(1);
+            } else if (allies.length === 0 && buffed) {
+                console.log(`${hero.name} não tem aliados próximos! (-1 ataque)`);
+                hero.increaseAttack(-1);
+            }
+        }
+    },  
     brokenDefense: {
         name: 'Broken Defense',
-        description: 'Causa mais dano em inimigos com "Taunt". (+2)',
+        description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
         triggers: ['onAttack'],
         apply: (hero, target) => {
             if (target.ability === 'Taunt') {
-                const bonusDamage = hero.attack + 2;
+                const bonusDamage = hero.stats.attack + 2;
                 console.log(`${hero.name} causa dano extra a ${target.name} devido a "Broken Defense"!`);
                 target.takeDamage(bonusDamage, hero);
             } else {
@@ -66,7 +88,7 @@ export const skills = {
     },
     firstPunch: {
         name: 'First Punch',
-        description: 'Primeiro ataque da partida causa mais dano (+2)',
+        description: 'O primeiro ataque do herói na partida causa +2 de dano.',
         triggers: ['onTurnStart', 'onAttack'],
         apply: (hero, target = null) => {
             if (!hero.state.firstPunchApplied && hero.state.isAlive && !hero.state.hasPunched && target === null) {
@@ -92,7 +114,7 @@ export const skills = {
     },
     goodLuck: {
         name: 'Good Luck',
-        description: 'Tem 50% de chance de aumentar um de ataque.',
+        description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
         triggers: ['onTurnEnd', 'onAttack'],
         apply: (hero, target) => {
             if(!target) {

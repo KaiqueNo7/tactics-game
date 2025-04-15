@@ -136,7 +136,7 @@ export default class UIManager {
             this.scene.scale.height / 2 - 60
         );
     
-        const hexTile = currentPlayer.color == 255 ? 'hex_tile_p1' : 'hex_tile_p2';
+        const hexTile = currentPlayer.number == 1 ? 'hex_tile_p1' : 'hex_tile_p2';
     
         this.turnPanelBackground = this.scene.add.image(0, 0, hexTile)
             .setOrigin(0.5)

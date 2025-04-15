@@ -1,11 +1,13 @@
 import { skills } from '../heroes/skills.js';
 
 class Hero extends Phaser.GameObjects.Container {
-    constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = []) {
+    constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null) {
         super(scene, x, y);
 
         this.scene = scene;
         scene.add.existing(this);
+
+        this.playerId = playerId;
 
         const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
         sprite.setScale(0.8);
@@ -31,13 +33,16 @@ class Hero extends Phaser.GameObjects.Container {
             position: null,
             isAlive: true,
             statusEffects: [],
-            playerId: null,
         };
 
         this.effectSprites = {};
         this.setSize(sprite.displayWidth, sprite.displayHeight);
         this.applyTaunt();
         this.setInteractive();
+    }
+
+    addPlayerId(playerId) {
+        this.playerId = playerId;
     }
 
     attackTarget(target) {
@@ -139,7 +144,11 @@ class Hero extends Phaser.GameObjects.Container {
 
     increaseAttack(amount) {
         this.stats.attack += amount;
-        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#87CEFA');
+
+        let color = amount > 0 ? '#87CEFA' : '#ff8080';
+        let amountText = amount > 0 ? `+${amount}` : amount;
+
+        this.scene.uiManager.showFloatingAmount(this, amountText, -20, color);
         this.updateHeroStats();
     }
 
@@ -163,10 +172,10 @@ class Hero extends Phaser.GameObjects.Container {
         this.updateHeroStats();
     }
 
-    placeOnBoard(scene, hex, player, container) {
+    placeOnBoard(scene, hex, playerNumber, container) {
         this.setPosition(hex.x, hex.y);
     
-        const hexColor = player === 1 ? 'hexagon_blue' : 'hexagon_red';
+        const hexColor = playerNumber === 1 ? 'hexagon_blue' : 'hexagon_red';
     
         this.hexBg = scene.add.image(0, 0, hexColor)
             .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
@@ -190,20 +199,26 @@ class Hero extends Phaser.GameObjects.Container {
     }
 
     startTurn() {
-        this.processStatusEffects();
-        this.triggerSkills('onTurnStart');
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            this.processStatusEffects();
+            this.triggerSkills('onTurnStart');
+            this.updateHeroStats();
+        });
     }
 
     endTurn() {
-        this.triggerSkills('onTurnEnd');
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            this.triggerSkills('onTurnEnd');
+            this.updateHeroStats();
+        });
     }
 
     counterAttack(target) {
-        console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
-        target.takeDamage(this.stats.attack, this, true);
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
+            target.takeDamage(this.stats.attack, this, true);
+            this.updateHeroStats();
+        });
     }
 
     addPoisonEffect() {

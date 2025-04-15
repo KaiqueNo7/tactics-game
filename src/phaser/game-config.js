@@ -10,8 +10,7 @@ const config = {
     backgroundColor: '#333333',
     justifyContent: 'center',
     alignContent: 'center',
-    // scene: [MainMenuScene, CharacterSelectionScene, BoardScene],
-    scene: [BoardScene],
+    scene: [MainMenuScene, CharacterSelectionScene, BoardScene],
     physics: {
         default: 'arcade',
         arcade: {

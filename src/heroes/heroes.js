@@ -11,6 +11,11 @@ export class Ralph extends Hero {
                 key: 'firstPunch',
                 name: skills.firstPunch.name,
                 description: skills.firstPunch.description
+            },
+            {
+                key: 'autoDefense',
+                name: skills.autoDefense.name,
+                description: skills.autoDefense.description
             }
         ]
     };
@@ -44,29 +49,11 @@ export class Ralph extends Hero {
     }
 
     takeDamage(amount, attacker = null, isCounterAttack = false) {
-        let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
-        
-
-        let totalDamage = amount + extraDamage;
-
-        if(isCounterAttack){
-            totalDamage -= 1;
+        if (isCounterAttack) {
+            amount = Math.max(0, amount - 1); 
         }
-        
-        this.stats.currentHealth -= totalDamage;
-
-        this.scene.uiManager.showFloatingAmount(this, `-${totalDamage}`);
     
-        console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
-        
-        if (this.stats.currentHealth <= 0) {
-            this.die();
-        }
-        
-        this.triggerSkills('onDamage', attacker);
-        this.updateHeroStats();
-        
-        return totalDamage;
+        super.takeDamage(amount, attacker);
     }
 }
 
@@ -164,9 +151,14 @@ export class Dante extends Hero {
         stats: { attack: 2, hp: 18, ability: 'Ranged' },
         abilities: [
             {
-                key: 'beyondFront',
-                name: skills.beyondFront.name,
-                description: skills.beyondFront.description
+                key: 'brokenDefense',
+                name: skills.brokenDefense.name,
+                description: skills.brokenDefense.description
+            },
+            {
+                key: 'trustInTeam',
+                name: skills.trustInTeam.name,
+                description: skills.trustInTeam.description
             }
         ]
     };
