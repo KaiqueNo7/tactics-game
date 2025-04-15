@@ -18,16 +18,14 @@ export default class GameManager extends Phaser.GameObjects.Container {
         this.scene = scene;
         this.board = board; 
 
-        const player1Heroes = selectedHeroesP1.map((name, i) => {
-            return new HERO_CLASSES[name](scene, 0, 0);
-        });
-    
-        const player2Heroes = selectedHeroesP2.map((name, i) => {
-            return new HERO_CLASSES[name](scene, 0, 0);
-        });
+        this.player1 = new Player("Jogador 1");
+        this.player1.setNumber(1);
+        this.player2 = new Player("Jogador 2");
+        this.player2.setNumber(2);   
 
-        this.player1 = new Player("Jogador 1", player1Heroes);
-        this.player2 = new Player("Jogador 2", player2Heroes);        
+        this.player1.addHeroes(selectedHeroesP1);
+        this.player2.addHeroes(selectedHeroesP2);
+       
 
         this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);
         this.currentTurn = this.turnManager.currentTurn;   
@@ -46,19 +44,16 @@ export default class GameManager extends Phaser.GameObjects.Container {
         this.player1.heros[1].state.position = 'D7';
         this.player1.heros[2].state.position = 'B7';
 
-        this.player1.color = 0x0000ff;
-        this.player2.color = 0xff0000;
-
         this.player1.heros.forEach(hero => this.board.placeHero(
             hero, 
             hero.state.position, 
-            1
+            this.player1.number
         ));
 
         this.player2.heros.forEach(hero => this.board.placeHero(
             hero, 
             hero.state.position, 
-            2
+            this.player2.number
         ));
    }
 

@@ -2,72 +2,81 @@ export default class UIManager {
     constructor(scene) {
         this.scene = scene;
 
-        this.turnPanel = this.scene.add.text(600, 150, '', { 
-            font: '18px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 },
-            wordWrap: { width: 300 }
-        }).setScrollFactor(0);
-
-        this.gamePanel = this.scene.add.text(600, 300, '', { 
-            font: '16px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 }
-        }).setScrollFactor(0);
-
-        this.characterPanel = this.scene.add.text(385, 300, '', { 
-            font: '16px Arial', 
-            fill: '#ffffff',
-            padding: { x: 10, y: 10 }
-        }).setScrollFactor(0);
-
         this.victory
     }
 
-    showFloatingAmount(hero, amount, x = 30, color = '#ff0000') {
+    showFloatingAmount(hero, amount, x = 0, color = '#FF6666') {
         if (!hero || !hero.add) return;
     
-        const damageText = this.scene.add.text(x, 0, `-${amount}`, {
-            font: '20px Arial',
+        const amountText = this.scene.add.text(x, 0, `${amount}`, {
+            fontSize: '40px',
             fill: color,
+            fontStyle: 'bold',
             stroke: '#000000',
-            strokeThickness: 2
+            strokeThickness: 1.4,
+            align: 'center'
         }).setOrigin(0.5).setDepth(10);
     
-        hero.add(damageText);
+        hero.add(amountText);
     
         this.scene.tweens.add({
-            targets: damageText,
-            y: damageText.y - 20,
+            targets: amountText,
+            y: amountText.y - 20,
             alpha: 0,
             duration: 3000,
             ease: 'Power1',
             onComplete: () => {
-                damageText.destroy();
+                amountText.destroy();
             }
         });
     } 
+
+    playDamageAnimation(target) {
+        const sprite = target.sprite || target; // Ajuste se necessário
+    
+        // Tween de piscar
+        this.scene.tweens.add({
+            targets: sprite,
+            alpha: 0.3,
+            yoyo: true,
+            repeat: 3,
+            duration: 100,
+            onComplete: () => {
+                sprite.alpha = 1;
+            }
+        });
+    
+        // Efeito de cor vermelha
+        // sprite.setTint(0xff0000);
+        // this.scene.time.delayedCall(300, () => {
+        //     sprite.clearTint();
+        // });
+    }
     
     createEndTurnButton(turnManager) {
-        const buttonText = this.scene.add.text(this.scene.cameras.main.width - 150, 20, 'Próximo Turno', {
-            fontFamily: 'Arial',
-            fontSize: '24px',
-            fill: '#ffffff',
-            backgroundColor: '#ccc',
-            padding: { x: 10, y: 5 }
-        }).setOrigin(0.5).setInteractive();
+        this.endTurnButtonContainer = this.scene.add.container(
+            this.scene.scale.width - 145,
+            this.scene.scale.height / 2
+        );
     
-        buttonText.on('pointerover', () => {
-            buttonText.setStyle({ fill: '#ffcc00' });
-        });
+        this.endTurnBackground = this.scene.add.image(0, 0, 'next_turn')
+            .setOrigin(0.5)
+            .setScale(1.5)
+            .setInteractive({ useHandCursor: true });
     
-        buttonText.on('pointerout', () => {
-            buttonText.setStyle({ fill: '#ffffff' });
-        });
-    
-        buttonText.on('pointerdown', () => {
+        this.endTurnBackground.on('pointerdown', () => {
             turnManager.nextTurn();
         });
+    
+        this.endTurnBackground.on('pointerover', () => {
+            this.endTurnBackground.setTint(0xaaaaaa);
+        });
+    
+        this.endTurnBackground.on('pointerout', () => {
+            this.endTurnBackground.clearTint();
+        });
+    
+        this.endTurnButtonContainer.add(this.endTurnBackground);
     }
 
     createStatsUI(hero) {
@@ -122,28 +131,77 @@ export default class UIManager {
     }
 
     updateTurnPanel(currentPlayer, roundNumber) {
-        const text = `Turno Atual: ${roundNumber}\n` + 
-                     `Jogador: ${currentPlayer.name}`;
-        
-        this.setTextWithBackground(this.turnPanel, text);
-        this.turnPanel.setStyle({ backgroundColor: '#333333' });
-    }
+        this.turnPanelContainer = this.scene.add.container(
+            this.scene.scale.width - 145,
+            this.scene.scale.height / 2 - 60
+        );
+    
+        const hexTile = currentPlayer.number == 1 ? 'hex_tile_p1' : 'hex_tile_p2';
+    
+        this.turnPanelBackground = this.scene.add.image(0, 0, hexTile)
+            .setOrigin(0.5)
+            .setScale(1.5)
+            .setInteractive({ useHandCursor: true });
+    
+        this.roundNumberText = this.scene.add.text(0, 0, roundNumber, {
+            fontSize: '18px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 1.4,
+            align: 'center'
+        }).setOrigin(0.5);
+    
+        this.turnLabelText = this.scene.add.text(0, -40, 'Turno Atual', {
+            fontSize: '14px',
+            fontStyle: 'bold',
+            color: '#FFFFFF',
+            stroke: '#000000',
+            strokeThickness: 1.4,
+            align: 'center'
+        }).setOrigin(0.5);
+    
+        this.turnPanelContainer.add(this.turnPanelBackground);
+        this.turnPanelContainer.add(this.turnLabelText);
+        this.turnPanelContainer.add(this.roundNumberText);
+    }    
 
-    updategamePanel(players) {
-        let panelText = '';
-        
-        players.forEach(player => {
-            panelText += `\nJogador: ${player.name}\n`;
-            
-            player.heros.forEach(character => {
+    updateGamePanel(players) {
+        const tileSize = 90;
+        const spriteScale = 0.4;
+        const spacingY = 50;
+        const startX = this.scene.scale.width - 145;
+    
+        players.forEach((player, playerIndex) => {
+            player.heros.forEach((character, index) => {
+                const y = playerIndex === 0
+                    ? this.scene.scale.height / 2 + 120 + index * spacingY
+                    : this.scene.scale.height / 2 - 160 - index * spacingY;
+    
                 const isAlive = character.state.isAlive;
-                const statusIcon = isAlive ? '🟢' : '❌';
-                panelText += `${statusIcon} ${character.name}\n`;
+    
+                // Cria container para agrupar tile + herói
+                const heroContainer = this.scene.add.container(startX, y);
+    
+                // Tile de fundo
+                const tile = this.scene.add.image(0, 0, 'hex_tile')
+                    .setOrigin(0.5)
+                    .setScale(tileSize / 64);
+    
+                if (!isAlive) {
+                    tile.setTint(0x808080);
+                }
+    
+                // Sprite do herói
+                const sprite = this.scene.add.sprite(0, 0, 'heroes', character.frameIndex)
+                    .setOrigin(0.5)
+                    .setScale(spriteScale);
+    
+                // Adiciona ambos ao container
+                heroContainer.add([tile, sprite]);
             });
         });
-        
-        this.setTextWithBackground(this.gamePanel, panelText);
-    }
+    }       
 
     showDetailedCharacterInfo(character) {
         const text = `Personagem: ${character.name}\n` +
@@ -173,7 +231,7 @@ export default class UIManager {
         }).setOrigin(0.5);
         victoryText.setDepth(100);
     
-        const playAgainBtn = this.scene.add.text(400, 300, '🔁 Jogar novamente', {
+        const playAgainBtn = this.scene.add.text(400, 300, 'Jogar novamente', {
             fontSize: '28px',
             fill: '#00ff00',
             backgroundColor: '#222',

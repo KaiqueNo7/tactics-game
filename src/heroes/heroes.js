@@ -11,6 +11,11 @@ export class Ralph extends Hero {
                 key: 'firstPunch',
                 name: skills.firstPunch.name,
                 description: skills.firstPunch.description
+            },
+            {
+                key: 'autoDefense',
+                name: skills.autoDefense.name,
+                description: skills.autoDefense.description
             }
         ]
     };
@@ -41,6 +46,14 @@ export class Ralph extends Hero {
         }
 
         this.updateHeroStats();
+    }
+
+    takeDamage(amount, attacker = null, isCounterAttack = false) {
+        if (isCounterAttack) {
+            amount = Math.max(0, amount - 1); 
+        }
+    
+        super.takeDamage(amount, attacker);
     }
 }
 
@@ -138,9 +151,14 @@ export class Dante extends Hero {
         stats: { attack: 2, hp: 18, ability: 'Ranged' },
         abilities: [
             {
-                key: 'beyondFront',
-                name: skills.beyondFront.name,
-                description: skills.beyondFront.description
+                key: 'brokenDefense',
+                name: skills.brokenDefense.name,
+                description: skills.brokenDefense.description
+            },
+            {
+                key: 'trustInTeam',
+                name: skills.trustInTeam.name,
+                description: skills.trustInTeam.description
             }
         ]
     };

@@ -25,7 +25,8 @@ export default class TurnManager extends Phaser.Data.DataManager {
     markHeroAsMoved(hero) {
         console.log(`${hero.name} se moveu.`);
         this.currentTurn.movedHeros.add(hero);
-
+        
+        this.triggerOnMoveSkills(this.players);
         if(this.currentTurn.movedHeros.size === this.currentTurn.player.heros.length) {
             this.currentTurn.movedAll = true;
         }
@@ -62,8 +63,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
         
         this.currentPlayerIndex = startingPlayerIndex;
         this.currentTurn.player = this.players[startingPlayerIndex];
-
-        this.scene.warningTextPlugin.showTemporaryMessage(`${this.currentTurn.player.name} começa o jogo!`);
 
         this.whoStarted = startingPlayerIndex;
     }
@@ -102,12 +101,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
         this.checkGameState();
     
         this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
-        
-        this.scene.warningTextPlugin.showTemporaryMessage(`Turno de ${currentPlayer.name}!`);
 
         this.scene.board.clearHighlights();
 
         this.triggerStartOfTurnSkills(this.players);
+
+        this.scene.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
     
         return this.currentTurn;
     }
@@ -116,7 +115,17 @@ export default class TurnManager extends Phaser.Data.DataManager {
         players.forEach(player => {
             player.heros.forEach(hero => {
                 if (hero.state.isAlive) {
-                    hero.startTurn(); // Método `startTurn()` agora chama habilidades `onTurnStart`
+                    hero.startTurn();
+                }
+            });
+        });
+    }
+
+    triggerOnMoveSkills(players) {
+        players.forEach(player => {
+            player.heros.forEach(hero => {
+                if (hero.state.isAlive) {
+                    hero.triggerSkills('onMove');
                 }
             });
         });
@@ -126,7 +135,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
         const currentPlayer = this.players[this.currentPlayerIndex];
         currentPlayer.heros.forEach(hero => {
             if (hero.state.isAlive) {
-                hero.endTurn(); // Método `endTurn()` agora chama habilidades `onTurnEnd`
+                hero.endTurn();
             }
         });
     }

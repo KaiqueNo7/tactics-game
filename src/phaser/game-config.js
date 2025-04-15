@@ -1,7 +1,6 @@
 import BoardScene from './scenes/board-scene.js';
 import MainMenuScene from './scenes/main-menu-scene.js';
 import CharacterSelectionScene from './scenes/character-selection-scene.js';
-import WarningTextPlugin from './plugins/warning-text-plugin.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -21,11 +20,6 @@ const config = {
     scale: {
         mode: Phaser.Scale.FIT,
         autoCenter: Phaser.Scale.CENTER_BOTH
-    },
-    plugins: {
-        scene: [
-            { key: 'WarningTextPlugin', plugin: WarningTextPlugin, mapping: 'warningTextPlugin' }
-        ]
     }
 };
 

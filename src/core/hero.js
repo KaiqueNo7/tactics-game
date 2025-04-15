@@ -1,14 +1,16 @@
 import { skills } from '../heroes/skills.js';
 
 class Hero extends Phaser.GameObjects.Container {
-    constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = []) {
+    constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null) {
         super(scene, x, y);
 
         this.scene = scene;
         scene.add.existing(this);
 
+        this.playerId = playerId;
+
         const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
-        sprite.setScale(1);
+        sprite.setScale(0.8);
         this.add(sprite);
         this.sprite = sprite;
         
@@ -31,13 +33,16 @@ class Hero extends Phaser.GameObjects.Container {
             position: null,
             isAlive: true,
             statusEffects: [],
-            playerId: null,
         };
 
         this.effectSprites = {};
         this.setSize(sprite.displayWidth, sprite.displayHeight);
         this.applyTaunt();
         this.setInteractive();
+    }
+
+    addPlayerId(playerId) {
+        this.playerId = playerId;
     }
 
     attackTarget(target) {
@@ -58,9 +63,9 @@ class Hero extends Phaser.GameObjects.Container {
     
         const shield = this.scene.add.image(0, 0, 'shield');
         shield.setScale(0.5);
-        shield.setDepth(10);
-        shield.setY(-20);
-        shield.setX(-20);
+        shield.setDepth(15);
+        shield.setY(-13);
+        shield.setX(-13);
         shield.setOrigin(0.5, 0.5);
     
         this.add(shield);
@@ -108,16 +113,18 @@ class Hero extends Phaser.GameObjects.Container {
         });
     }   
     
-    takeDamage(amount, attacker = null) {
+    takeDamage(amount, attacker = null, isCounterAttack = false) {
         let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
         const totalDamage = amount + extraDamage;
         
         this.stats.currentHealth -= totalDamage;
 
-        this.scene.uiManager.showFloatingAmount(this, totalDamage);
+        this.scene.uiManager.showFloatingAmount(this, `-${totalDamage}`);
     
         console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
+        
+        this.scene.uiManager.playDamageAnimation(this);
         
         if (this.stats.currentHealth <= 0) {
             this.die();
@@ -131,12 +138,17 @@ class Hero extends Phaser.GameObjects.Container {
 
     heal(amount) {
         this.stats.currentHealth = Math.min(this.stats.currentHealth + amount, this.stats.maxHealth);
-        this.scene.uiManager.showFloatingAmount(this, amount, -20, '#00ff00');
+        this.scene.uiManager.showFloatingAmount(this, `+${amount}`, -20, '#80ff80');
         this.updateHeroStats();
     }
 
     increaseAttack(amount) {
         this.stats.attack += amount;
+
+        let color = amount > 0 ? '#87CEFA' : '#ff8080';
+        let amountText = amount > 0 ? `+${amount}` : amount;
+
+        this.scene.uiManager.showFloatingAmount(this, amountText, -20, color);
         this.updateHeroStats();
     }
 
@@ -144,6 +156,7 @@ class Hero extends Phaser.GameObjects.Container {
         console.log(`${this.name} foi derrotado!`);
         this.state.isAlive = false;
         const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
+        this.scene.uiManager.updateGamePanel(this.scene.game.gameManager.turnManager.players);
         this.scene.board.handleHeroDeath(this, hexHeroDie);
     }
 
@@ -159,11 +172,11 @@ class Hero extends Phaser.GameObjects.Container {
         this.updateHeroStats();
     }
 
-    placeOnBoard(scene, hex, player) {
+    placeOnBoard(scene, hex, playerNumber, container) {
         this.setPosition(hex.x, hex.y);
-
-        const hexColor = player == 1 ? 'hexagon_blue' : 'hexagon_red';
-
+    
+        const hexColor = playerNumber === 1 ? 'hexagon_blue' : 'hexagon_red';
+    
         this.hexBg = scene.add.image(0, 0, hexColor)
             .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
             .setAngle(30);
@@ -179,29 +192,33 @@ class Hero extends Phaser.GameObjects.Container {
                 scene.board.selectHero(this);
             }
         });
-
-        if (!this.scene.children.list.includes(this)) {
-            scene.add.existing(this);
-        }
-
+    
+        container.add(this);
+    
         this.setDepth(2);
     }
 
     startTurn() {
-        this.processStatusEffects();
-        this.triggerSkills('onTurnStart');
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            this.processStatusEffects();
+            this.triggerSkills('onTurnStart');
+            this.updateHeroStats();
+        });
     }
 
     endTurn() {
-        this.triggerSkills('onTurnEnd');
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            this.triggerSkills('onTurnEnd');
+            this.updateHeroStats();
+        });
     }
 
     counterAttack(target) {
-        console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
-        target.takeDamage(this.stats.attack, this);
-        this.updateHeroStats();
+        this.scene.time.delayedCall(1000, () => {
+            console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
+            target.takeDamage(this.stats.attack, this, true);
+            this.updateHeroStats();
+        });
     }
 
     addPoisonEffect() {
@@ -217,14 +234,28 @@ class Hero extends Phaser.GameObjects.Container {
     updateHeroStats() {
         if (!this.state.isAlive) return;
     
+        const health = this.hp;
+        const attackBase = this.attack;
         const { currentHealth, attack } = this.stats;
     
         if (this.attackText) {
             this.attackText.setText(`${attack}`);
+
+            if (attack > attackBase) {
+                this.attackText.setColor('#87CEFA');
+            } else {
+                this.attackText.setColor('#FFFFFF');
+            }
         }
     
         if (this.healthText) {
             this.healthText.setText(`${currentHealth}`);
+    
+            if (currentHealth < health) {
+                this.healthText.setColor('#FF6666');
+            } else {
+                this.healthText.setColor('#FFFFFF');
+            }
         }
     }
 }

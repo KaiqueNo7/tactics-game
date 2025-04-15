@@ -1,10 +1,20 @@
 export default class Player {
   constructor(name, heros = []) {
-      this.id = Date.now() + Math.random();
+      this.id = crypto.randomUUID();
       this.name = name;
       this.heros = heros;
-      this.color = 0x000000;
       this.number = 1;
+  }
+
+  setNumber(number){
+    this.number = number;
+  }
+
+  addHeroes(heroes){
+    heroes.forEach(hero => {
+        hero.addPlayerId(this.id);
+        this.heros.push(hero);
+    });
   }
 
   toJSON() {
