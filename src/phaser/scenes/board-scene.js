@@ -30,37 +30,37 @@ export default class BoardScene extends Phaser.Scene {
         this.load.image('ui_box_brown', 'assets/ui/ui_box_brown.png');
     }
 
-    create() {
+    create(data) {
         const bg = this.add.image(0, 0, 'background');
-
         bg.setOrigin(0);
         bg.setDisplaySize(this.scale.width, this.scale.height);
-
+      
         this.uiManager = new UIManager(this);
         this.gameUI = new GameUI(this);
-
+      
         if (!this.textures.exists('boardCanvas')) {
-            this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
+          this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
         } else {
-            this.canvas = this.textures.get('boardCanvas');
+          this.canvas = this.textures.get('boardCanvas');
         }
-        
-        this.board = new Board(this, 45);  
-
+      
+        this.board = new Board(this, 45);
         this.board.initializeBoard();
         this.board.createHexagons();
-
-        this.gameManager = new GameManager(this, this.board, this.selectedHeroesP1, this.selectedHeroesP2);
+      
+        const { player1: selectedHeroesP1, player2: selectedHeroesP2 } = data;
+      
+        this.gameManager = new GameManager(this, this.board, selectedHeroesP1, selectedHeroesP2);
         this.game.gameManager = this.gameManager;
-
+      
         const turnManager = this.game.gameManager.getTurnManager();
-
+      
         this.uiManager.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
         this.uiManager.updateGamePanel(turnManager.players);
-
+      
         this.gameUI.showMessage(turnManager.currentTurn.player.name + ' - Começa o jogo!');
-    }  
+      }      
 
     init(data) {
         this.selectedHeroesP1 = data.player1;

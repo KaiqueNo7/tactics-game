@@ -1,6 +1,7 @@
 import express from 'express';
 import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
+import Player  from '../src/core/player.js';
 import { Server } from 'socket.io';
 
 const app = express();
@@ -14,35 +15,38 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Servidor Socket.io ativo');
-});
-
-
 server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
 const waitingQueue = [];
+const matches = {};
 
 io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
-  console.log(`Novo jogador conectado: ${socket.id}`);
-
   socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {
     console.log(`Jogador ${socket.id} entrou na fila`);
     waitingQueue.push(socket);
 
     if (waitingQueue.length >= 2) {
-      const player1 = waitingQueue.shift();
-      const player2 = waitingQueue.shift();
+      const playerSocket1 = waitingQueue.shift();
+      const playerSocket2 = waitingQueue.shift();
 
-      const roomId = `sala_${player1.id}_${player2.id}`;
-      player1.join(roomId);
-      player2.join(roomId);
+      const roomId = `room_${playerSocket1.id}_${playerSocket2.id}`;
+      playerSocket1.join(roomId);
+      playerSocket2.join(roomId);
+
+      matches[roomId] = {
+        player1: new Player('Player 1', [], playerSocket1.id, 1),
+        player2: new Player('Player 2', [], playerSocket2.id, 2),
+        selectedHeroes: []
+      };
 
       console.log(`Criando partida na sala ${roomId}`);
 
       io.to(roomId).emit(SOCKET_EVENTS.MATCH_FOUND, {
         roomId,
-        players: [player1.id, player2.id]
+        players: [
+          matches[roomId].player1.toJSON(),
+          matches[roomId].player2.toJSON()
+        ]
       });
     }
   });

@@ -16,7 +16,7 @@ export default class MainMenuScene extends Phaser.Scene {
       }).setOrigin(0.5);
 
       this.createButton(width / 2, 200, 'OFFLINE', () => {
-          this.scene.start('CharacterSelectionScene');
+          this.scene.start('HeroSelectionScene');
       });
 
       this.createButton(width / 2, 270, 'ONLINE', () => {
