@@ -8,7 +8,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
   }
 
   create() {
-      const { width, height } = this.scale;
+      const { width } = this.scale;
 
       this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
           fontSize: '48px',

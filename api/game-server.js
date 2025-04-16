@@ -19,7 +19,6 @@ server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
 const waitingQueue = [];
 const matches = {};
-const matchReadyState = {};
 
 io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {

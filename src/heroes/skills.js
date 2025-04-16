@@ -14,7 +14,7 @@ export const skills = {
         name: 'Auto Defense',
         description: 'Recebe 1 ponto a menos de dano ao sofrer contra-ataques.',
         triggers: [''],
-        apply: (hero, target) => {
+        apply: () => {
             //
         }
     },
@@ -55,7 +55,7 @@ export const skills = {
         name: 'Trusted in Team',
         description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
         triggers: ['onMove', 'onTurnStart'],
-        apply: (hero, target) => {
+        apply: (hero) => {
             const board = hero.scene.board;
             const allies = board.getAlliesInRange(hero, 1);
 
