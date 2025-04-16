@@ -2,7 +2,7 @@ import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js';
 
 export default class CharacterSelectionScene extends Phaser.Scene {
   constructor() {
-    super({ key: 'CharacterSelectionScene' });
+    super('CharacterSelectionScene');
 
     this.HERO_DATA = [
       Gold.data,

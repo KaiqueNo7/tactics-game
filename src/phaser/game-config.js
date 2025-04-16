@@ -1,6 +1,8 @@
 import BoardScene from './scenes/board-scene.js';
 import MainMenuScene from './scenes/main-menu-scene.js';
 import CharacterSelectionScene from './scenes/character-selection-scene.js';
+import MatchOnlineScene from './scenes/match-online-scene.js';
+import FindingMatchScene from './scenes/finding-match-scene.js';
 
 const config = {
     type: Phaser.AUTO,
@@ -10,7 +12,7 @@ const config = {
     backgroundColor: '#333333',
     justifyContent: 'center',
     alignContent: 'center',
-    scene: [MainMenuScene, CharacterSelectionScene, BoardScene],
+    scene: [MainMenuScene, MatchOnlineScene, FindingMatchScene, CharacterSelectionScene, BoardScene],
     physics: {
         default: 'arcade',
         arcade: {
