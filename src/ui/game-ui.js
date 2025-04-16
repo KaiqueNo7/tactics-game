@@ -1,68 +1,68 @@
 export default class GameUI {
-    constructor(scene) {
-        this.scene = scene;
-        this.messageQueue = [];
-        this.isShowingMessage = false;
+  constructor(scene) {
+    this.scene = scene;
+    this.messageQueue = [];
+    this.isShowingMessage = false;
 
-        this.container = this.scene.add.container(this.scene.scale.width / 2, -50);
+    this.container = this.scene.add.container(this.scene.scale.width / 2, -50);
         
-        this.background = this.scene.add.image(0, 0, 'ui_box_brown')
-            .setOrigin(0.5)
-            .setScale(2, 1);
+    this.background = this.scene.add.image(0, 0, 'ui_box_brown')
+      .setOrigin(0.5)
+      .setScale(2, 1);
 
-        this.text = this.scene.add.text(0, 0, '', {
-            fontSize: '16px',
-            fontWeight: 'bold',
-            color: '#000',
-        }).setOrigin(0.5);
+    this.text = this.scene.add.text(0, 0, '', {
+      fontSize: '16px',
+      fontWeight: 'bold',
+      color: '#000',
+    }).setOrigin(0.5);
 
-        this.container.add([this.background, this.text]);
+    this.container.add([this.background, this.text]);
 
-        this.finalY = 150;
+    this.finalY = 150;
+  }
+
+  showMessage(message) {
+    this.messageQueue.push(message);
+    if (!this.isShowingMessage) {
+      this.displayNextMessage();
+    }
+  }
+
+  displayNextMessage() {
+    if (this.messageQueue.length === 0) {
+      this.isShowingMessage = false;
+      return;
     }
 
-    showMessage(message) {
-        this.messageQueue.push(message);
-        if (!this.isShowingMessage) {
-            this.displayNextMessage();
-        }
-    }
+    const message = this.messageQueue.shift();
+    this.isShowingMessage = true;
 
-    displayNextMessage() {
-        if (this.messageQueue.length === 0) {
-            this.isShowingMessage = false;
-            return;
-        }
+    this.text.setText(message);
+    this.container.setY(-50);
+    this.container.setAlpha(0);
+    this.container.setDepth(100);
 
-        const message = this.messageQueue.shift();
-        this.isShowingMessage = true;
-
-        this.text.setText(message);
-        this.container.setY(-50);
-        this.container.setAlpha(0);
-        this.container.setDepth(100);
-
-        this.scene.tweens.add({
+    this.scene.tweens.add({
+      targets: this.container,
+      y: this.finalY,
+      alpha: 1,
+      ease: 'Power2',
+      duration: 400,
+      onComplete: () => {
+        this.scene.time.delayedCall(1200, () => {
+          this.scene.tweens.add({
             targets: this.container,
-            y: this.finalY,
-            alpha: 1,
+            y: this.finalY - 20,
+            alpha: 0,
             ease: 'Power2',
             duration: 400,
             onComplete: () => {
-                this.scene.time.delayedCall(1200, () => {
-                    this.scene.tweens.add({
-                        targets: this.container,
-                        y: this.finalY - 20,
-                        alpha: 0,
-                        ease: 'Power2',
-                        duration: 400,
-                        onComplete: () => {
-                            this.isShowingMessage = false;
-                            this.displayNextMessage();
-                        }
-                    });
-                });
+              this.isShowingMessage = false;
+              this.displayNextMessage();
             }
+          });
         });
-    }
+      }
+    });
+  }
 }

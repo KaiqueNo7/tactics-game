@@ -308,7 +308,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     this.statusText.setText(`Jogador ${current.player}: escolha seu herói (${selected}/${total})`);
   }
-  
 
   updateSelectedHeroDisplay(player, hero) {
     const spacing = 60;

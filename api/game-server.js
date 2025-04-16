@@ -56,14 +56,14 @@ io.on('connection', (socket) => {
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
   });  
 
-    socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
-      console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
+  socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
+    console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
     
-      io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
-        roomId,
-        players,
-        heroes
-      });
+    io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
+      roomId,
+      players,
+      heroes
+    });
   });  
 
   socket.on('disconnect', () => {
