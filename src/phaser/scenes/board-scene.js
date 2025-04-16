@@ -34,40 +34,47 @@ export default class BoardScene extends Phaser.Scene {
         const bg = this.add.image(0, 0, 'background');
         bg.setOrigin(0);
         bg.setDisplaySize(this.scale.width, this.scale.height);
-      
+
         this.uiManager = new UIManager(this);
         this.gameUI = new GameUI(this);
-      
+
         if (!this.textures.exists('boardCanvas')) {
-          this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
+        this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
         } else {
-          this.canvas = this.textures.get('boardCanvas');
+        this.canvas = this.textures.get('boardCanvas');
         }
-      
+
         this.board = new Board(this, 45);
         this.board.initializeBoard();
         this.board.createHexagons();
-      
-        const { player1: selectedHeroesP1, player2: selectedHeroesP2 } = data;
-      
-        this.gameManager = new GameManager(this, this.board, selectedHeroesP1, selectedHeroesP2);
+
+        const { roomId, players, myPlayerId } = data;
+
+        this.roomId = roomId;
+        this.players = players;
+        this.myPlayerId = myPlayerId;
+
+        const player1Data = players.find(p => p.number === 1);
+        const player2Data = players.find(p => p.number === 2);
+
+        this.gameManager = new GameManager(this, this.board, player1Data, player2Data);
         this.game.gameManager = this.gameManager;
-      
-        const turnManager = this.game.gameManager.getTurnManager();
-      
+
+        const turnManager = this.gameManager.getTurnManager();
+
         this.uiManager.createEndTurnButton(turnManager);
         this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
         this.uiManager.updateGamePanel(turnManager.players);
-      
-        this.gameUI.showMessage(turnManager.currentTurn.player.name + ' - Começa o jogo!');
-      }      
+
+        this.gameUI.showMessage(`${turnManager.currentTurn.player.name} - Começa o jogo!`);
+    }         
 
     init(data) {
         this.selectedHeroesP1 = data.player1;
         this.selectedHeroesP2 = data.player2;
     }    
-    
+
     update() {
-        // Lógica de atualização, se necessário
+    // Lógica de atualização, se necessário
     }
 }
