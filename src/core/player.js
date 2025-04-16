@@ -1,9 +1,9 @@
 export default class Player {
-  constructor(name, heros = []) {
-      this.id = crypto.randomUUID();
+  constructor(name, heros = [], id, number) {
+      this.id = id;
       this.name = name;
       this.heros = heros;
-      this.number = 1;
+      this.number = number;
   }
 
   setNumber(number){
@@ -21,6 +21,7 @@ export default class Player {
       return {
           id: this.id,
           name: this.name,
+          number: this.number,
           heros: this.heros.map(char => char.toJSON())
       };
   }

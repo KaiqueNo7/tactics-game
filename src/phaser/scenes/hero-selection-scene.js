@@ -2,9 +2,9 @@ import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js';
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 
-export default class CharacterSelectionScene extends Phaser.Scene {
+export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
-    super('CharacterSelectionScene');
+    super('HeroSelectionScene');
 
     this.HERO_DATA = [
       Gold.data,
@@ -38,16 +38,22 @@ export default class CharacterSelectionScene extends Phaser.Scene {
 
   create(data) {
     if (!data || !data.roomId || !data.players) {
-      console.warn('Acesso inválido à CharacterSelectionScene. Redirecionando...');
+      console.warn('Acesso inválido à HeroSelectionScene. Redirecionando...');
       this.scene.start('FindingMatchScene');
       return;
     }
 
     const { roomId, players } = data;
+
     this.roomId = roomId;
     this.players = players;
+
     this.socket = socket;
-    this.playerNumber = socket.id === players[0] ? 1 : 2;
+    
+    this.myPlayer = players.find(p => p.id === socket.id);
+    this.opponentPlayer = players.find(p => p.id !== socket.id);
+    
+    this.playerNumber = this.myPlayer.number;
   
     console.log(`Você é o Jogador ${this.playerNumber} na sala ${roomId}`);
 
@@ -130,7 +136,7 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   createHeroDetailUI() {
     const { width } = this.scale;
 
-    this.detailBox = this.add.image(width / 2, 400, 'character-box')
+    this.detailBox = this.add.image(width / 2, 400, 'Hero-box')
       .setOrigin(0.5)
       .setVisible(false);
 
@@ -245,10 +251,11 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   confirmSelection(hero) {
     const currentPlayer = this.selectionOrder[this.currentStep].player;
     const currentSelection = currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
+    
+    if (currentPlayer !== this.playerNumber) return;
+    if (currentSelection.includes(hero.name)) return;
 
     console.log(`Jogador ${currentPlayer} selecionou: ${hero.name}`); 
-
-    if (currentSelection.includes(hero.name)) return;
 
     currentSelection.push(hero.name);
 
@@ -312,10 +319,19 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   startGame() {
-    this.socket.off('hero_selected');
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
+  
+    const player1 = this.players.find(p => p.number === 1);
+    const player2 = this.players.find(p => p.number === 2);
+  
+    player1.heros = this.selectedHeroesP1;
+    player2.heros = this.selectedHeroesP2;
+  
     this.scene.start('BoardScene', {
-      player1: this.selectedHeroesP1,
-      player2: this.selectedHeroesP2
+      roomId: this.roomId,
+      players: [player1, player2],
+      myPlayerId: this.myPlayer.id
     });
   }
+  
 }

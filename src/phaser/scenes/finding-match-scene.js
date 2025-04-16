@@ -30,14 +30,18 @@ export default class FindingMatchScene extends Phaser.Scene {
       
       socket.emit(SOCKET_EVENTS.FINDING_MATCH);
 
-      socket.on(SOCKET_EVENTS.MATCH_FOUND, (data) => {
-        console.log('Partida encontrada!', data);
-  
-        this.scene.start('CharacterSelectionScene', {
-          roomId: data.roomId,
-          players: data.players
+      socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {
+        const mySocketId = socket.id;
+        const myPlayer = players.find(p => p.id === mySocketId);
+        const opponentPlayer = players.find(p => p.id !== mySocketId);
+      
+        this.scene.start('HeroSelectionScene', {
+          roomId,
+          players,
+          myPlayer,
+          opponentPlayer
         });
-      });
+      });      
     }
 
 }

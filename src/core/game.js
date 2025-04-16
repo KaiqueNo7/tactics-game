@@ -23,8 +23,16 @@ export default class GameManager extends Phaser.GameObjects.Container {
         this.player2 = new Player("Jogador 2");
         this.player2.setNumber(2);   
 
-        this.player1.addHeroes(selectedHeroesP1);
-        this.player2.addHeroes(selectedHeroesP2);
+        const player1Heroes = selectedHeroesP1.map((name) => {
+            return new HERO_CLASSES[name](scene, 0, 0);
+        });
+
+        const player2Heroes = selectedHeroesP2.map((name) => {
+            return new HERO_CLASSES[name](scene, 0, 0);
+        });
+
+        this.player1.addHeroes(player1Heroes);
+        this.player2.addHeroes(player2Heroes);
        
 
         this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);

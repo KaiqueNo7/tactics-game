@@ -250,7 +250,7 @@ export default class UIManager {
         });
     
         playAgainBtn.on('pointerdown', () => {
-            this.scene.scene.start('CharacterSelectionScene');
+            this.scene.scene.start('HeroSelectionScene');
         });
     
         this.scene.tweens.add({
