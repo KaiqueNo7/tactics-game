@@ -445,9 +445,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
             return { col, row };
         }        
     
-        const deltaCol = toHex.col - fromHex.col;
-        const deltaRow = toHex.row - fromHex.row;
-    
         let direction = null;
         for (const d of directions) {
             const neighbor = getNeighborHex(fromHex, d);

@@ -11,7 +11,7 @@ export default class FindingMatchScene extends Phaser.Scene {
     }
 
     create() {
-      const { width, height } = this.scale;
+      const { width } = this.scale;
 
       this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
         fontSize: '48px',
