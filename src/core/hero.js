@@ -24,14 +24,14 @@ class Hero extends Phaser.GameObjects.Container {
     this.attackRange = ability === 'Ranged' ? 2 : 1;
 
     this.stats = {
-      maxHealth: hp,
+      attack: attack,
       currentHealth: hp,
-      attack: attack
+      maxHealth: hp
     };
 
     this.state = {
-      position: null,
       isAlive: true,
+      position: null,
       statusEffects: [],
     };
 
@@ -90,10 +90,10 @@ class Hero extends Phaser.GameObjects.Container {
     if (this.statsText) this.statsText.destroy();
 
     this.statsText = scene.add.text(hex.x, hex.y + 25, '', {
-      font: '12px Arial',
-      fill: '#ffffff',
       align: 'center',
       backgroundColor: '#000000',
+      fill: '#ffffff',
+      font: '12px Arial',
       padding: { x: 2, y: 2 }
     });
 

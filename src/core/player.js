@@ -19,10 +19,10 @@ export default class Player {
 
   toJSON() {
     return {
+      heros: this.heros.map(char => char.toJSON()),
       id: this.id,
       name: this.name,
-      number: this.number,
-      heros: this.heros.map(char => char.toJSON())
+      number: this.number
     };
   }
 }

@@ -14,18 +14,18 @@ export default class FindingMatchScene extends Phaser.Scene {
     const { width } = this.scale;
 
     this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
-      fontSize: '48px',
       color: '#ffffff',
+      fontSize: '48px',
     }).setOrigin(0.5);
       
     this.dots = '';
     this.time.addEvent({
-      delay: 500,
-      loop: true,
       callback: () => {
         this.dots = this.dots.length < 3 ? this.dots + '.' : '';
         this.procurandoText.setText('PROCURANDO' + this.dots);
-      }
+      },
+      delay: 500,
+      loop: true
     });    
       
     socket.emit(SOCKET_EVENTS.FINDING_MATCH);
@@ -36,10 +36,10 @@ export default class FindingMatchScene extends Phaser.Scene {
       const opponentPlayer = players.find(p => p.id !== mySocketId);
       
       this.scene.start('HeroSelectionScene', {
-        roomId,
-        players,
         myPlayer,
-        opponentPlayer
+        opponentPlayer,
+        players,
+        roomId
       });
     });      
   }

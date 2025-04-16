@@ -8,8 +8,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
+    origin: '*'
   }
 });
 
@@ -42,11 +42,11 @@ io.on('connection', (socket) => {
       console.log(`Criando partida na sala ${roomId}`);
 
       io.to(roomId).emit(SOCKET_EVENTS.MATCH_FOUND, {
-        roomId,
         players: [
           matches[roomId].player1.toJSON(),
           matches[roomId].player2.toJSON()
-        ]
+        ],
+        roomId
       });
     }
   });
@@ -60,9 +60,9 @@ io.on('connection', (socket) => {
     console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
     
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
-      roomId,
+      heroes,
       players,
-      heroes
+      roomId
     });
   });  
 

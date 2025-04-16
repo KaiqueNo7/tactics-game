@@ -11,9 +11,9 @@ export default class GameUI {
       .setScale(2, 1);
 
     this.text = this.scene.add.text(0, 0, '', {
+      color: '#000',
       fontSize: '16px',
       fontWeight: 'bold',
-      color: '#000',
     }).setOrigin(0.5);
 
     this.container.add([this.background, this.text]);
@@ -43,26 +43,26 @@ export default class GameUI {
     this.container.setDepth(100);
 
     this.scene.tweens.add({
-      targets: this.container,
-      y: this.finalY,
       alpha: 1,
-      ease: 'Power2',
       duration: 400,
+      ease: 'Power2',
       onComplete: () => {
         this.scene.time.delayedCall(1200, () => {
           this.scene.tweens.add({
-            targets: this.container,
-            y: this.finalY - 20,
             alpha: 0,
-            ease: 'Power2',
             duration: 400,
+            ease: 'Power2',
             onComplete: () => {
               this.isShowingMessage = false;
               this.displayNextMessage();
-            }
+            },
+            targets: this.container,
+            y: this.finalY - 20
           });
         });
-      }
+      },
+      targets: this.container,
+      y: this.finalY
     });
   }
 }

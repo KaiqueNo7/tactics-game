@@ -3,12 +3,12 @@ import Player from './player.js';
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 
 const HERO_CLASSES = {
-  Ralph,
-  Vic,
-  Gold,
   Blade,
+  Ceos,
   Dante,
-  Ceos
+  Gold,
+  Ralph,
+  Vic
 };
 
 export default class GameManager extends Phaser.GameObjects.Container {

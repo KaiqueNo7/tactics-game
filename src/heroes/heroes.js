@@ -3,21 +3,21 @@ import { skills } from './skills.js';
 
 export class Ralph extends Hero {
   static data = {
-    name: 'Ralph',
-    frame: 2,
-    stats: { attack: 3, hp: 17, ability: null },
     abilities: [
       {
+        description: skills.firstPunch.description,
         key: 'firstPunch',
-        name: skills.firstPunch.name,
-        description: skills.firstPunch.description
+        name: skills.firstPunch.name
       },
       {
+        description: skills.autoDefense.description,
         key: 'autoDefense',
-        name: skills.autoDefense.name,
-        description: skills.autoDefense.description
+        name: skills.autoDefense.name
       }
-    ]
+    ],
+    frame: 2,
+    name: 'Ralph',
+    stats: { ability: null, attack: 3, hp: 17 }
   };
 
   constructor(scene, x, y) {
@@ -59,16 +59,16 @@ export class Ralph extends Hero {
 
 export class Vic extends Hero {
   static data = {
-    name: 'Vic',
-    frame: 1,
-    stats: { attack: 1, hp: 19, ability: null },
     abilities: [
       {
+        description: skills.poisonAttack.description,
         key: 'poisonAttack',
-        name: skills.poisonAttack.name,
-        description: skills.poisonAttack.description
+        name: skills.poisonAttack.name
       }
-    ]
+    ],
+    frame: 1,
+    name: 'Vic',
+    stats: { ability: null, attack: 1, hp: 19 }
   };
 
   constructor(scene, x, y) {
@@ -88,16 +88,16 @@ export class Vic extends Hero {
 
 export class Gold extends Hero {
   static data = {
-    name: 'Gold',
-    frame: 0,
-    stats: { attack: 1, hp: 18, ability: 'Sprint' },
     abilities: [
       {
+        description: skills.goodLuck.description,
         key: 'goodLuck',
-        name: skills.goodLuck.name,
-        description: skills.goodLuck.description
+        name: skills.goodLuck.name
       }
-    ]
+    ],
+    frame: 0,
+    name: 'Gold',
+    stats: { ability: 'Sprint', attack: 1, hp: 18 }
   };
 
   constructor(scene, x, y) {
@@ -117,16 +117,16 @@ export class Gold extends Hero {
 
 export class Blade extends Hero {
   static data = {
-    name: 'Blade',
-    frame: 4,
-    stats: { attack: 4, hp: 16, ability: null },
     abilities: [
       {
+        description: skills.beyondFront.description,
         key: 'beyondFront',
-        name: skills.beyondFront.name,
-        description: skills.beyondFront.description
+        name: skills.beyondFront.name
       }
-    ]
+    ],
+    frame: 4,
+    name: 'Blade',
+    stats: { ability: null, attack: 4, hp: 16 }
   };
 
   constructor(scene, x, y) {
@@ -146,21 +146,21 @@ export class Blade extends Hero {
 
 export class Dante extends Hero {
   static data = {
-    name: 'Dante',
-    frame: 5,
-    stats: { attack: 2, hp: 18, ability: 'Ranged' },
     abilities: [
       {
+        description: skills.brokenDefense.description,
         key: 'brokenDefense',
-        name: skills.brokenDefense.name,
-        description: skills.brokenDefense.description
+        name: skills.brokenDefense.name
       },
       {
+        description: skills.trustInTeam.description,
         key: 'trustInTeam',
-        name: skills.trustInTeam.name,
-        description: skills.trustInTeam.description
+        name: skills.trustInTeam.name
       }
-    ]
+    ],
+    frame: 5,
+    name: 'Dante',
+    stats: { ability: 'Ranged', attack: 2, hp: 18 }
   };
 
   constructor(scene, x, y) {
@@ -180,16 +180,16 @@ export class Dante extends Hero {
 
 export class Ceos extends Hero {
   static data = {
-    name: 'Ceos',
-    frame: 3,
-    stats: { attack: 1, hp: 26, ability: 'Taunt' },
     abilities: [
       {
+        description: skills.absorbRoots.description,
         key: 'absorbRoots',
-        name: skills.absorbRoots.name,
-        description: skills.absorbRoots.description
+        name: skills.absorbRoots.name
       }
-    ]
+    ],
+    frame: 3,
+    name: 'Ceos',
+    stats: { ability: 'Taunt', attack: 1, hp: 26 }
   };
 
   constructor(scene, x, y) {
