@@ -1,4 +1,6 @@
-import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js';
+import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
+import socket from '../../services/game-api-service.js';
+import { SOCKET_EVENTS } from '../../../api/events.js';
 
 export default class CharacterSelectionScene extends Phaser.Scene {
   constructor() {
@@ -34,17 +36,29 @@ export default class CharacterSelectionScene extends Phaser.Scene {
     });
   }
 
-  create() {
+  create(data) {
+    if (!data || !data.roomId || !data.players) {
+      console.warn('Acesso inválido à CharacterSelectionScene. Redirecionando...');
+      this.scene.start('FindingMatchScene');
+      return;
+    }
+
+    const { roomId, players } = data;
+    this.roomId = roomId;
+    this.players = players;
+    this.socket = socket;
+    this.playerNumber = socket.id === players[0] ? 1 : 2;
+  
+    console.log(`Você é o Jogador ${this.playerNumber} na sala ${roomId}`);
+
     const { width } = this.scale;
 
-    // Título
     this.add.text(width / 2, 40, 'Selecione seus Heróis', {
       fontSize: '40px',
       color: '#ffffff',
       fontFamily: 'Arial'
     }).setOrigin(0.5);
 
-    // Status do jogador
     this.statusText = this.add.text(width / 2, 90, '', {
       fontSize: '24px',
       color: '#dddddd',
@@ -54,10 +68,41 @@ export default class CharacterSelectionScene extends Phaser.Scene {
     this.drawHeroOptions();
     this.createHeroDetailUI();
     this.updateStatusText();
+    this.setupSocketEvents();
 
-    // Grupos visuais para mostrar heróis escolhidos
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
+  }
+
+  setupSocketEvents() {
+    this.socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
+      console.log(`Recebi seleção do jogador ${player}: ${heroName} (step ${step})`);
+  
+      if (player === this.playerNumber) return;
+  
+      const heroData = this.HERO_DATA.find(h => h.name === heroName);
+      if (!heroData) {
+        console.warn(`Herói não encontrado: ${heroName}`);
+        return;
+      }
+  
+      const heroSpriteObj = this.heroSprites.find(h => h.name === heroName);
+      if (heroSpriteObj) {
+        heroSpriteObj.sprite.setTint(0x555555).disableInteractive();
+        heroSpriteObj.highlight.setVisible(true);
+      }
+  
+      // Atualiza a lista de seleção do outro jogador
+      const opponentSelection = player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
+      opponentSelection.push(heroName);
+  
+      this.updateSelectedHeroDisplay(player, heroData);
+
+      this.currentStep = step;
+      this.currentStepCount = 0;
+    
+      this.updateStatusText();
+    });
   }
 
   drawHeroOptions() {
@@ -85,19 +130,16 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   createHeroDetailUI() {
     const { width } = this.scale;
 
-    // Caixa de detalhes personalizada
     this.detailBox = this.add.image(width / 2, 400, 'character-box')
       .setOrigin(0.5)
       .setVisible(false);
 
-    // Nome do herói
     this.heroNameText = this.add.text(width / 2, 340, '', {
       fontSize: '22px',
       color: '#ffffff',
       fontFamily: 'Arial'
     }).setOrigin(0.5).setVisible(false);
 
-    // Habilidades
     this.abilitiesText = this.add.text(width / 2, 370, '', {
       fontSize: '16px',
       color: '#dddddd',
@@ -106,7 +148,6 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       fontFamily: 'Arial'
     }).setOrigin(0.5).setVisible(false);
 
-    // Botão de confirmar
     this.confirmButton = this.add.text(width / 2, 430, 'Confirmar', {
       fontSize: '20px',
       backgroundColor: '#00aa00',
@@ -124,12 +165,21 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   previewHero(hero) {
+    if (!this.isCurrentPlayerTurn()) {
+      console.log('Não é sua vez!');
+      return;
+    }
+  
+    if (
+      this.selectedHeroesP1.includes(hero.name) ||
+      this.selectedHeroesP2.includes(hero.name)
+    ) return;
+
     if (
       this.selectedHeroesP1.includes(hero.name) ||
       this.selectedHeroesP2.includes(hero.name)
     ) return;
   
-    // Animação para voltar o anterior ao tamanho normal
     if (this.previewedSprite) {
       this.tweens.add({
         targets: this.previewedSprite,
@@ -144,8 +194,7 @@ export default class CharacterSelectionScene extends Phaser.Scene {
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
     if (heroSpriteObj) {
       this.previewedSprite = heroSpriteObj.sprite;
-  
-      // Animação para dar destaque ao novo sprite
+
       this.tweens.add({
         targets: this.previewedSprite,
         scale: 2.5,
@@ -187,11 +236,17 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       this.previewedSprite = null;
     }
   }
-  
 
+  isCurrentPlayerTurn() {
+    const currentStep = this.selectionOrder[this.currentStep];
+    return currentStep && currentStep.player === this.playerNumber;
+  }  
+  
   confirmSelection(hero) {
     const currentPlayer = this.selectionOrder[this.currentStep].player;
     const currentSelection = currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
+
+    console.log(`Jogador ${currentPlayer} selecionou: ${hero.name}`); 
 
     if (currentSelection.includes(hero.name)) return;
 
@@ -213,21 +268,31 @@ export default class CharacterSelectionScene extends Phaser.Scene {
       this.currentStepCount = 0;
     }
 
+    this.socket.emit(SOCKET_EVENTS.HERO_SELECTED, {
+      roomId: this.roomId,
+      heroName: hero.name,
+      player: currentPlayer,
+      step: this.currentStep
+    }); 
+
     if (this.currentStep >= this.selectionOrder.length) {
       this.startGame();
     } else {
       this.updateStatusText();
-    }
+    }  
   }
 
   updateStatusText() {
     const current = this.selectionOrder[this.currentStep];
+    if (!current) return;
+
     const currentSelection = current.player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
     const selected = currentSelection.length;
     const total = current.count;
-
+  
     this.statusText.setText(`Jogador ${current.player}: escolha seu herói (${selected}/${total})`);
   }
+  
 
   updateSelectedHeroDisplay(player, hero) {
     const spacing = 60;
@@ -247,6 +312,7 @@ export default class CharacterSelectionScene extends Phaser.Scene {
   }
 
   startGame() {
+    this.socket.off('hero_selected');
     this.scene.start('BoardScene', {
       player1: this.selectedHeroesP1,
       player2: this.selectedHeroesP2
