@@ -19,8 +19,9 @@ server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
 const waitingQueue = [];
 const matches = {};
+const matchReadyState = {};
 
-io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
+io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {
     console.log(`Jogador ${socket.id} entrou na fila`);
     waitingQueue.push(socket);
@@ -56,7 +57,17 @@ io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
   });  
 
-  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
+    socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
+      console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
+    
+      io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
+        roomId,
+        players,
+        heroes
+      });
+  });  
+
+  socket.on('disconnect', () => {
     console.log(`Jogador desconectado: ${socket.id}`);
     const index = waitingQueue.findIndex(s => s.id === socket.id);
     if (index !== -1) waitingQueue.splice(index, 1);
