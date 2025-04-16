@@ -10,8 +10,8 @@ export default class BoardScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
-      frameWidth: 59,
-      frameHeight: 64
+      frameHeight: 64,
+      frameWidth: 59
     });        
     this.load.image('background', 'assets/background/01.png');
     this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');

@@ -5,14 +5,14 @@ export default class TurnManager extends Phaser.Data.DataManager {
     this.players = players;
     this.currentPlayerIndex = 0;
     this.currentTurn = {
-      player: null,
-      phase: 'start',
-      roundNumber: 1,
-      movedAll: false,
       attackedAll: false,
+      attackedHeros: new Set(),
       counterAttack: false,
+      movedAll: false,
       movedHeros: new Set(),
-      attackedHeros: new Set()
+      phase: 'start',
+      player: null,
+      roundNumber: 1
     };
     this.gameState = {
       status: 'active',
@@ -69,14 +69,14 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
   createNewTurn(player, roundNumber) {
     return {
-      player,
-      phase: 'start',
-      roundNumber,
-      movedAll: false,
       attackedAll: false,
+      attackedHeros: new Set(),
       counterAttack: false,
+      movedAll: false,
       movedHeros: new Set(),
-      attackedHeros: new Set()
+      phase: 'start',
+      player,
+      roundNumber
     };
   }    
 
@@ -166,12 +166,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
   toJSON() {
     return {
       currentPlayer: this.currentTurn.player.name,
-      roundNumber: this.currentTurn.roundNumber,
       gameState: this.gameState,
       players: this.players.map(player => ({
-        name: player.name,
-        heros: player.heros.map(char => char.toJSON())
-      }))
+        heros: player.heros.map(char => char.toJSON()),
+        name: player.name
+      })),
+      roundNumber: this.currentTurn.roundNumber
     };
   }
 }

@@ -20,10 +20,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     // Ordem personalizada de seleção
     this.selectionOrder = [
-      { player: 1, count: 1 },
-      { player: 2, count: 2 },
-      { player: 1, count: 2 },
-      { player: 2, count: 1 }
+      { count: 1, player: 1 },
+      { count: 2, player: 2 },
+      { count: 2, player: 1 },
+      { count: 1, player: 2 }
     ];
     this.currentStep = 0;
     this.currentStepCount = 0;
@@ -31,8 +31,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
-      frameWidth: 59,
-      frameHeight: 64
+      frameHeight: 64,
+      frameWidth: 59
     });
   }
 
@@ -60,15 +60,15 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const { width } = this.scale;
 
     this.add.text(width / 2, 40, 'Selecione seus Heróis', {
-      fontSize: '40px',
       color: '#ffffff',
-      fontFamily: 'Arial'
+      fontFamily: 'Arial',
+      fontSize: '40px'
     }).setOrigin(0.5);
 
     this.statusText = this.add.text(width / 2, 90, '', {
-      fontSize: '24px',
       color: '#dddddd',
-      fontFamily: 'Arial'
+      fontFamily: 'Arial',
+      fontSize: '24px'
     }).setOrigin(0.5);
 
     this.drawHeroOptions();
@@ -81,9 +81,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players }) => {
       this.scene.start('BoardScene', {
-        roomId,
+        myPlayerId: this.myPlayer.id,
         players,
-        myPlayerId: this.myPlayer.id
+        roomId
       });
     });
       
@@ -136,7 +136,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       const highlight = this.add.rectangle(sprite.x, sprite.y + 45, 20, 20, 0x00ff00)
         .setVisible(false);
 
-      this.heroSprites.push({ name: hero.name, sprite, highlight });
+      this.heroSprites.push({ highlight, name: hero.name, sprite });
 
       sprite.on('pointerdown', () => this.previewHero(hero));
     });
@@ -150,25 +150,25 @@ export default class HeroSelectionScene extends Phaser.Scene {
       .setVisible(false);
 
     this.heroNameText = this.add.text(width / 2, 340, '', {
-      fontSize: '22px',
       color: '#ffffff',
-      fontFamily: 'Arial'
+      fontFamily: 'Arial',
+      fontSize: '22px'
     }).setOrigin(0.5).setVisible(false);
 
     this.abilitiesText = this.add.text(width / 2, 370, '', {
-      fontSize: '16px',
-      color: '#dddddd',
       align: 'center',
-      wordWrap: { width: 280 },
-      fontFamily: 'Arial'
+      color: '#dddddd',
+      fontFamily: 'Arial',
+      fontSize: '16px',
+      wordWrap: { width: 280 }
     }).setOrigin(0.5).setVisible(false);
 
     this.confirmButton = this.add.text(width / 2, 430, 'Confirmar', {
-      fontSize: '20px',
       backgroundColor: '#00aa00',
-      padding: { x: 10, y: 5 },
       color: '#ffffff',
-      fontFamily: 'Arial'
+      fontFamily: 'Arial',
+      fontSize: '20px',
+      padding: { x: 10, y: 5 }
     }).setOrigin(0.5).setInteractive().setVisible(false);
 
     this.confirmButton.on('pointerdown', () => {
@@ -197,10 +197,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     if (this.previewedSprite) {
       this.tweens.add({
-        targets: this.previewedSprite,
-        scale: 2,
         duration: 150,
-        ease: 'Power1'
+        ease: 'Power1',
+        scale: 2,
+        targets: this.previewedSprite
       });
     }
   
@@ -211,10 +211,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.previewedSprite = heroSpriteObj.sprite;
 
       this.tweens.add({
-        targets: this.previewedSprite,
-        scale: 2.5,
         duration: 200,
-        ease: 'Power2'
+        ease: 'Power2',
+        scale: 2.5,
+        targets: this.previewedSprite
       });
     }
   
@@ -243,10 +243,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     if (this.previewedSprite) {
       this.tweens.add({
-        targets: this.previewedSprite,
-        scale: 2,
         duration: 150,
-        ease: 'Power1'
+        ease: 'Power1',
+        scale: 2,
+        targets: this.previewedSprite
       });
       this.previewedSprite = null;
     }
@@ -285,9 +285,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
     }
 
     this.socket.emit(SOCKET_EVENTS.HERO_SELECTED, {
-      roomId: this.roomId,
       heroName: hero.name,
       player: currentPlayer,
+      roomId: this.roomId,
       step: this.currentStep
     }); 
 
@@ -336,12 +336,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
     player2.heros = this.selectedHeroesP2;
   
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
-      roomId: this.roomId,
-      players: [player1, player2],
       heroes: {
         player1: this.selectedHeroesP1,
         player2: this.selectedHeroesP2
-      }
+      },
+      players: [player1, player2],
+      roomId: this.roomId
     });
   }  
 }

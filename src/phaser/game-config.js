@@ -5,24 +5,24 @@ import MatchOnlineScene from './scenes/match-online-scene.js';
 import FindingMatchScene from './scenes/finding-match-scene.js';
 
 const config = {
-  type: Phaser.AUTO,
-  width: 800,
-  height: 600,
-  parent: 'game-container',
-  backgroundColor: '#333333',
-  justifyContent: 'center',
   alignContent: 'center',
-  scene: [MainMenuScene, MatchOnlineScene, FindingMatchScene, HeroSelectionScene, BoardScene],
+  backgroundColor: '#333333',
+  height: 600,
+  justifyContent: 'center',
+  parent: 'game-container',
   physics: {
-    default: 'arcade',
     arcade: {
       debug: false,
-    }
+    },
+    default: 'arcade'
   },
   scale: {
-    mode: Phaser.Scale.FIT,
-    autoCenter: Phaser.Scale.CENTER_BOTH
-  }
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.FIT
+  },
+  scene: [MainMenuScene, MatchOnlineScene, FindingMatchScene, HeroSelectionScene, BoardScene],
+  type: Phaser.AUTO,
+  width: 800
 };
 
 new Phaser.Game(config);

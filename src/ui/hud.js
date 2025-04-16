@@ -9,25 +9,25 @@ export default class UIManager {
     if (!hero || !hero.add) return;
     
     const amountText = this.scene.add.text(x, 0, `${amount}`, {
-      fontSize: '40px',
+      align: 'center',
       fill: color,
+      fontSize: '40px',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 1.4,
-      align: 'center'
+      strokeThickness: 1.4
     }).setOrigin(0.5).setDepth(10);
     
     hero.add(amountText);
     
     this.scene.tweens.add({
-      targets: amountText,
-      y: amountText.y - 20,
       alpha: 0,
       duration: 3000,
       ease: 'Power1',
       onComplete: () => {
         amountText.destroy();
-      }
+      },
+      targets: amountText,
+      y: amountText.y - 20
     });
   } 
 
@@ -36,14 +36,14 @@ export default class UIManager {
     
     // Tween de piscar
     this.scene.tweens.add({
-      targets: sprite,
       alpha: 0.3,
-      yoyo: true,
-      repeat: 3,
       duration: 100,
       onComplete: () => {
         sprite.alpha = 1;
-      }
+      },
+      repeat: 3,
+      targets: sprite,
+      yoyo: true
     });
     
     // Efeito de cor vermelha
@@ -91,13 +91,13 @@ export default class UIManager {
     hero.add(hero.attackIcon);
     
     hero.attackText = this.scene.add.text(-18, offsetY, `${hero.stats.attack}`, {
+      align: 'center',
+      color: '#FFFFFF',
       fontFamily: 'Arial',
       fontSize: '18px',
       fontStyle: 'bold',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 1.4, 
-      align: 'center'
+      stroke: '#000000', 
+      strokeThickness: 1.4
     }).setDepth(2).setOrigin(0.4, 0.5);
     hero.add(hero.attackText);
     
@@ -108,13 +108,13 @@ export default class UIManager {
     hero.add(hero.healthIcon);
     
     hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
+      align: 'center',
+      color: '#FFFFFF',
       fontFamily: 'Arial',
       fontSize: '18px',
       fontStyle: 'bold',
-      color: '#FFFFFF',
-      stroke: '#000000',
-      strokeThickness: 1.4, 
-      align: 'center'
+      stroke: '#000000', 
+      strokeThickness: 1.4
     }).setDepth(2).setOrigin(0.6, 0.5);
     hero.add(hero.healthText);
   }       
@@ -144,21 +144,21 @@ export default class UIManager {
       .setInteractive({ useHandCursor: true });
     
     this.roundNumberText = this.scene.add.text(0, 0, roundNumber, {
+      align: 'center',
+      color: '#FFFFFF',
       fontSize: '18px',
       fontStyle: 'bold',
-      color: '#FFFFFF',
       stroke: '#000000',
-      strokeThickness: 1.4,
-      align: 'center'
+      strokeThickness: 1.4
     }).setOrigin(0.5);
     
     this.turnLabelText = this.scene.add.text(0, -40, 'Turno Atual', {
+      align: 'center',
+      color: '#FFFFFF',
       fontSize: '14px',
       fontStyle: 'bold',
-      color: '#FFFFFF',
       stroke: '#000000',
-      strokeThickness: 1.4,
-      align: 'center'
+      strokeThickness: 1.4
     }).setOrigin(0.5);
     
     this.turnPanelContainer.add(this.turnPanelBackground);
@@ -223,8 +223,8 @@ export default class UIManager {
     overlay.setDepth(99);
     
     const victoryText = this.scene.add.text(400, 200, `${winner.name} venceu!`, {
-      fontSize: '40px',
       fill: '#ffffff',
+      fontSize: '40px',
       fontStyle: 'bold',
       stroke: '#000',
       strokeThickness: 4,
@@ -232,9 +232,9 @@ export default class UIManager {
     victoryText.setDepth(100);
     
     const playAgainBtn = this.scene.add.text(400, 300, 'Jogar novamente', {
-      fontSize: '28px',
-      fill: '#00ff00',
       backgroundColor: '#222',
+      fill: '#00ff00',
+      fontSize: '28px',
       padding: { x: 15, y: 10 },
     })
       .setOrigin(0.5)
@@ -242,11 +242,11 @@ export default class UIManager {
     playAgainBtn.setDepth(100);
     
     playAgainBtn.on('pointerover', () => {
-      playAgainBtn.setStyle({ fill: '#ffffff', backgroundColor: '#00aa00' });
+      playAgainBtn.setStyle({ backgroundColor: '#00aa00', fill: '#ffffff' });
     });
     
     playAgainBtn.on('pointerout', () => {
-      playAgainBtn.setStyle({ fill: '#00ff00', backgroundColor: '#222' });
+      playAgainBtn.setStyle({ backgroundColor: '#222', fill: '#00ff00' });
     });
     
     playAgainBtn.on('pointerdown', () => {
@@ -254,12 +254,12 @@ export default class UIManager {
     });
     
     this.scene.tweens.add({
-      targets: [victoryText, playAgainBtn],
       alpha: { from: 0, to: 1 },
-      y: '+=20',
-      ease: 'Power1',
-      duration: 500,
       delay: 100,
+      duration: 500,
+      ease: 'Power1',
+      targets: [victoryText, playAgainBtn],
+      y: '+=20',
     });
   }    
 }

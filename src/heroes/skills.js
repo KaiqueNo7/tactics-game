@@ -1,27 +1,24 @@
 export const skills = {
   absorbRoots: {
-    name: 'Absorb Roots',
-    description: 'Recupera vida equivalente ao dano causado.',
-    triggers: ['onAttack'],
     apply: (hero, target) => {
       if(target){
         target.takeDamage(hero.attack, hero);
         hero.heal(hero.stats.attack);
       }
-    }
+    },
+    description: 'Recupera vida equivalente ao dano causado.',
+    name: 'Absorb Roots',
+    triggers: ['onAttack']
   },
   autoDefense: {
-    name: 'Auto Defense',
-    description: 'Recebe 1 ponto a menos de dano ao sofrer contra-ataques.',
-    triggers: [''],
     apply: () => {
       //
-    }
+    },
+    description: 'Recebe 1 ponto a menos de dano ao sofrer contra-ataques.',
+    name: 'Auto Defense',
+    triggers: ['']
   },
   beyondFront: {
-    name: 'Beyond Front',
-    description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas.',
-    triggers: ['onAttack'],
     apply: (hero, target) => {
       const board = hero.scene.board;
         
@@ -49,32 +46,12 @@ export const skills = {
         const dmg = index === 0 ? hero.stats.attack : Math.floor(hero.stats.attack * 0.5);
         h.takeDamage(dmg, hero);
       });
-    }
+    },
+    description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas.',
+    name: 'Beyond Front',
+    triggers: ['onAttack']
   },
-  trustInTeam: {
-    name: 'Trusted in Team',
-    description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
-    triggers: ['onMove', 'onTurnStart'],
-    apply: (hero) => {
-      const board = hero.scene.board;
-      const allies = board.getAlliesInRange(hero, 1);
-
-      const baseAttack = hero.attack;
-      const buffed = hero.stats.attack > baseAttack;
-
-      if (allies.length > 0 && !buffed) {
-        console.log(`${hero.name} está com aliados próximos! (+1 ataque)`);
-        hero.increaseAttack(1);
-      } else if (allies.length === 0 && buffed) {
-        console.log(`${hero.name} não tem aliados próximos! (-1 ataque)`);
-        hero.increaseAttack(-1);
-      }
-    }
-  },  
   brokenDefense: {
-    name: 'Broken Defense',
-    description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
-    triggers: ['onAttack'],
     apply: (hero, target) => {
       if (target.ability === 'Taunt') {
         const bonusDamage = hero.stats.attack + 2;
@@ -84,12 +61,12 @@ export const skills = {
         console.log(`${hero.name} ataca ${target.name} normalmente.`);
         target.takeDamage(hero.attack, hero);
       }
-    }
-  },
+    },
+    description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
+    name: 'Broken Defense',
+    triggers: ['onAttack']
+  },  
   firstPunch: {
-    name: 'First Punch',
-    description: 'O primeiro ataque do herói na partida causa +2 de dano.',
-    triggers: ['onTurnStart', 'onAttack'],
     apply: (hero, target = null) => {
       if (!hero.state.firstPunchApplied && hero.state.isAlive && !hero.state.hasPunched && target === null) {
         hero.increaseAttack(2);
@@ -110,12 +87,12 @@ export const skills = {
         target.takeDamage(hero.attack, hero);
         return;
       }
-    }
+    },
+    description: 'O primeiro ataque do herói na partida causa +2 de dano.',
+    name: 'First Punch',
+    triggers: ['onTurnStart', 'onAttack']
   },
   goodLuck: {
-    name: 'Good Luck',
-    description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
-    triggers: ['onTurnEnd', 'onAttack'],
     apply: (hero, target) => {
       if(!target) {
         if(Math.random() < 0.5) {
@@ -129,12 +106,12 @@ export const skills = {
       if(target) {
         target.takeDamage(hero.stats.attack, hero);
       }
-    }
+    },
+    description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
+    name: 'Good Luck',
+    triggers: ['onTurnEnd', 'onAttack']
   },
   poisonAttack: {
-    name: 'Poison Attack',
-    description: 'Envenena o inimigo causando 1 de dano por turno.',
-    triggers: ['onAttack'],
     apply: (hero, target) => {
       console.log(`${hero.name} envenena ${target.name}!`);
       target.takeDamage(hero.attack, hero);
@@ -145,14 +122,37 @@ export const skills = {
         
       if (!alreadyPoisoned) {
         target.applyStatusEffect({
-          type: 'poison',
           duration: Infinity,
           effect: (target) => {
             console.log(`${target.name} recebe 1 de dano por veneno!`); 
             target.takeDamage(1);
-          }
+          },
+          type: 'poison'
         });
       }
-    }        
+    },
+    description: 'Envenena o inimigo causando 1 de dano por turno.',
+    name: 'Poison Attack',
+    triggers: ['onAttack']        
+  },
+  trustInTeam: {
+    apply: (hero) => {
+      const board = hero.scene.board;
+      const allies = board.getAlliesInRange(hero, 1);
+
+      const baseAttack = hero.attack;
+      const buffed = hero.stats.attack > baseAttack;
+
+      if (allies.length > 0 && !buffed) {
+        console.log(`${hero.name} está com aliados próximos! (+1 ataque)`);
+        hero.increaseAttack(1);
+      } else if (allies.length === 0 && buffed) {
+        console.log(`${hero.name} não tem aliados próximos! (-1 ataque)`);
+        hero.increaseAttack(-1);
+      }
+    },
+    description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
+    name: 'Trusted in Team',
+    triggers: ['onMove', 'onTurnStart']
   }
 };

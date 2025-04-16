@@ -11,8 +11,8 @@ export default class MainMenuScene extends Phaser.Scene {
     const { width } = this.scale;
 
     this.add.text(width / 2, 100, 'Heroes Tactics', {
-      fontSize: '48px',
       color: '#ffffff',
+      fontSize: '48px',
     }).setOrigin(0.5);
 
     this.createButton(width / 2, 200, 'OFFLINE', () => {
@@ -27,11 +27,11 @@ export default class MainMenuScene extends Phaser.Scene {
 
   createButton(x, y, text, callback, disabled = false) {
     const btn = this.add.text(x, y, text, {
-      fontSize: '28px',
-      color: disabled ? '#777' : '#fff',
+      align: 'center',
       backgroundColor: disabled ? '#333' : '#555',
-      padding: { x: 20, y: 10 },
-      align: 'center'
+      color: disabled ? '#777' : '#fff',
+      fontSize: '28px',
+      padding: { x: 20, y: 10 }
     }).setOrigin(0.5).setInteractive();
 
     if (disabled) {

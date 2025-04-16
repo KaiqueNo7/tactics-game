@@ -31,13 +31,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
       for (let row = 0; row < rows; row++) {
         let label = String.fromCharCode(65 + col) + (row + 1);
         let hex = { 
-          x: xOffset, 
-          y: currentYOffset, 
+          col, 
+          label: label, 
           occupied: false, 
           occupiedBy: null,
-          label: label, 
-          col, 
-          row 
+          row, 
+          x: xOffset, 
+          y: currentYOffset 
         };
         this.board.push(hex);
         currentYOffset += this.hexHeight;
@@ -151,9 +151,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
       this.boardContainer.add(borderSprite);
         
       this.hexagons.push({
+        borderSprite,
         hexData: hex,
-        image,
-        borderSprite
+        image
       });            
     });
 
