@@ -1,4 +1,5 @@
-import socket from '../../services/game-api-service.js'
+import socket from '../../services/game-api-service.js';
+import { SOCKET_EVENTS } from '../../../api/events.js';
 
 export default class FindingMatchScene extends Phaser.Scene {
     constructor() {
@@ -27,12 +28,15 @@ export default class FindingMatchScene extends Phaser.Scene {
         }
       });    
       
-      socket.emit('finding_match');
+      socket.emit(SOCKET_EVENTS.FINDING_MATCH);
 
-      socket.on('match found', (data) => {
+      socket.on(SOCKET_EVENTS.MATCH_FOUND, (data) => {
         console.log('Partida encontrada!', data);
   
-        this.scene.start('CharacterSelectionScene', { roomId: data.roomId });
+        this.scene.start('CharacterSelectionScene', {
+          roomId: data.roomId,
+          players: data.players
+        });
       });
     }
 

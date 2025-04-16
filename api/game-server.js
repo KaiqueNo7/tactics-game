@@ -1,4 +1,5 @@
 import express from 'express';
+import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
 
@@ -22,10 +23,10 @@ server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
 const waitingQueue = [];
 
-io.on('connection', (socket) => {
+io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
   console.log(`Novo jogador conectado: ${socket.id}`);
 
-  socket.on('finding_match', () => {
+  socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {
     console.log(`Jogador ${socket.id} entrou na fila`);
     waitingQueue.push(socket);
 
@@ -39,14 +40,19 @@ io.on('connection', (socket) => {
 
       console.log(`Criando partida na sala ${roomId}`);
 
-      io.to(roomId).emit('match found', {
+      io.to(roomId).emit(SOCKET_EVENTS.MATCH_FOUND, {
         roomId,
         players: [player1.id, player2.id]
       });
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
+    console.log(`Jogador ${socket.id} selecionou o herói ${heroName} na sala ${roomId}`);
+    socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
+  });  
+
+  socket.on(SOCKET_EVENTS.DISCONNECT, () => {
     console.log(`Jogador desconectado: ${socket.id}`);
     const index = waitingQueue.findIndex(s => s.id === socket.id);
     if (index !== -1) waitingQueue.splice(index, 1);
