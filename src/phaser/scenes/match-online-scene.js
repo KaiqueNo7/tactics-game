@@ -1,28 +1,25 @@
-export default class MainMenuScene extends Phaser.Scene {
+export default class MatchOnlineScene extends Phaser.Scene {
   constructor() {
-    super('MainMenuScene');
+    super('MatchOnlineScene');
   }
 
   preload() {
-    //
+    // 
   }
 
   create() {
     const { width } = this.scale;
 
-    this.add.text(width / 2, 100, 'Heroes Tactics', {
+    this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
       fontSize: '48px',
     }).setOrigin(0.5);
 
-    this.createButton(width / 2, 200, 'OFFLINE', () => {
-      this.scene.start('HeroSelectionScene');
-    });
+    this.createButton(width / 2, 200, 'PARTIDA PRIVADA (Em desenvolvimento)', null, false);
 
-    this.createButton(width / 2, 270, 'ONLINE', () => {
-      this.scene.start('MatchOnlineScene');
+    this.createButton(width / 2, 270, 'PARTIDA ALEATÓRIA', () => {
+      this.scene.start('FindingMatchScene');
     });
-    this.createButton(width / 2, 340, 'Heroes (Em desenvolvimento)', null, true);
   }
 
   createButton(x, y, text, callback, disabled = false) {

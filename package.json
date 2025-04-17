@@ -3,20 +3,38 @@
   "version": "1.0.0",
   "description": "## 📝 Descrição do Jogo",
   "main": "index.js",
+  "type": "module",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "http-server ./ -p 8080"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "socket": "node api/game-server.js",
+    "lint": "eslint . --ext .js --ext .jsx --fix"
   },
-  "author": "",
+  "author": "Kaique Nocetti",
   "license": "MIT",
   "dependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "buffer": "^6.0.3",
+    "events": "^3.3.0",
+    "express": "^4.21.2",
     "phaser": "^3.88.2",
+    "process": "^0.11.10",
+    "rollup-plugin-node-polyfills": "^0.2.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
+    "util": "^0.12.5",
     "webfontloader": "^1.6.28"
   },
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "@eslint/js": "^9.24.0",
+    "eslint": "^9.24.0",
+    "eslint-plugin-sort-keys-fix": "^1.1.2",
+    "globals": "^16.0.0",
+    "http-server": "^14.1.1",
+    "vite": "^6.2.6"
   }
 }

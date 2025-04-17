@@ -1,26 +1,28 @@
 import BoardScene from './scenes/board-scene.js';
 import MainMenuScene from './scenes/main-menu-scene.js';
-import CharacterSelectionScene from './scenes/character-selection-scene.js';
+import HeroSelectionScene from './scenes/hero-selection-scene.js';
+import MatchOnlineScene from './scenes/match-online-scene.js';
+import FindingMatchScene from './scenes/finding-match-scene.js';
 
 const config = {
-    type: Phaser.AUTO,
-    width: 800,
-    height: 600,
-    parent: 'game-container',
-    backgroundColor: '#333333',
-    justifyContent: 'center',
-    alignContent: 'center',
-    scene: [MainMenuScene, CharacterSelectionScene, BoardScene],
-    physics: {
-        default: 'arcade',
-        arcade: {
-            debug: false,
-        }
+  alignContent: 'center',
+  backgroundColor: '#333333',
+  height: 600,
+  justifyContent: 'center',
+  parent: 'game-container',
+  physics: {
+    arcade: {
+      debug: false,
     },
-    scale: {
-        mode: Phaser.Scale.FIT,
-        autoCenter: Phaser.Scale.CENTER_BOTH
-    }
+    default: 'arcade'
+  },
+  scale: {
+    autoCenter: Phaser.Scale.CENTER_BOTH,
+    mode: Phaser.Scale.FIT
+  },
+  scene: [MainMenuScene, MatchOnlineScene, FindingMatchScene, HeroSelectionScene, BoardScene],
+  type: Phaser.AUTO,
+  width: 800
 };
 
-const game = new Phaser.Game(config);
+new Phaser.Game(config);
