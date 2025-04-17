@@ -32,9 +32,8 @@ export default class UIManager {
   } 
 
   playDamageAnimation(target) {
-    const sprite = target.sprite || target; // Ajuste se necessário
+    const sprite = target.sprite || target;
     
-    // Tween de piscar
     this.scene.tweens.add({
       alpha: 0.3,
       duration: 100,

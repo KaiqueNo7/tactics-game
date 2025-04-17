@@ -75,6 +75,6 @@ export default class BoardScene extends Phaser.Scene {
   }    
 
   update() {
-    // Lógica de atualização, se necessário
+    //
   }
 }
