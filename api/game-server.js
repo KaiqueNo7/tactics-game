@@ -59,21 +59,21 @@ io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
     console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
 
+    const startingIndex = Math.floor(Math.random() * 2);
+    const startedPlayerIndex = startingIndex;
+
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
       heroes,
       players,
-      roomId
+      roomId,
+      startedPlayerIndex
     });
   });
 
-  socket.on(SOCKET_EVENTS.TURN_DETERMINE_STARTING_PLAYER, ({ roomId, whoStarted }) => {
-    const match = matches[roomId];
-    if (!match) return;
-
-    io.to(roomId).emit(SOCKET_EVENTS.TURN_START, {
-      whoStarted
-    });
-  });
+  socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId }) => {
+    console.log(`[SERVER] NEXT_TURN recebido. Enviando NEXT_TURN para sala ${roomId}`);
+    io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
+  })
 
   socket.on(SOCKET_EVENTS.HERO_MOVED, ({ roomId, heroId, position }) => {
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, position });

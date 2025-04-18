@@ -1,45 +1,39 @@
 import { SOCKET_EVENTS } from "../../api/events";
-import socket from "../services/game-api-service";
-import { Server } from 'socket.io';
 
 export default class TurnManager extends Phaser.Data.DataManager {
-  constructor(scene, players, socket) {
+  constructor(scene, players, socket, roomId, startedPlayerIndex) {
     super(scene, 'TurnManager');
     this.scene = scene;
     this.players = players;
     this.socket = socket;
-    this.currentPlayerIndex = 0;
-    this.currentTurn = {
-      attackedAll: false,
-      attackedHeros: new Set(),
-      counterAttack: false,
-      movedAll: false,
-      movedHeros: new Set(),
-      phase: 'start',
-      player: null,
-      roundNumber: 1
-    };
+    this.roomId = roomId;
+    this.currentPlayerIndex = startedPlayerIndex;
+    this.startedPlayerIndex = startedPlayerIndex;
+    this.currentTurn = this.createNewTurn(this.players[this.currentPlayerIndex], 1);
     this.gameState = {
       status: 'active',
       winner: null
     };
 
-    this.setupSocketListeners();
     this.determineStartingPlayer();
+    this.setupSocketListeners();
+  }
+
+  determineStartingPlayer () {
+    this.currentPlayerIndex = this.startedPlayerIndex;
+    this.currentTurn.player = this.players[this.startedPlayerIndex];
+  
+    this.scene.gameUI.showMessage(`${this.currentTurn.player.name} começa o jogo!`);
+  
+    this.whoStarted = this.startedPlayerIndex;
+
+    const isMyTurn = this.currentTurn.player.id === this.socket.id;
+    this.scene.uiManager.setEndTurnButtonEnabled(isMyTurn);
   }
 
   setupSocketListeners() {
-    this.socket.on(SOCKET_EVENTS.TURN_START, (data) => {
-      this.currentTurn = this.createNewTurn(
-        this.players.find(p => p.name === data.currentPlayer.name),
-        data.roundNumber
-      );
-      this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
-      this.scene.gameUI.showMessage(`${data.currentPlayer.name} - Sua vez!`);
-    });
-
-    this.socket.on(SOCKET_EVENTS.TURN_END, () => {
-      this.nextTurn(true);
+    this.socket.on(SOCKET_EVENTS.NEXT_TURN, () => {
+      this.nextTurn();
     });
   }
 
@@ -67,18 +61,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
            !this.currentTurn.movedAll;
   }
 
-  determineStartingPlayer() {
-    const startingPlayerIndex = Math.random() > 0.5 ? 0 : 1;
-
-    this.currentPlayerIndex = startingPlayerIndex;
-    this.currentTurn.player = this.players[startingPlayerIndex];
-    this.whoStarted = startingPlayerIndex;
-
-    this.socket.emit(SOCKET_EVENTS.TURN_DETERMINE_STARTING_PLAYER, {
-      whoStarted: this.whoStarted,
-    });
-  }
-
   createNewTurn(player, roundNumber) {
     return {
       attackedAll: false,
@@ -92,7 +74,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
     };
   }
 
-  nextTurn(fromSocket = false) {
+  nextTurn() {
     this.triggerEndOfTurnSkills();
     this.currentTurn.movedHeros.clear();
     if (this.currentTurn.attackedHeros) {
@@ -101,7 +83,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
 
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
     const currentPlayer = this.players[this.currentPlayerIndex];
-    const isBackToStarter = (this.currentPlayerIndex === this.whoStarted);
+    const isBackToStarter = (this.currentPlayerIndex === this.startedPlayerIndex);
     const newRoundNumber = this.currentTurn.roundNumber + (isBackToStarter ? 1 : 0);
 
     this.currentTurn = this.createNewTurn(currentPlayer, newRoundNumber);
@@ -112,12 +94,8 @@ export default class TurnManager extends Phaser.Data.DataManager {
     this.triggerStartOfTurnSkills(this.players);
     this.scene.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
 
-    if (!fromSocket) {
-      this.socket.emit(SOCKET_EVENTS.TURN_END_REQUEST, {
-        currentPlayer: currentPlayer.name,
-        roundNumber: newRoundNumber
-      });
-    }
+    const isMyTurn = this.currentTurn.player.id === this.socket.id;
+    this.scene.uiManager.setEndTurnButtonEnabled(isMyTurn);
 
     return this.currentTurn;
   }

@@ -79,11 +79,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
 
-    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players }) => {
+    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       this.scene.start('BoardScene', {
         myPlayerId: this.myPlayer.id,
         players,
-        roomId
+        roomId,
+        startedPlayerIndex
       });
     });
       

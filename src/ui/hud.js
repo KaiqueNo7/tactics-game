@@ -1,6 +1,11 @@
+import { SOCKET_EVENTS } from "../../api/events";
+import socket from "../services/game-api-service";
+
 export default class UIManager {
-  constructor(scene) {
+  constructor(scene, roomId) {
     this.scene = scene;
+    this.roomId = roomId;
+    this.socket = socket;
 
     this.victory
   }
@@ -64,7 +69,7 @@ export default class UIManager {
       .setInteractive({ useHandCursor: true });
     
     this.endTurnBackground.on('pointerdown', () => {
-      turnManager.nextTurn();
+      this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { roomId: this.roomId });
     });
     
     this.endTurnBackground.on('pointerover', () => {
@@ -77,6 +82,11 @@ export default class UIManager {
     
     this.endTurnButtonContainer.add(this.endTurnBackground);
   }
+
+  setEndTurnButtonEnabled(enabled) {
+    this.endTurnBackground.setInteractive(enabled);
+    this.endTurnBackground.setAlpha(enabled ? 1 : 0.5);
+  }  
 
   createStatsUI(hero) {
     if (!hero.sprite) return;

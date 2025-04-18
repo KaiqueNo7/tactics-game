@@ -1,6 +1,7 @@
 import TurnManager from './turn-manager.js';
 import Player from './player.js';
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
+import socket from '../services/game-api-service.js';
 
 const HERO_CLASSES = {
   Blade,
@@ -12,11 +13,14 @@ const HERO_CLASSES = {
 };
 
 export default class GameManager extends Phaser.GameObjects.Container {
-  constructor(scene, board, player1Data, player2Data) {
+  constructor(scene, board, player1Data, player2Data, roomId, startedPlayerIndex) {
     super(scene);
 
     this.scene = scene;
     this.board = board;
+    this.socket = socket;
+    this.roomId = roomId;
+    this.startedPlayerIndex = startedPlayerIndex;
 
     this.player1 = new Player(player1Data.name, [], player1Data.id);
     this.player1.setNumber(player1Data.number);
@@ -30,7 +34,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player1.addHeroes(player1Heroes);
     this.player2.addHeroes(player2Heroes);
 
-    this.turnManager = new TurnManager(this.scene, [this.player1, this.player2]);
+    this.turnManager = new TurnManager(this.scene, [this.player1, this.player2], this.socket, this.roomId, this.startedPlayerIndex);
     this.currentTurn = this.turnManager.currentTurn;
 
     this.setupInitialPositions();
