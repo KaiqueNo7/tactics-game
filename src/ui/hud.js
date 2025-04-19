@@ -7,7 +7,8 @@ export default class UIManager {
     this.roomId = roomId;
     this.socket = socket;
 
-    this.victory
+    this.victory;
+    this.buttonEnabled = false;
   }
 
   showFloatingAmount(hero, amount, x = 0, color = '#FF6666') {
@@ -62,31 +63,43 @@ export default class UIManager {
       this.scene.scale.width - 145,
       this.scene.scale.height / 2
     );
-    
+
     this.endTurnBackground = this.scene.add.image(0, 0, 'next_turn')
       .setOrigin(0.5)
       .setScale(1.5)
       .setInteractive({ useHandCursor: true });
-    
+
     this.endTurnBackground.on('pointerdown', () => {
+      if (!this.buttonEnabled) return;
       this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { roomId: this.roomId });
     });
-    
+
     this.endTurnBackground.on('pointerover', () => {
+      if (!this.buttonEnabled) return;
       this.endTurnBackground.setTint(0xaaaaaa);
     });
-    
+
     this.endTurnBackground.on('pointerout', () => {
+      if (!this.buttonEnabled) return;
       this.endTurnBackground.clearTint();
+      this.endTurnBackground.setAlpha(1); // força o alpha correto
     });
-    
+
     this.endTurnButtonContainer.add(this.endTurnBackground);
   }
 
   setEndTurnButtonEnabled(enabled) {
-    this.endTurnBackground.setInteractive(enabled);
-    this.endTurnBackground.setAlpha(enabled ? 1 : 0.5);
-  }  
+    this.buttonEnabled = enabled;
+
+    if (enabled) {
+      this.endTurnBackground.setInteractive();
+      this.endTurnBackground.setAlpha(1);
+    } else {
+      this.endTurnBackground.disableInteractive();
+      this.endTurnBackground.clearTint();
+      this.endTurnBackground.setAlpha(0.5);
+    }
+  }
 
   createStatsUI(hero) {
     if (!hero.sprite) return;

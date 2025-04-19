@@ -34,39 +34,40 @@ export default class BoardScene extends Phaser.Scene {
     const bg = this.add.image(0, 0, 'background');
     bg.setOrigin(0);
     bg.setDisplaySize(this.scale.width, this.scale.height);
-
+  
     const { roomId, players, myPlayerId, startedPlayerIndex } = data;
-
+  
     this.roomId = roomId;
     this.players = players;
     this.myPlayerId = myPlayerId;
     this.startedPlayerIndex = startedPlayerIndex;
-
-    this.uiManager = new UIManager(this, this.roomId);
+  
     this.gameUI = new GameUI(this);
-
+  
     if (!this.textures.exists('boardCanvas')) {
       this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
     } else {
       this.canvas = this.textures.get('boardCanvas');
     }
-
+  
     this.board = new Board(this, 45);
     this.board.initializeBoard();
     this.board.createHexagons();
-
+  
     const player1Data = players.find(p => p.number === 1);
     const player2Data = players.find(p => p.number === 2);
+  
+    this.uiManager = new UIManager(this, this.roomId);
+    this.uiManager.createEndTurnButton()
 
     this.gameManager = new GameManager(this, this.board, player1Data, player2Data, this.roomId, this.startedPlayerIndex);
     this.game.gameManager = this.gameManager;
-
+  
     const turnManager = this.gameManager.getTurnManager();
-
-    this.uiManager.createEndTurnButton(turnManager);
+  
     this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
     this.uiManager.updateGamePanel(turnManager.players);
-  }         
+  }       
 
   init(data) {
     this.selectedHeroesP1 = data.player1;
