@@ -1,7 +1,8 @@
 export default class Board extends Phaser.GameObjects.GameObject {
-  constructor(scene, hexRadius = 40) {
+  constructor(scene, hexRadius = 40, socket) {
     super(scene, 'Board');
     this.scene = scene;
+    this.socket = socket;
     this.hexRadius = hexRadius;
     this.hexWidth = hexRadius * 2;
     this.hexHeight = Math.sqrt(3) * hexRadius;
@@ -60,6 +61,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
   selectHero(hero) {
     if(!hero.state.isAlive) return;
+
+    if (hero.playerId !== this.socket.id) {
+      this.scene.gameUI.showMessage('Você não pode selecionar o herói do adversário.');
+      return;
+    }    
 
     const gameManager = this.scene.game.gameManager;
     const turnManager = gameManager.getTurnManager();
@@ -564,7 +570,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
       currentHex.occupied = false;
       delete this.heros[currentHex.label];
     
-      // Apenas remove a borda se ninguém mais estiver lá
       if (!this.heros[currentHex.label] && currentHex.borderGraphics) {
         currentHex.borderGraphics.clear();
         currentHex.borderGraphics.destroy();
@@ -581,6 +586,12 @@ export default class Board extends Phaser.GameObjects.GameObject {
     hero.setPosition(targetHex.x, targetHex.y);
     
     turnManager.markHeroAsMoved(hero);
+
+    this.socket.emit(SOCKET_EVENTS.MOVE_HERO, {
+      hero: hero,
+      targetHex: targetHex
+    });
+
     this.clearHighlights();
     this.selectedHero = null;
   }     

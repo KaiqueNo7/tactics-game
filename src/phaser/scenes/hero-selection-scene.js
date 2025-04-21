@@ -75,9 +75,11 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.createHeroDetailUI();
     this.updateStatusText();
     this.setupSocketEvents();
-
+    
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
+    
+    this.autoSelectHeroesForTesting();
 
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       this.scene.start('BoardScene', {
@@ -119,6 +121,26 @@ export default class HeroSelectionScene extends Phaser.Scene {
     
       this.updateStatusText();
     });
+  }
+
+  autoSelectHeroesForTesting() {
+    // Defina os nomes dos heróis que você quer selecionar por padrão
+    const presetP1 = ['Gold', 'Vic', 'Blade'];
+    const presetP2 = ['Ralph', 'Ceos', 'Dante'];
+  
+    // Mapeia os dados dos heróis
+    const getHeroData = name => this.HERO_DATA.find(h => h.name === name);
+  
+    // Preenche a seleção para ambos os jogadores
+    this.selectedHeroesP1 = presetP1;
+    this.selectedHeroesP2 = presetP2;
+  
+    // Atualiza o display visual dos heróis (opcional)
+    presetP1.forEach(name => this.updateSelectedHeroDisplay(1, getHeroData(name)));
+    presetP2.forEach(name => this.updateSelectedHeroDisplay(2, getHeroData(name)));
+  
+    // Emite o evento para iniciar o jogo
+    this.startGame();
   }
 
   drawHeroOptions() {

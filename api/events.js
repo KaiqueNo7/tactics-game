@@ -11,5 +11,5 @@ export const SOCKET_EVENTS = {
   NEXT_TURN_REQUEST: 'next_turn_request',
   GAME_FINISHED: 'game:finished',
   HERO_ATTACKED: 'hero:attacked',
-  HERO_MOVED: 'hero:moved'
+  MOVE_HERO: 'move_hero'
 };

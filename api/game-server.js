@@ -75,7 +75,7 @@ io.on('connection', (socket) => {
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
   })
 
-  socket.on(SOCKET_EVENTS.HERO_MOVED, ({ roomId, heroId, position }) => {
+  socket.on(SOCKET_EVENTS.MOVE_HERO, ({ roomId, heroId, position }) => {
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, position });
   });
 

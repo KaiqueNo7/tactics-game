@@ -2,6 +2,7 @@ import Board from '../../core/board.js';
 import GameManager from '../../core/game.js';
 import UIManager from '../../ui/hud.js';
 import GameUI from '../../ui/game-ui.js';
+import socket from '../../services/game-api-service.js';
 
 export default class BoardScene extends Phaser.Scene {
   constructor() {
@@ -50,7 +51,7 @@ export default class BoardScene extends Phaser.Scene {
       this.canvas = this.textures.get('boardCanvas');
     }
   
-    this.board = new Board(this, 45);
+    this.board = new Board(this, 45, socket);
     this.board.initializeBoard();
     this.board.createHexagons();
   
