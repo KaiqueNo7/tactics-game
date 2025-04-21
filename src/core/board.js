@@ -1,8 +1,11 @@
+import { SOCKET_EVENTS } from "../../api/events";
+
 export default class Board extends Phaser.GameObjects.GameObject {
-  constructor(scene, hexRadius = 40, socket) {
+  constructor(scene, hexRadius = 40, socket, roomId) {
     super(scene, 'Board');
     this.scene = scene;
     this.socket = socket;
+    this.roomId = roomId;
     this.hexRadius = hexRadius;
     this.hexWidth = hexRadius * 2;
     this.hexHeight = Math.sqrt(3) * hexRadius;
@@ -11,6 +14,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightedHexes = [];
     this.selectedHero = null;
     this.hexagons = [];
+    this.setupSocketListeners();
   }
 
   initializeBoard() {
@@ -63,7 +67,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if(!hero.state.isAlive) return;
 
     if (hero.playerId !== this.socket.id) {
-      this.scene.gameUI.showMessage('Você não pode selecionar o herói do adversário.');
+      this.scene.gameUI.showMessage('Esse herói não é seu.');
       return;
     }    
 
@@ -85,14 +89,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
         } else {
           this.attackHero(this.selectedHero, hero);
           turnManager.markHeroAsAttacked(this.selectedHero);
-    
-          // Desseleciona depois de atacar
+
           this.selectedHero.setSelected(false);
           this.selectedHero = null;
           this.clearHighlights();
         }
       } else {
-        this.scene.gameUI.showMessage('Esse herói não é seu.');
+        this.scene.gameUI.showMessage('Aguarde a sua vez!');
       }
     
       return;
@@ -122,6 +125,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightHexes(this.highlightedHexes);
         
   }    
+
+  setupSocketListeners() {
+    this.socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroPosition, targetLabel }) => {
+      const realHero = this.heros[heroPosition];
+      const targetHex = this.getHexByLabel(targetLabel);
+    
+      if (realHero && targetHex) {
+        this.moveHero(realHero, targetHex);
+      }
+    });    
+  }
 
   clearSelectedHero() {
     if (this.selectedHero) {
@@ -550,51 +564,56 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightedHexes = [];
   }     
 
-  moveHero(hero, targetHex) {   
+  moveHero(hero, targetHex) {
     const gameManager = this.scene.game.gameManager;
     const turnManager = gameManager.getTurnManager();
-    
+  
     if (!hero || !targetHex) return;
-    
+  
     if (!turnManager.canMoveHero(hero)) {
       this.scene.gameUI.showMessage("Este héroi não pode se mover.");
       this.clearHighlights();
       this.selectedHero = null;    
       return;
     }
-    
+
+    const fromPosition = hero.state.position;
+  
     console.log(`Movendo ${hero.name} para ${targetHex.label}`);
-    
+  
     const currentHex = this.getHexByLabel(hero.state.position);
     if (currentHex) {
       currentHex.occupied = false;
       delete this.heros[currentHex.label];
-    
+  
       if (!this.heros[currentHex.label] && currentHex.borderGraphics) {
         currentHex.borderGraphics.clear();
         currentHex.borderGraphics.destroy();
         currentHex.borderGraphics = null;
       }
     }
-    
+  
     targetHex.occupied = true;
     targetHex.occupiedBy = hero;
-
+  
     this.heros[targetHex.label] = hero;
     hero.state.position = targetHex.label;
-    
+  
     hero.setPosition(targetHex.x, targetHex.y);
-    
+  
     turnManager.markHeroAsMoved(hero);
-
-    this.socket.emit(SOCKET_EVENTS.MOVE_HERO, {
-      hero: hero,
-      targetHex: targetHex
-    });
-
+  
     this.clearHighlights();
     this.selectedHero = null;
-  }     
+  
+    if (this.socket && this.roomId) {
+      this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
+        roomId: this.roomId,
+        heroPosition: fromPosition,
+        targetLabel: targetHex.label
+      });
+    }
+  }      
         
   getHexByLabel(label) {
     return this.board.find(hex => hex.label === label);

@@ -51,7 +51,7 @@ export default class BoardScene extends Phaser.Scene {
       this.canvas = this.textures.get('boardCanvas');
     }
   
-    this.board = new Board(this, 45, socket);
+    this.board = new Board(this, 45, socket, this.roomId);
     this.board.initializeBoard();
     this.board.createHexagons();
   

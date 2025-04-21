@@ -75,9 +75,10 @@ io.on('connection', (socket) => {
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
   })
 
-  socket.on(SOCKET_EVENTS.MOVE_HERO, ({ roomId, heroId, position }) => {
-    socket.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, position });
-  });
+  socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroPosition, targetLabel }) => {
+    console.log(`[SERVER] HERO_MOVE_REQUEST recebido. Enviando HERO_MOVED para sala ${roomId}`);
+    socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroPosition, targetLabel });
+  });  
 
   socket.on(SOCKET_EVENTS.HERO_ATTACKED, ({ roomId, attackerId, targetId, damage }) => {
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
