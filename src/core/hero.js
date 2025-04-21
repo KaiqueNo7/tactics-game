@@ -113,7 +113,7 @@ class Hero extends Phaser.GameObjects.Container {
     });
   }   
     
-  takeDamage(amount, attacker = null, isCounterAttack = false) {
+  takeDamage(amount, attacker = null) {
     let extraDamage = this.state.statusEffects.filter(effect => effect.type === 'wound').length;
         
     const totalDamage = amount + extraDamage;

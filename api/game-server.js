@@ -80,18 +80,11 @@ io.on('connection', (socket) => {
     socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroPosition, targetLabel });
   });  
 
-  socket.on(SOCKET_EVENTS.HERO_ATTACKED, ({ roomId, attackerId, targetId, damage }) => {
-    socket.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
-      attackerId,
-      targetId,
-      damage
-    });
-  });
-
-  socket.on(SOCKET_EVENTS.TURN_END_REQUEST, ({ roomId, nextPlayerIndex, roundNumber }) => {
-    io.to(roomId).emit(SOCKET_EVENTS.TURN_START, {
-      nextPlayerIndex,
-      roundNumber
+  socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, attackerPosition, targetPosition }) => {
+    console.log(`[SERVER] HERO_ATTACK_REQUEST de ${socket.id} - broadcast para sala ${roomId}`);
+    socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
+      attackerPosition,
+      targetPosition
     });
   });
 

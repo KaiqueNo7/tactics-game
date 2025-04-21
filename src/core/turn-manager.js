@@ -43,7 +43,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
     if (this.currentTurn.movedHeros.size === this.currentTurn.player.heros.length) {
       this.currentTurn.movedAll = true;
     }
-    this.socket.emit(SOCKET_EVENTS.HERO_MOVED, { heroId: hero.id, player: this.currentTurn.player.name });
   }
 
   markHeroAsAttacked(hero) {
@@ -52,7 +51,6 @@ export default class TurnManager extends Phaser.Data.DataManager {
     if (this.currentTurn.attackedHeros.size === aliveHeros.length) {
       this.currentTurn.attackedAll = true;
     }
-    this.socket.emit(SOCKET_EVENTS.HERO_ATTACKED, { heroId: hero.id, player: this.currentTurn.player.name });
   }
 
   canMoveHero(hero) {

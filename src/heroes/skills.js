@@ -59,7 +59,7 @@ export const skills = {
         target.takeDamage(bonusDamage, hero);
       } else {
         console.log(`${hero.name} ataca ${target.name} normalmente.`);
-        target.takeDamage(hero.attack, hero);
+        target.takeDamage(hero.stats.attack, hero);
       }
     },
     description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
