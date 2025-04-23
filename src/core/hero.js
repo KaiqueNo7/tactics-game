@@ -1,4 +1,3 @@
-import { v4 as uuidv4 } from 'uuid';
 import { skills } from '../heroes/skills.js';
 
 class Hero extends Phaser.GameObjects.Container {
@@ -42,7 +41,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.setSize(sprite.displayWidth, sprite.displayHeight);
     this.applyTaunt();
     this.setInteractive();
-    this.id = uuidv4();
+    this.id = crypto.randomUUID();
   }
 
   addPlayerId(playerId) {
