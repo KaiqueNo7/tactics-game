@@ -79,8 +79,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
     
-    this.autoSelectHeroesForTesting();
-
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       this.scene.start('BoardScene', {
         myPlayerId: this.myPlayer.id,
@@ -122,21 +120,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.updateStatusText();
     });
   }
-
-  autoSelectHeroesForTesting() {
-    const presetP1 = ['Gold', 'Vic', 'Blade'];
-    const presetP2 = ['Ralph', 'Ceos', 'Dante'];
-  
-    // Transforma em instâncias com a cena atual
-    this.selectedHeroesP1 = presetP1.map(name => new HERO_CLASSES[name](this.scene, 0, 0, this.socket));
-    this.selectedHeroesP2 = presetP2.map(name => new HERO_CLASSES[name](this.scene, 0, 0, this.socket));
-  
-    // Atualiza visual (opcional)
-    presetP1.forEach(name => this.updateSelectedHeroDisplay(1, this.HERO_DATA.find(h => h.name === name)));
-    presetP2.forEach(name => this.updateSelectedHeroDisplay(2, this.HERO_DATA.find(h => h.name === name)));
-  
-    this.startGame();
-  }  
 
   drawHeroOptions() {
     const startX = 100;
