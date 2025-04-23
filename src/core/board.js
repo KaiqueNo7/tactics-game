@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS } from "../../api/events";
+import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class Board extends Phaser.GameObjects.GameObject {
   constructor(scene, hexRadius = 40, socket, roomId) {

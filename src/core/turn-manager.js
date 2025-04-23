@@ -1,4 +1,4 @@
-import { SOCKET_EVENTS } from "../../api/events";
+import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class TurnManager extends Phaser.Data.DataManager {
   constructor(scene, players, socket, roomId, startedPlayerIndex) {
