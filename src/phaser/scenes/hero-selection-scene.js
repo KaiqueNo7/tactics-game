@@ -360,10 +360,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
       heroes: {
-        player1: this.selectedHeroesP1,
-        player2: this.selectedHeroesP2
+        player1: this.selectedHeroesP1.map(h => h.toJSON()),
+        player2: this.selectedHeroesP2.map(h => h.toJSON())
       },
-      players: [player1, player2],
+      players: [player1.toJSON(), player2.toJSON()],
       roomId: this.roomId
     });
   }  
