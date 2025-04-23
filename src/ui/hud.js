@@ -1,5 +1,5 @@
-import { SOCKET_EVENTS } from "../../api/events";
-import socket from "../services/game-api-service";
+import { SOCKET_EVENTS } from "../../api/events.js";
+import socket from "../services/game-api-service.js";
 
 export default class UIManager {
   constructor(scene, roomId) {
