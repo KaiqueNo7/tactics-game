@@ -12,6 +12,23 @@ const HERO_CLASSES = {
   Vic
 };
 
+export function createHeroFromJson(data, scene, socket) {
+  return new HERO_CLASSES[data.name](
+    scene,
+    0,
+    0,
+    data.frame, // frameIndex
+    data.name,
+    data.stats.attack,
+    data.stats.maxHealth,
+    data.stats.ability || 'Melee', // se precisar de fallback
+    data.abilities || [],
+    data.playerId,
+    socket
+  );
+}
+
+
 export default class GameManager extends Phaser.GameObjects.Container {
   constructor(scene, board, player1Data, player2Data, roomId, startedPlayerIndex) {
     super(scene);
@@ -28,8 +45,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player2 = new Player(player2Data.name, [], player2Data.id);
     this.player2.setNumber(player2Data.number);
 
-    const player1Heroes = player1Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
-    const player2Heroes = player2Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
+    const player1Heroes = player1Data.heros.map(h => createHeroFromJson(h, scene, socket));
+    const player2Heroes = player2Data.heros.map(h => createHeroFromJson(h, scene, socket));
 
     this.player1.addHeroes(player1Heroes);
     this.player2.addHeroes(player2Heroes);
