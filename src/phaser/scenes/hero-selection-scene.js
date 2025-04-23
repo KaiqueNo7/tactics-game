@@ -78,7 +78,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
-    
+
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       this.scene.start('BoardScene', {
         myPlayerId: this.myPlayer.id,
@@ -338,10 +338,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
       heroes: {
-        player1: this.selectedHeroesP1.map(h => h.toJSON()),
-        player2: this.selectedHeroesP2.map(h => h.toJSON())
+        player1: this.selectedHeroesP1,
+        player2: this.selectedHeroesP2
       },
-      players: [player1.toJSON(), player2.toJSON()],
+      players: [player1, player2],
       roomId: this.roomId
     });
   }  
