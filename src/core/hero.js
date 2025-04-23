@@ -1,11 +1,14 @@
+import { v4 as uuidv4 } from 'uuid';
 import { skills } from '../heroes/skills.js';
 
 class Hero extends Phaser.GameObjects.Container {
-  constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null) {
+  constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null, socket = null) {
     super(scene, x, y);
 
     this.scene = scene;
     scene.add.existing(this);
+
+    this.socket = socket || scene.socket;
 
     this.playerId = playerId;
 
@@ -39,6 +42,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.setSize(sprite.displayWidth, sprite.displayHeight);
     this.applyTaunt();
     this.setInteractive();
+    this.id = uuidv4();
   }
 
   addPlayerId(playerId) {
@@ -257,6 +261,23 @@ class Hero extends Phaser.GameObjects.Container {
         this.healthText.setColor('#FFFFFF');
       }
     }
+  }
+
+  hasSkill(skillKey) {
+    return this.skills.some(skill => skill.key === skillKey);
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      stats: this.stats,
+      state: this.state,
+      abilities: this.skills.map(skill => skill.key),
+      position: this.state.position,
+      frame: this.frameIndex,
+      playerId: this.playerId
+    };
   }
 }
 

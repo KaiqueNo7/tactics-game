@@ -93,24 +93,31 @@ export const skills = {
     triggers: ['onTurnStart', 'onAttack']
   },
   goodLuck: {
-    apply: (hero, target) => {
-      if(!target) {
-        if(Math.random() < 0.5) {
+    apply: async (hero, target) => {
+      if (!target) {
+        const roomId = hero.scene.game.gameManager.roomId;
+
+        const gotLucky = await new Promise(resolve => {
+          hero.socket.once('GOOD_LUCK_RESULT', resolve);
+          hero.socket.emit('CHECK_GOOD_LUCK', { roomId });
+        });
+  
+        if (gotLucky) {
           console.log(`${hero.name} teve sorte! (+1 ataque)`);
           hero.increaseAttack(1);
         } else {
           console.log(`${hero.name} não teve sorte!`);
         }
-      } 
-
-      if(target) {
+      }
+  
+      if (target) {
         target.takeDamage(hero.stats.attack, hero);
       }
     },
     description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
     name: 'Good Luck',
     triggers: ['onTurnEnd', 'onAttack']
-  },
+  },  
   poisonAttack: {
     apply: (hero, target) => {
       console.log(`${hero.name} envenena ${target.name}!`);

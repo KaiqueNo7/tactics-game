@@ -19,6 +19,7 @@ server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
 const waitingQueue = [];
 const matches = {};
+const goodLuckCache = new Map();
 
 io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {
@@ -72,6 +73,7 @@ io.on('connection', (socket) => {
 
   socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId }) => {
     console.log(`[SERVER] NEXT_TURN recebido. Enviando NEXT_TURN para sala ${roomId}`);
+    goodLuckCache.delete(roomId);
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
   })
 
@@ -91,6 +93,20 @@ io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ roomId, winnerId }) => {
     io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
     delete matches[roomId];
+  });
+
+  socket.on('CHECK_GOOD_LUCK', ({ roomId }) => {
+    if (goodLuckCache.has(roomId)) {
+      const result = goodLuckCache.get(roomId);
+      socket.emit('GOOD_LUCK_RESULT', result);
+      return;
+    }
+  
+    const gotLucky = Math.random() < 0.5;
+    goodLuckCache.set(roomId, gotLucky);
+  
+    console.log('Resultado do GOOD_LUCK:', gotLucky);
+    io.to(roomId).emit('GOOD_LUCK_RESULT', gotLucky);
   });
 
   socket.on('disconnect', () => {

@@ -28,8 +28,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player2 = new Player(player2Data.name, [], player2Data.id);
     this.player2.setNumber(player2Data.number);
 
-    const player1Heroes = player1Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0));
-    const player2Heroes = player2Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0));
+    const player1Heroes = player1Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
+    const player2Heroes = player2Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
 
     this.player1.addHeroes(player1Heroes);
     this.player2.addHeroes(player2Heroes);

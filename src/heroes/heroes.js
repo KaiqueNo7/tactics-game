@@ -20,7 +20,7 @@ export class Ralph extends Hero {
     stats: { ability: null, attack: 3, hp: 17 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -30,7 +30,9 @@ export class Ralph extends Hero {
       Ralph.data.stats.attack,
       Ralph.data.stats.hp,
       Ralph.data.stats.ability,
-      Ralph.data.abilities.map(a => a.key)
+      Ralph.data.abilities.map(a => a.key),
+      null,
+      socket
     );
     this.state.hasPunched = false;
     this.state.firstPunchApplied = false;
@@ -71,7 +73,7 @@ export class Vic extends Hero {
     stats: { ability: null, attack: 1, hp: 19 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -81,7 +83,9 @@ export class Vic extends Hero {
       Vic.data.stats.attack,
       Vic.data.stats.hp,
       Vic.data.stats.ability,
-      Vic.data.abilities.map(a => a.key)
+      Vic.data.abilities.map(a => a.key),
+      null,
+      socket
     );
   }
 }
@@ -100,7 +104,7 @@ export class Gold extends Hero {
     stats: { ability: 'Sprint', attack: 1, hp: 18 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -110,7 +114,9 @@ export class Gold extends Hero {
       Gold.data.stats.attack,
       Gold.data.stats.hp,
       Gold.data.stats.ability,
-      Gold.data.abilities.map(a => a.key)
+      Gold.data.abilities.map(a => a.key),
+      null,
+      socket
     );
   }
 }
@@ -129,7 +135,7 @@ export class Blade extends Hero {
     stats: { ability: null, attack: 4, hp: 16 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -139,7 +145,9 @@ export class Blade extends Hero {
       Blade.data.stats.attack,
       Blade.data.stats.hp,
       Blade.data.stats.ability,
-      Blade.data.abilities.map(a => a.key)
+      Blade.data.abilities.map(a => a.key),
+      null,
+      socket
     );
   }
 }
@@ -163,7 +171,7 @@ export class Dante extends Hero {
     stats: { ability: 'Ranged', attack: 2, hp: 18 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -173,7 +181,9 @@ export class Dante extends Hero {
       Dante.data.stats.attack,
       Dante.data.stats.hp,
       Dante.data.stats.ability,
-      Dante.data.abilities.map(a => a.key)
+      Dante.data.abilities.map(a => a.key),
+      null,
+      socket
     );
   }
 }
@@ -192,7 +202,7 @@ export class Ceos extends Hero {
     stats: { ability: 'Taunt', attack: 1, hp: 26 }
   };
 
-  constructor(scene, x, y) {
+  constructor(scene, x, y, socket) {
     super(
       scene,
       x,
@@ -202,7 +212,9 @@ export class Ceos extends Hero {
       Ceos.data.stats.attack,
       Ceos.data.stats.hp,
       Ceos.data.stats.ability,
-      Ceos.data.abilities.map(a => a.key)
+      Ceos.data.abilities.map(a => a.key),
+      null,
+      socket
     );
   }
 }
