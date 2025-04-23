@@ -13,21 +13,22 @@ const HERO_CLASSES = {
 };
 
 export function createHeroFromJson(data, scene, socket) {
+  const { attack, maxHealth, ability } = data.stats || {};
+  
   return new HERO_CLASSES[data.name](
     scene,
     0,
     0,
-    data.frame, // frameIndex
+    data.frame ?? 0,
     data.name,
-    data.stats.attack,
-    data.stats.maxHealth,
-    data.stats.ability || 'Melee', // se precisar de fallback
+    attack ?? 1,
+    maxHealth ?? 5,
+    ability ?? 'Melee',
     data.abilities || [],
     data.playerId,
     socket
   );
 }
-
 
 export default class GameManager extends Phaser.GameObjects.Container {
   constructor(scene, board, player1Data, player2Data, roomId, startedPlayerIndex) {

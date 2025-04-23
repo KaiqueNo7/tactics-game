@@ -270,14 +270,18 @@ class Hero extends Phaser.GameObjects.Container {
     return {
       id: this.id,
       name: this.name,
-      stats: this.stats,
+      stats: {
+        attack: this.stats?.attack ?? this.attack ?? 1,
+        maxHealth: this.stats?.maxHealth ?? this.hp ?? 5,
+        ability: this.ability ?? null
+      },
       state: this.state,
-      abilities: this.skills.map(skill => skill.key),
-      position: this.state.position,
-      frame: this.frameIndex,
+      abilities: this.skills?.map(skill => skill?.key).filter(Boolean) || [],
+      position: this.state?.position ?? null,
+      frame: this.frameIndex ?? 0,
       playerId: this.playerId
     };
-  }
+  }  
 }
 
 export default Hero;
