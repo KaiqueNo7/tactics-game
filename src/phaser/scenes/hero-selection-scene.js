@@ -124,24 +124,19 @@ export default class HeroSelectionScene extends Phaser.Scene {
   }
 
   autoSelectHeroesForTesting() {
-    // Defina os nomes dos heróis que você quer selecionar por padrão
     const presetP1 = ['Gold', 'Vic', 'Blade'];
     const presetP2 = ['Ralph', 'Ceos', 'Dante'];
   
-    // Mapeia os dados dos heróis
-    const getHeroData = name => this.HERO_DATA.find(h => h.name === name);
+    // Transforma em instâncias com a cena atual
+    this.selectedHeroesP1 = presetP1.map(name => new HERO_CLASSES[name](this.scene, 0, 0, this.socket));
+    this.selectedHeroesP2 = presetP2.map(name => new HERO_CLASSES[name](this.scene, 0, 0, this.socket));
   
-    // Preenche a seleção para ambos os jogadores
-    this.selectedHeroesP1 = presetP1;
-    this.selectedHeroesP2 = presetP2;
+    // Atualiza visual (opcional)
+    presetP1.forEach(name => this.updateSelectedHeroDisplay(1, this.HERO_DATA.find(h => h.name === name)));
+    presetP2.forEach(name => this.updateSelectedHeroDisplay(2, this.HERO_DATA.find(h => h.name === name)));
   
-    // Atualiza o display visual dos heróis (opcional)
-    presetP1.forEach(name => this.updateSelectedHeroDisplay(1, getHeroData(name)));
-    presetP2.forEach(name => this.updateSelectedHeroDisplay(2, getHeroData(name)));
-  
-    // Emite o evento para iniciar o jogo
     this.startGame();
-  }
+  }  
 
   drawHeroOptions() {
     const startX = 100;
