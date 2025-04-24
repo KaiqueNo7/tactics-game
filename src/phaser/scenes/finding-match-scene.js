@@ -1,5 +1,6 @@
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
+import createButton from '../../utils/helpers.js';
 
 export default class FindingMatchScene extends Phaser.Scene {
   constructor() {
@@ -27,7 +28,12 @@ export default class FindingMatchScene extends Phaser.Scene {
       delay: 500,
       loop: true
     });    
-      
+
+    createButton(this, width / 2, 500, 'CANCELAR', () => {
+      socket.emit(SOCKET_EVENTS.QUIT_QUEUE);
+      this.scene.start('MatchOnlineScene');
+    });
+
     socket.emit(SOCKET_EVENTS.FINDING_MATCH);
 
     socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {

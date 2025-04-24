@@ -1,45 +1,33 @@
+import createButton from '../../utils/helpers';
+
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
     super('MainMenuScene');
   }
 
   preload() {
-    //
+    this.load.image('background', 'assets/background/menu.png');
+    this.load.image('title', 'assets/background/title.png');
   }
 
   create() {
-    const { width } = this.scale;
+    const { width, height } = this.scale;
 
-    this.add.text(width / 2, 100, 'Heroes Tactics', {
-      color: '#ffffff',
-      fontSize: '48px',
-    }).setOrigin(0.5);
+    const bg = this.add.image(0, 0, 'background').setOrigin(0);
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale).setOrigin(0);
 
-    this.createButton(width / 2, 200, 'OFFLINE', () => {
-      this.scene.start('HeroSelectionScene');
-    });
+    const text = this.add.image(width / 2, height * 0.25, 'title');
+    const maxWidth = width * 1;
+    const maxHeight = height * 0.5;
+    const scaleFactor = Math.min(maxWidth / text.width, maxHeight / text.height);
+    text.setScale(scaleFactor).setOrigin(0.5);
+  
 
-    this.createButton(width / 2, 270, 'ONLINE', () => {
+    createButton(this, width / 2, height * 0.70, 'JOGAR ONLINE', () => {
       this.scene.start('MatchOnlineScene');
     });
-    this.createButton(width / 2, 340, 'Heroes (Em desenvolvimento)', null, true);
-  }
-
-  createButton(x, y, text, callback, disabled = false) {
-    const btn = this.add.text(x, y, text, {
-      align: 'center',
-      backgroundColor: disabled ? '#333' : '#555',
-      color: disabled ? '#777' : '#fff',
-      fontSize: '28px',
-      padding: { x: 20, y: 10 }
-    }).setOrigin(0.5).setInteractive();
-
-    if (disabled) {
-      btn.disableInteractive();
-    } else if (callback) {
-      btn.on('pointerdown', callback);
-      btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#777' }));
-      btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#555' }));
-    }
   }
 }
