@@ -57,19 +57,40 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
     console.log(`Você é o Jogador ${this.playerNumber} na sala ${roomId}`);
 
+    const padding = 100;
     const { width } = this.scale;
 
-    this.add.text(width / 2, 40, 'Selecione seus Heróis', {
+    const player1 = this.players.find(p => p.number === 1);
+    const player2 = this.players.find(p => p.number === 2);
+
+    this.player1NameText = this.add.text(padding, 20, player1.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
-      fontSize: '40px'
+      fontSize: '20px'
+    }).setOrigin(0, 0.5);
+    
+    this.player2NameText = this.add.text(width - padding, 20, player2.name, {
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      fontSize: '20px'
+    }).setOrigin(1, 0.5);
+    
+    this.add.text(width / 2, 20, 'VS', {
+      color: '#ffffff',
+      fontFamily: 'Arial',
+      fontSize: '24px',
+      fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.statusText = this.add.text(width / 2, 90, '', {
+    this.statusText = this.add.text(width / 2, 60, '', {
       color: '#dddddd',
-      fontFamily: 'Arial',
       fontSize: '24px'
     }).setOrigin(0.5);
+
+    this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 290, '', {
+      fontSize: '20px',
+      color: '#ffffff',
+    }).setOrigin(0.5);    
 
     this.drawHeroOptions();
     this.createHeroDetailUI();
@@ -80,14 +101,28 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP2 = this.add.group();
 
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
-      this.scene.start('BoardScene', {
+      const resolvedHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
+
+      this.scene.start('PreMatchScene', {
         myPlayerId: this.myPlayer.id,
-        players,
-        roomId,
+        players: [
+          { ...player1, heroesData: resolvedHeroes(this.selectedHeroesP1) },
+          { ...player2, heroesData: resolvedHeroes(this.selectedHeroesP2) }
+        ],
+        roomId: this.roomId,
         startedPlayerIndex
       });
     });
       
+    this.input.on('pointerdown', (pointer) => {
+      const clickedHero = this.heroSprites.some(heroObj =>
+        heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
+      );
+    
+      if (!clickedHero && this.previewedHero) {
+        this.hideHeroDetail();
+      }
+    });    
   }
 
   setupSocketEvents() {
@@ -103,12 +138,32 @@ export default class HeroSelectionScene extends Phaser.Scene {
       }
   
       const heroSpriteObj = this.heroSprites.find(h => h.name === heroName);
-      if (heroSpriteObj) {
-        heroSpriteObj.sprite.setTint(0x555555).disableInteractive();
-        heroSpriteObj.highlight.setVisible(true);
+      if (heroSpriteObj && heroSpriteObj.hex) {
+        const color = player === 1 ? 0x3344ff : 0xff3333;
+        heroSpriteObj.hex.clear();
+        heroSpriteObj.hex.fillStyle(color, 0.7);
+        heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
+      
+        const size = 50;
+        const x = heroSpriteObj.sprite.x;
+        const y = heroSpriteObj.sprite.y;
+      
+        const points = [];
+        for (let i = 0; i < 6; i++) {
+          const angle = Phaser.Math.DegToRad(60 * i - 30);
+          points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
+        }
+      
+        heroSpriteObj.hex.beginPath();
+        heroSpriteObj.hex.moveTo(points[0].x, points[0].y);
+        for (let i = 1; i < points.length; i++) {
+          heroSpriteObj.hex.lineTo(points[i].x, points[i].y);
+        }
+        heroSpriteObj.hex.closePath();
+        heroSpriteObj.hex.fillPath();
+        heroSpriteObj.hex.strokePath();
       }
-  
-      // Atualiza a lista de seleção do outro jogador
+
       const opponentSelection = player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
       opponentSelection.push(heroName);
   
@@ -122,75 +177,144 @@ export default class HeroSelectionScene extends Phaser.Scene {
   }
 
   drawHeroOptions() {
-    const startX = 100;
-    const spacing = 100;
-    const y = 200;
-
+    const size = 50;
+    const spacingX = size * 1;
+    const spacingY = size * Math.sqrt(3);
+    const offsetY = spacingY / 1;
+  
+    const totalHeroes = this.HERO_DATA.length;
+    const totalWidth = spacingX * (totalHeroes - 1);
+    const centerY = this.scale.height / 2 + 200;
+    const startX = this.scale.width / 2 - totalWidth / 2;
+  
     this.heroSprites = [];
-
+  
     this.HERO_DATA.forEach((hero, index) => {
-      const sprite = this.add.sprite(startX + index * spacing, y, 'heroes', hero.frame)
+      const x = startX + index * spacingX;
+      const y = centerY + ((index % 2) ? -offsetY : 0);
+  
+      // Criação do gráfico (hexágono)
+      const hex = this.add.graphics();
+      hex.fillStyle(0x4e5d6c, 0.6); // padrão
+      hex.lineStyle(2, 0xaaaaaa, 0.8);
+  
+      const points = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = Phaser.Math.DegToRad(60 * i - 30);
+        points.push({
+          x: x + size * Math.cos(angle),
+          y: y + size * Math.sin(angle)
+        });
+      }
+  
+      hex.beginPath();
+      hex.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        hex.lineTo(points[i].x, points[i].y);
+      }
+      hex.closePath();
+      hex.fillPath();
+      hex.strokePath();
+  
+      // Sprite do herói
+      const sprite = this.add.sprite(x, y, 'heroes', hero.frame)
         .setInteractive()
-        .setScale(2)
+        .setScale(1)
         .setData('heroName', hero.name);
-
-      const highlight = this.add.rectangle(sprite.x, sprite.y + 45, 20, 20, 0x00ff00)
+  
+      // Animação de hover
+      sprite.on('pointerover', () => {
+        if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
+          this.tweens.add({
+            targets: sprite,
+            scale: 1.2,
+            duration: 150
+          });
+        }
+      });
+  
+      sprite.on('pointerout', () => {
+        if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
+          this.tweens.add({
+            targets: sprite,
+            scale: 1,
+            duration: 150
+          });
+        }
+      });
+  
+      // Highlight visível se selecionado
+      const highlight = this.add.rectangle(x, y + 45, 20, 20, 0x00ff00)
         .setVisible(false);
-
-      this.heroSprites.push({ highlight, name: hero.name, sprite });
-
+  
+      this.heroSprites.push({ highlight, name: hero.name, sprite, hex });
+  
+      // Clique no herói
       sprite.on('pointerdown', () => this.previewHero(hero));
     });
-  }
+  }  
 
   createHeroDetailUI() {
-    const { width } = this.scale;
-
-    this.detailBox = this.add.image(width / 2, 400, 'Hero-box')
+    const centerX = this.scale.width / 2;
+    const centerY = this.scale.height / 2 - 100;
+  
+    this.previewSprite = this.add.sprite(centerX - 80, centerY, 'heroes', 0)
+      .setScale(2)
       .setOrigin(0.5)
       .setVisible(false);
+  
+      this.heroNameText = this.add.text(centerX - 80, centerY - 60, '', {
+        fontSize: '32px',
+        color: '#ccc',
+        stroke: '#6e4c1e',
+        strokeThickness: 3,
+        shadow: {
+          offsetX: 2,
+          offsetY: 2,
+          color: '#000000',
+          blur: 4,
+          fill: true
+        }
+      })
+      .setOrigin(0.5, 1) 
+      .setVisible(false);  
 
-    this.heroNameText = this.add.text(width / 2, 340, '', {
+    this.heroStatsText = this.add.text(centerX - 20, centerY - 60, '', {
       color: '#ffffff',
-      fontFamily: 'Arial',
-      fontSize: '22px'
-    }).setOrigin(0.5).setVisible(false);
-
-    this.abilitiesText = this.add.text(width / 2, 370, '', {
-      align: 'center',
-      color: '#dddddd',
-      fontFamily: 'Arial',
       fontSize: '16px',
-      wordWrap: { width: 280 }
-    }).setOrigin(0.5).setVisible(false);
+    }).setOrigin(0, 0).setVisible(false);
 
-    this.confirmButton = this.add.text(width / 2, 430, 'Confirmar', {
-      backgroundColor: '#00aa00',
+    this.heroAbilitiesText = this.add.text(centerX - 20, centerY - 90, '', {
       color: '#ffffff',
-      fontFamily: 'Arial',
-      fontSize: '20px',
-      padding: { x: 10, y: 5 }
-    }).setOrigin(0.5).setInteractive().setVisible(false);
+      fontSize: '16px',
+    }).setOrigin(0, 0).setVisible(false);
+  
+    this.heroSkillsText = this.add.text(centerX - 20, centerY - 25, '', {
+      fontSize: '16px',
+      wordWrap: { width: 260 }
+    }).setOrigin(0, 0).setVisible(false);
 
+    this.confirmButton = this.add.text(centerX - 20, centerY + 100, 'Selecionar', {
+      backgroundColor: '#8b4513',
+      color: '#fff8dc',
+      fontSize: '18px',
+      fontFamily: 'Arial',
+      padding: { x: 12, y: 6 },
+      border: 1,
+      align: 'center'
+    }).setOrigin(0)
+      .setInteractive()
+      .setVisible(false);
+  
     this.confirmButton.on('pointerdown', () => {
       if (this.previewedHero) {
         this.confirmSelection(this.previewedHero);
         this.hideHeroDetail();
       }
     });
-  }
-
-  previewHero(hero) {
-    if (!this.isCurrentPlayerTurn()) {
-      console.log('Não é sua vez!');
-      return;
-    }
+  }  
   
-    if (
-      this.selectedHeroesP1.includes(hero.name) ||
-      this.selectedHeroesP2.includes(hero.name)
-    ) return;
-
+  previewHero(hero) {
     if (
       this.selectedHeroesP1.includes(hero.name) ||
       this.selectedHeroesP2.includes(hero.name)
@@ -200,7 +324,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.tweens.add({
         duration: 150,
         ease: 'Power1',
-        scale: 2,
+        scale: 1,
         targets: this.previewedSprite
       });
     }
@@ -210,48 +334,32 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
     if (heroSpriteObj) {
       this.previewedSprite = heroSpriteObj.sprite;
-
-      this.tweens.add({
-        duration: 200,
-        ease: 'Power2',
-        scale: 2.5,
-        targets: this.previewedSprite
-      });
+      this.tweens.add({ duration: 200, ease: 'Power2', scale: 1, targets: this.previewedSprite });
     }
   
-    const abilitiesFormatted = hero.abilities.map(a => `${a.name}: ${a.description}`).join('\n');
+    const abilitiesFormatted = hero.abilities.map(a => `${a.description}`).join('\n');
   
-    this.heroNameText
-      .setText(`${hero.name}  |  🧡 ${hero.stats.hp}  |  ⚔️ ${hero.stats.attack}`)
-      .setVisible(true)
-      .setY(330);
-  
-    this.abilitiesText
-      .setText(`Habilidades:\n${abilitiesFormatted}`)
-      .setVisible(true)
-      .setY(420);
-  
-    this.confirmButton
-      .setVisible(true)
-      .setY(500);
+    this.previewSprite.setTexture('heroes', hero.frame).setVisible(true);
+    this.heroNameText.setText(`${hero.name}`).setVisible(true);
+    this.heroStatsText.setText(`attack: ${hero.stats.attack} hp: ${hero.stats.hp}`).setVisible(true);
+    if(hero.stats.ability) {
+      this.heroAbilitiesText.setText(`${hero.stats.ability}`).setVisible(true);
+    } else {
+      this.heroAbilitiesText.setText(``).setVisible(true);
+    }
+    this.heroSkillsText.setText(`${abilitiesFormatted}`).setVisible(true);
+    this.confirmButton.setVisible(this.isCurrentPlayerTurn());
   }  
 
   hideHeroDetail() {
+    this.previewSprite.setVisible(false);
     this.heroNameText.setVisible(false);
-    this.abilitiesText.setVisible(false);
+    this.heroStatsText.setVisible(false);
+    this.heroAbilitiesText.setVisible(false);
+    this.heroSkillsText.setVisible(false);
     this.confirmButton.setVisible(false);
     this.previewedHero = null;
-  
-    if (this.previewedSprite) {
-      this.tweens.add({
-        duration: 150,
-        ease: 'Power1',
-        scale: 2,
-        targets: this.previewedSprite
-      });
-      this.previewedSprite = null;
-    }
-  }
+  }  
 
   isCurrentPlayerTurn() {
     const currentStep = this.selectionOrder[this.currentStep];
@@ -272,9 +380,31 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.updateSelectedHeroDisplay(currentPlayer, hero);
 
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
-    if (heroSpriteObj) {
-      heroSpriteObj.sprite.setTint(0x555555).disableInteractive();
-      heroSpriteObj.highlight.setVisible(true);
+
+    if (heroSpriteObj && heroSpriteObj.hex) {
+      const color = currentPlayer === 1 ? 0x3344ff : 0xff3333;
+      heroSpriteObj.hex.clear();
+      heroSpriteObj.hex.fillStyle(color, 0.7);
+      heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
+    
+      const size = 50;
+      const x = heroSpriteObj.sprite.x;
+      const y = heroSpriteObj.sprite.y;
+    
+      const points = [];
+      for (let i = 0; i < 6; i++) {
+        const angle = Phaser.Math.DegToRad(60 * i - 30);
+        points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
+      }
+    
+      heroSpriteObj.hex.beginPath();
+      heroSpriteObj.hex.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        heroSpriteObj.hex.lineTo(points[i].x, points[i].y);
+      }
+      heroSpriteObj.hex.closePath();
+      heroSpriteObj.hex.fillPath();
+      heroSpriteObj.hex.strokePath();
     }
 
     this.currentStepCount++;
@@ -302,30 +432,50 @@ export default class HeroSelectionScene extends Phaser.Scene {
   updateStatusText() {
     const current = this.selectionOrder[this.currentStep];
     if (!current) return;
-
+  
     const currentSelection = current.player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
     const selected = currentSelection.length;
     const total = current.count;
   
-    this.statusText.setText(`Jogador ${current.player}: escolha seu herói (${selected}/${total})`);
+    this.statusText.setText(`Jogador ${this.myPlayer.name}`);
+
+    if (current.player === this.playerNumber) {
+      this.turnInfoText.setText('É a sua vez de escolher um herói').setStyle({ color: '#ffd700' });
+    } else {
+      this.turnInfoText.setText('Aguardando o oponente escolher...').setStyle({ color: '#cccccc' });
+    }    
+  
+    this.player1NameText.setStyle({
+      color: current.player === 1 ? '#ffd700' : '#ffffff',
+      fontStyle: current.player === 1 ? 'bold' : 'normal'
+    });
+  
+    this.player2NameText.setStyle({
+      color: current.player === 2 ? '#ffd700' : '#ffffff',
+      fontStyle: current.player === 2 ? 'bold' : 'normal'
+    });
   }
+  
 
   updateSelectedHeroDisplay(player, hero) {
     const spacing = 60;
-    const baseY = 550;
+    const baseY = 70; // altura dos nomes
+    const offsetY = 50; // abaixo do nome
+    const y = baseY + offsetY;
+  
     const baseX_P1 = 60;
     const baseX_P2 = this.scale.width - 60;
-
+  
     const index = player === 1 ? this.selectedHeroesP1.length - 1 : this.selectedHeroesP2.length - 1;
     const x = player === 1 ? baseX_P1 + index * spacing : baseX_P2 - index * spacing;
-
-    const sprite = this.add.sprite(x, baseY, 'heroes', hero.frame).setScale(1.2);
+  
+    const sprite = this.add.sprite(x, y, 'heroes', hero.frame).setScale(1.2);
     if (player === 1) {
       this.heroDisplayP1.add(sprite);
     } else {
       this.heroDisplayP2.add(sprite);
     }
-  }
+  }  
 
   startGame() {
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
