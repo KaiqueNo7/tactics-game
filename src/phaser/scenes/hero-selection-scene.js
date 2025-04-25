@@ -63,38 +63,38 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const player1 = this.players.find(p => p.number === 1);
     const player2 = this.players.find(p => p.number === 2);
 
-    this.player1NameText = this.add.text(padding, 20, player1.name, {
+    this.player1NameText = this.add.text(padding, 40, player1.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
       fontSize: '20px'
     }).setOrigin(0, 0.5);
     
-    this.player2NameText = this.add.text(width - padding, 20, player2.name, {
+    this.player2NameText = this.add.text(width - padding, 40, player2.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
       fontSize: '20px'
     }).setOrigin(1, 0.5);
     
-    this.add.text(width / 2, 20, 'VS', {
+    this.add.text(width / 2, 40, 'VS', {
       color: '#ffffff',
       fontFamily: 'Arial',
       fontSize: '24px',
       fontStyle: 'bold'
     }).setOrigin(0.5);
 
-    this.statusText = this.add.text(width / 2, 60, '', {
+    this.namePlayerText = this.add.text(width / 2, 80, '', {
       color: '#dddddd',
-      fontSize: '24px'
+      fontSize: '12px'
     }).setOrigin(0.5);
 
-    this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 290, '', {
+    this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 275, '', {
       fontSize: '20px',
       color: '#ffffff',
     }).setOrigin(0.5);    
 
     this.drawHeroOptions();
     this.createHeroDetailUI();
-    this.updateStatusText();
+    this.updateNamePlayerText();
     this.setupSocketEvents();
     
     this.heroDisplayP1 = this.add.group();
@@ -103,13 +103,16 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       const resolvedHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
 
+      const player1 = players.find(p => p.number === 1);
+      const player2 = players.find(p => p.number === 2);
+
       this.scene.start('PreMatchScene', {
         myPlayerId: this.myPlayer.id,
         players: [
           { ...player1, heroesData: resolvedHeroes(this.selectedHeroesP1) },
           { ...player2, heroesData: resolvedHeroes(this.selectedHeroesP2) }
         ],
-        roomId: this.roomId,
+        roomId: roomId,
         startedPlayerIndex
       });
     });
@@ -172,7 +175,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.currentStep = step;
       this.currentStepCount = 0;
     
-      this.updateStatusText();
+      this.updateNamePlayerText();
     });
   }
 
@@ -425,11 +428,11 @@ export default class HeroSelectionScene extends Phaser.Scene {
     if (this.currentStep >= this.selectionOrder.length) {
       this.startGame();
     } else {
-      this.updateStatusText();
+      this.updateNamePlayerText();
     }  
   }
 
-  updateStatusText() {
+  updateNamePlayerText() {
     const current = this.selectionOrder[this.currentStep];
     if (!current) return;
   
@@ -437,7 +440,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const selected = currentSelection.length;
     const total = current.count;
   
-    this.statusText.setText(`Jogador ${this.myPlayer.name}`);
+    this.namePlayerText.setText(`Jogador ${this.myPlayer.name}`);
 
     if (current.player === this.playerNumber) {
       this.turnInfoText.setText('É a sua vez de escolher um herói').setStyle({ color: '#ffd700' });
