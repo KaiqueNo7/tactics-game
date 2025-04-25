@@ -21,7 +21,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     mode: Phaser.Scale.FIT
   },
-  scene: [FindingMatchScene, PreMatchScene, HeroSelectionScene, BoardScene],
+  scene: [MatchOnlineScene, FindingMatchScene, PreMatchScene, HeroSelectionScene, BoardScene],
   type: Phaser.AUTO,
   width: 800
 };

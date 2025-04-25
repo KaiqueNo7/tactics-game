@@ -34,7 +34,7 @@ export default class FindingMatchScene extends Phaser.Scene {
       this.scene.start('MatchOnlineScene');
     });
 
-    socket.emit(SOCKET_EVENTS.FINDING_MATCH);
+    socket.emit(SOCKET_EVENTS.FINDING_MATCH, {name: this.registry.get('playerName')});
 
     socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {
       const mySocketId = socket.id;

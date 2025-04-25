@@ -6,22 +6,67 @@ export default class MatchOnlineScene extends Phaser.Scene {
   }
 
   preload() {
-    // 
+    //
   }
 
   create() {
-    const { width } = this.scale;
+    const { width, height } = this.scale;
 
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
       fontSize: '48px',
+      fontFamily: '"Press Start 2P"',
     }).setOrigin(0.5);
 
-    createButton(this, width / 2, 270, 'PARTIDA ALEATÓRIA', () => {
+    // Criar input
+    this.nameInput = document.createElement('input');
+    this.nameInput.type = 'text';
+    this.nameInput.placeholder = 'Digite seu nome';
+    this.nameInput.style.position = 'absolute';
+    this.nameInput.style.top = `${height / 2 - 120}px`;
+    this.nameInput.style.left = `${width / 2 + 120}px`;
+    this.nameInput.style.width = '300px';
+    this.nameInput.style.fontSize = '18px';
+    this.nameInput.style.padding = '10px';
+    this.nameInput.style.zIndex = 1000;
+    document.body.appendChild(this.nameInput);
+
+    // Criar botão
+    const startMatchButton = createButton(this, width / 2, 270, 'PARTIDA ALEATÓRIA', () => {
+      const playerName = this.nameInput.value.trim();
+
+      this.registry.set('playerName', playerName);
+      if(playerName.length < 5){
+        console.log('Nome deve ter 5 ou mais letras');
+        return; 
+      }
+
+      this.nameInput.remove();
+      startMatchButton.setInteractive(false);
+
+      this.nameInput.remove();
       this.scene.start('FindingMatchScene');
     });
 
+    // ⚡ Desativar botão inicialmente
+    startMatchButton.setInteractive(false);
+    startMatchButton.alpha = 0.5; // Deixar meio transparente pra mostrar que tá desativado
+
+    // ⚡ Listener no input pra habilitar quando tiver 5+ letras
+    this.nameInput.addEventListener('input', () => {
+      const value = this.nameInput.value.trim();
+      if (value.length >= 5) {
+        startMatchButton.setInteractive(true);
+        startMatchButton.alpha = 1; // Totalmente visível
+      } else {
+        startMatchButton.setInteractive(false);
+        startMatchButton.alpha = 0.5; // Meio apagado
+      }
+    });
+
+    // Botão voltar
     createButton(this, width / 2, 370, 'VOLTAR', () => {
+      this.nameInput.remove();
       this.scene.start('MainMenuScene');
     });
   }

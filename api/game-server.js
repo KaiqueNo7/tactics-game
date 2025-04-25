@@ -28,8 +28,10 @@ io.on('connection', (socket) => {
     if (index !== -1) waitingQueue.splice(index, 1);
   });
 
-  socket.on(SOCKET_EVENTS.FINDING_MATCH, () => {
-    console.log(`Jogador ${socket.id} entrou na fila`);
+  socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ name }) => {
+    console.log(`Jogador ${socket.id} (${name}) entrou na fila`);
+    socket.playerName = name;
+
     waitingQueue.push(socket);
 
     if (waitingQueue.length >= 2) {
@@ -41,8 +43,8 @@ io.on('connection', (socket) => {
       playerSocket2.join(roomId);
 
       matches[roomId] = {
-        player1: new Player('Player 1', [], playerSocket1.id, 1),
-        player2: new Player('Player 2', [], playerSocket2.id, 2),
+        player1: new Player(playerSocket1.playerName, [], playerSocket1.id, 1),
+        player2: new Player(playerSocket2.playerName, [], playerSocket2.id, 2),
         selectedHeroes: []
       };
 
