@@ -1,0 +1,45 @@
+name: Hero Tactic Game Deployment
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ vars.REMOTE_HOST }}
+          username: ${{ vars.REMOTE_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ vars.REMOTE_PORT }}
+          script: |
+            cd domains/kaiquenocetti.com/public_html/hero-tatics-game/
+
+            # Atualiza ou clona o repositório
+            if [ ! -d "tatics-game" ]; then
+              git clone --depth=1 https://github.com/KaiqueNo7/tatics-game.git
+            fi
+
+            cd tatics-game
+            git pull origin main
+            npm install
+            npm run build
+
+            # Voltar para a pasta pública
+            cd ..
+
+            # Apagar apenas arquivos de frontend antigos
+            rm -rf assets favicon.ico index.html
+
+            # Copiar novos arquivos da build
+            cp -R tatics-game/dist/* .
+
+            # (Opcional) Apagar node_modules para não ocupar espaço
+            rm -rf tatics-game/node_modules
