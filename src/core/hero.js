@@ -202,18 +202,14 @@ class Hero extends Phaser.GameObjects.Container {
   }
 
   startTurn() {
-    this.scene.time.delayedCall(1000, () => {
       this.processStatusEffects();
       this.triggerSkills('onTurnStart');
       this.updateHeroStats();
-    });
   }
 
   endTurn() {
-    this.scene.time.delayedCall(1000, () => {
       this.triggerSkills('onTurnEnd');
       this.updateHeroStats();
-    });
   }
 
   counterAttack(target) {

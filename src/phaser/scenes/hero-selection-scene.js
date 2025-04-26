@@ -2,6 +2,15 @@ import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js';
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 
+const HERO_CLASSES = {
+  Blade,
+  Ceos,
+  Dante,
+  Gold,
+  Ralph,
+  Vic
+};
+
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
     super('HeroSelectionScene');
@@ -120,6 +129,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
 
+    this.autoSelectHeroesForTesting();
+
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       const resolvedHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
 
@@ -147,6 +158,37 @@ export default class HeroSelectionScene extends Phaser.Scene {
       }
     });    
   }
+
+  autoSelectHeroesForTesting() {
+    const presetP1 = ['Gold', 'Vic', 'Blade'];
+    const presetP2 = ['Ralph', 'Ceos', 'Dante'];
+  
+    // Preenche como se fosse a seleção feita manualmente
+    this.selectedHeroesP1 = [];
+    this.selectedHeroesP2 = [];
+  
+    presetP1.forEach(name => {
+      const heroData = this.HERO_DATA.find(h => h.name === name);
+      if (heroData) {
+        this.selectedHeroesP1.push(name);
+        this.updateSelectedHeroDisplay(1, heroData);
+      }
+    });
+  
+    presetP2.forEach(name => {
+      const heroData = this.HERO_DATA.find(h => h.name === name);
+      if (heroData) {
+        this.selectedHeroesP2.push(name);
+        this.updateSelectedHeroDisplay(2, heroData);
+      }
+    });
+  
+    // Marca seleção como completa e inicia o jogo
+    this.currentStep = this.selectionOrder.length;
+    this.currentStepCount = 0;
+    this.startGame();
+  }
+     
 
   setupSocketEvents() {
     this.socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ heroName, player, step }) => {

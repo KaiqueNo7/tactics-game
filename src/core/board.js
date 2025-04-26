@@ -300,6 +300,14 @@ export default class Board extends Phaser.GameObjects.GameObject {
       hero.sprite.setScale(0.8);
     }
 
+    if (hero.shieldSprite){
+      hero.shieldSprite.destroy();
+    }
+
+    if (hero.effectSprites.poison){
+      hero.effectSprites.poison.destroy();
+    }
+
     if (hero.hexBg) {
       hero.hexBg.destroy();
     }

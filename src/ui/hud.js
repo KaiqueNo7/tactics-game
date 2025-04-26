@@ -196,10 +196,10 @@ export default class UIManager {
   
     players.forEach((player, playerIndex) => {
       const playerNameY = playerIndex === 0
-        ? this.scene.scale.height / 2 + 165
-        : this.scene.scale.height / 2 - 160 - 40;
+        ? this.scene.scale.height / 2 + 170
+        : this.scene.scale.height / 2 - 210;
   
-     this.scene.add.text(startX + 50, playerNameY, player.name, {
+     this.scene.add.text(startX + 30, playerNameY, player.name, {
         color: '#FFD700',
         fontSize: '14px',
         fontStyle: 'bold',

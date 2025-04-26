@@ -8,7 +8,6 @@ import PreMatchScene from './scenes/pre-match-scene.js';
 const config = {
   alignContent: 'center',
   backgroundColor: '#333333',
-  height: 600,
   justifyContent: 'center',
   parent: 'game-container',
   physics: {
@@ -21,7 +20,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     mode: Phaser.Scale.FIT
   },
-  scene: [MatchOnlineScene, FindingMatchScene, PreMatchScene, HeroSelectionScene, BoardScene],
+  scene: [FindingMatchScene, PreMatchScene, HeroSelectionScene, BoardScene],
   type: Phaser.AUTO,
   width: 800
 };
