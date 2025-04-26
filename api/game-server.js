@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
 
   socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ name }) => {
     console.log(`Jogador ${socket.id} (${name}) entrou na fila`);
-    socket.playerName = name;
+    socket.playerName = name ? name : `Jogador_${socket.id}`;
 
     waitingQueue.push(socket);
 

@@ -18,7 +18,6 @@ export default class MatchOnlineScene extends Phaser.Scene {
       fontFamily: '"Press Start 2P"',
     }).setOrigin(0.5);
 
-    // Criar input
     this.nameInput = document.createElement('input');
     this.nameInput.type = 'text';
     this.nameInput.placeholder = 'Digite seu nome';

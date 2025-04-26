@@ -58,7 +58,7 @@ export default class UIManager {
     // });
   }
     
-  createEndTurnButton(turnManager) {
+  createEndTurnButton() {
     this.endTurnButtonContainer = this.scene.add.container(
       this.scene.scale.width - 145,
       this.scene.scale.height / 2
@@ -82,7 +82,7 @@ export default class UIManager {
     this.endTurnBackground.on('pointerout', () => {
       if (!this.buttonEnabled) return;
       this.endTurnBackground.clearTint();
-      this.endTurnBackground.setAlpha(1); // força o alpha correto
+      this.endTurnBackground.setAlpha(1);
     });
 
     this.endTurnButtonContainer.add(this.endTurnBackground);
@@ -193,33 +193,41 @@ export default class UIManager {
     const spriteScale = 0.4;
     const spacingY = 50;
     const startX = this.scene.scale.width - 145;
-    
+  
     players.forEach((player, playerIndex) => {
+      const playerNameY = playerIndex === 0
+        ? this.scene.scale.height / 2 + 165
+        : this.scene.scale.height / 2 - 160 - 40;
+  
+     this.scene.add.text(startX + 50, playerNameY, player.name, {
+        color: '#FFD700',
+        fontSize: '14px',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 2
+      }).setOrigin(0, 0.5);
+  
       player.heros.forEach((character, index) => {
         const y = playerIndex === 0
           ? this.scene.scale.height / 2 + 120 + index * spacingY
           : this.scene.scale.height / 2 - 160 - index * spacingY;
-    
+  
         const isAlive = character.state.isAlive;
-    
-        // Cria container para agrupar tile + herói
+  
         const heroContainer = this.scene.add.container(startX, y);
-    
-        // Tile de fundo
+  
         const tile = this.scene.add.image(0, 0, 'hex_tile')
           .setOrigin(0.5)
           .setScale(tileSize / 64);
-    
+  
         if (!isAlive) {
           tile.setTint(0x808080);
         }
-    
-        // Sprite do herói
+  
         const sprite = this.scene.add.sprite(0, 0, 'heroes', character.frameIndex)
           .setOrigin(0.5)
           .setScale(spriteScale);
-    
-        // Adiciona ambos ao container
+  
         heroContainer.add([tile, sprite]);
       });
     });
@@ -272,7 +280,7 @@ export default class UIManager {
     });
     
     playAgainBtn.on('pointerdown', () => {
-      this.scene.scene.start('HeroSelectionScene');
+      this.scene.scene.start('MatchOnlineScene');
     });
     
     this.scene.tweens.add({

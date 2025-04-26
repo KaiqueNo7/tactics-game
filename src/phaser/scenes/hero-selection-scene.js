@@ -34,6 +34,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       frameHeight: 64,
       frameWidth: 59
     });
+    this.load.image('hexagon_empty', 'assets/ui/hex_tile.png');
   }
 
   create(data) {
@@ -91,6 +92,25 @@ export default class HeroSelectionScene extends Phaser.Scene {
       fontSize: '20px',
       color: '#ffffff',
     }).setOrigin(0.5);    
+
+    this.heroSlotsP1 = [];
+    this.heroSlotsP2 = [];
+
+    const spacing = 60;
+    const baseY = 70;
+    const offsetY = 50;
+    const y = baseY + offsetY;
+
+    const baseX_P1 = 60;
+    const baseX_P2 = this.scale.width - 60;
+
+    for (let i = 0; i < 3; i++) {
+      const slotP1 = this.add.image(baseX_P1 + i * spacing, y, 'hexagon_empty').setScale(1.2);
+      this.heroSlotsP1.push(slotP1);
+
+      const slotP2 = this.add.image(baseX_P2 - i * spacing, y, 'hexagon_empty').setScale(1.2);
+      this.heroSlotsP2.push(slotP2);
+    }
 
     this.drawHeroOptions();
     this.createHeroDetailUI();
@@ -459,27 +479,29 @@ export default class HeroSelectionScene extends Phaser.Scene {
     });
   }
   
-
   updateSelectedHeroDisplay(player, hero) {
-    const spacing = 60;
-    const baseY = 70; // altura dos nomes
-    const offsetY = 50; // abaixo do nome
-    const y = baseY + offsetY;
-  
-    const baseX_P1 = 60;
-    const baseX_P2 = this.scale.width - 60;
-  
     const index = player === 1 ? this.selectedHeroesP1.length - 1 : this.selectedHeroesP2.length - 1;
-    const x = player === 1 ? baseX_P1 + index * spacing : baseX_P2 - index * spacing;
   
-    const sprite = this.add.sprite(x, y, 'heroes', hero.frame).setScale(1.2);
+    let slot;
     if (player === 1) {
-      this.heroDisplayP1.add(sprite);
+      slot = this.heroSlotsP1[index];
     } else {
-      this.heroDisplayP2.add(sprite);
+      slot = this.heroSlotsP2[index];
     }
-  }  
+  
+    if (slot) {
+      slot.destroy();
 
+      const sprite = this.add.sprite(slot.x, slot.y, 'heroes', hero.frame).setScale(1.2);
+  
+      if (player === 1) {
+        this.heroDisplayP1.add(sprite);
+      } else {
+        this.heroDisplayP2.add(sprite);
+      }
+    }
+  }
+  
   startGame() {
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
   
