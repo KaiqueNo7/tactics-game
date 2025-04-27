@@ -14,7 +14,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightedHexes = [];
     this.selectedHero = null;
     this.hexagons = [];
-    this.setupSocketListeners();
   }
 
   initializeBoard() {
@@ -126,36 +125,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
         
   }    
 
-  setupSocketListeners() {
-    this.socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroId, targetLabel }) => {
-      const realHero = this.getHeroById(heroId);
-      const targetHex = this.getHexByLabel(targetLabel);
-    
-      if (realHero && targetHex) {
-        this.moveHero(realHero, targetHex, true);
-
-        this.scene.game.gameManager.updateHeroPosition(heroId, targetLabel);
-      }
-    });   
-    
-    this.socket.on(SOCKET_EVENTS.HERO_ATTACKED, ({ heroAttackerId, heroTargetId }) => {
-      const attacker = this.getHeroById(heroAttackerId);
-      const target = this.getHeroById(heroTargetId);
-    
-      if (attacker && target) {
-        this.attackHero(attacker, target, true);
-      }    
-    });    
-
-    this.socket.on(SOCKET_EVENTS.HERO_COUNTER_ATTACK, ({ heroAttackerId, heroTargetId }) => {
-      const attacker = this.getHeroById(heroAttackerId);
-      const target = this.getHeroById(heroTargetId);
-    
-      if (attacker && target) {
-        target.counterAttack(attacker);
-      }    
-    });    
-  }
+  clearBoard() {
+    this.board.forEach(hex => {
+      hex.occupied = false;
+      hex.occupiedBy = null;
+    });
+    this.heroes = {};
+  
+    if (this.boardContainer) {
+      this.boardContainer.removeAll(true);
+    }
+  }  
 
   clearSelectedHero() {
     if (this.selectedHero) {
