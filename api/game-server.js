@@ -29,6 +29,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ name }) => {
+    if (waitingQueue.find(s => s.id === socket.id)) return;
+
     console.log(`Jogador ${socket.id} (${name}) entrou na fila`);
     socket.playerName = name ? name : 'Jogador_' + Math.floor(Math.random() * 1000);
 
@@ -61,11 +63,17 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
     console.log(`Jogador ${socket.id} selecionou o herói ${heroName} na sala ${roomId}`);
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
   });
 
   socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
     console.log(`[SERVER] SELECTION_COMPLETE recebido. Enviando START_GAME para sala ${roomId}`);
 
     const startingIndex = Math.floor(Math.random() * 2);
@@ -80,17 +88,26 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
     console.log(`[SERVER] NEXT_TURN recebido. Enviando NEXT_TURN para sala ${roomId}`);
     goodLuckCache.delete(roomId);
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
   })
 
   socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroPosition, targetLabel }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
     console.log(`[SERVER] HERO_MOVE_REQUEST recebido. Enviando HERO_MOVED para sala ${roomId}`);
     socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroPosition, targetLabel });
   });  
 
   socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, attackerPosition, targetPosition }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
     console.log(`[SERVER] HERO_ATTACK_REQUEST de ${socket.id} - broadcast para sala ${roomId}`);
     socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
       attackerPosition,
@@ -119,7 +136,23 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Jogador desconectado: ${socket.id}`);
+    
     const index = waitingQueue.findIndex(s => s.id === socket.id);
     if (index !== -1) waitingQueue.splice(index, 1);
+  
+    for (const [roomId, match] of Object.entries(matches)) {
+      if (!match?.player1 || !match?.player2) continue;
+  
+      if (match.player1.id === socket.id || match.player2.id === socket.id) {
+        const winnerId = (socket.id === match.player1.id) ? match.player2.id : match.player1.id;
+        console.log(`Finalizando partida ${roomId}. Vencedor: ${winnerId}`);
+        
+        if (winnerId) {
+          io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
+        }
+        delete matches[roomId];
+        break;
+      }
+    }
   });
 });

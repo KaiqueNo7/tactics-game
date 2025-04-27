@@ -2,6 +2,7 @@ import TurnManager from './turn-manager.js';
 import Player from './player.js';
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 import socket from '../services/game-api-service.js';
+import { SOCKET_EVENTS } from '../../api/events.js';
 
 const HERO_CLASSES = {
   Blade,
@@ -38,6 +39,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.currentTurn = this.turnManager.currentTurn;
 
     this.setupInitialPositions();
+    this.listnerSocketEvents();
 
     this.turnManager.triggerStartOfTurnSkills(this.turnManager.players);
   }
@@ -57,6 +59,16 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
     this.player2.heros.forEach(hero => {
       this.board.placeHero(hero, hero.state.position, this.player2.number);
+    });
+  }
+
+  listnerSocketEvents(){
+    this.socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winnerId }) => {
+      console.log('Game finished event received:', winnerId);
+      const winner = this.getPlayerById(winnerId);
+
+      this.setGameState({ winner: winner });
+      this.finishGame();
     });
   }
 

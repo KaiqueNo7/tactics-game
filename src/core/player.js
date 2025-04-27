@@ -17,6 +17,10 @@ export default class Player {
     });
   }
 
+  getPlayerById(id) {
+    return this.id === id ? this : null;
+  }
+
   toJSON() {
     return {
       heros: this.heros.map(char => char.toJSON()),

@@ -249,47 +249,50 @@ export default class UIManager {
   }
 
   showVictoryUI(winner) {
-    const overlay = this.scene.add.rectangle(400, 300, 800, 600, 0x000000, 0.6);
-    overlay.setDepth(99);
-    
-    const victoryText = this.scene.add.text(400, 200, `${winner.name} venceu!`, {
-      fill: '#ffffff',
-      fontSize: '40px',
-      fontStyle: 'bold',
-      stroke: '#000',
-      strokeThickness: 4,
-    }).setOrigin(0.5);
-    victoryText.setDepth(100);
-    
-    const playAgainBtn = this.scene.add.text(400, 300, 'Jogar novamente', {
-      backgroundColor: '#222',
-      fill: '#00ff00',
-      fontSize: '28px',
-      padding: { x: 15, y: 10 },
-    })
-      .setOrigin(0.5)
-      .setInteractive({ useHandCursor: true });
-    playAgainBtn.setDepth(100);
-    
-    playAgainBtn.on('pointerover', () => {
-      playAgainBtn.setStyle({ backgroundColor: '#00aa00', fill: '#ffffff' });
-    });
-    
-    playAgainBtn.on('pointerout', () => {
-      playAgainBtn.setStyle({ backgroundColor: '#222', fill: '#00ff00' });
-    });
-    
-    playAgainBtn.on('pointerdown', () => {
-      this.scene.scene.start('MatchOnlineScene');
-    });
-    
-    this.scene.tweens.add({
-      alpha: { from: 0, to: 1 },
-      delay: 100,
-      duration: 500,
-      ease: 'Power1',
-      targets: [victoryText, playAgainBtn],
-      y: '+=20',
-    });
-  }    
+      const width = this.scene.scale.width;
+      const height = this.scene.scale.height;
+
+      const overlay = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6);
+      overlay.setDepth(99);
+      
+      const victoryText = this.scene.add.text(width / 2, height * 0.3, `${winner.name} venceu!`, {
+        fill: '#ffffff',
+        fontSize: Math.round(width * 0.05) + 'px', // Tamanho de fonte proporcional
+        fontStyle: 'bold',
+        stroke: '#000',
+        strokeThickness: 4,
+      }).setOrigin(0.5);
+      victoryText.setDepth(100);
+      
+      const playAgainBtn = this.scene.add.text(width / 2, height * 0.5, 'Jogar novamente', {
+        backgroundColor: '#222',
+        fill: '#00ff00',
+        fontSize: Math.round(width * 0.035) + 'px', // Tamanho de fonte proporcional
+        padding: { x: 15, y: 10 },
+      })
+        .setOrigin(0.5)
+        .setInteractive({ useHandCursor: true });
+      playAgainBtn.setDepth(100);
+      
+      playAgainBtn.on('pointerover', () => {
+        playAgainBtn.setStyle({ backgroundColor: '#00aa00', fill: '#ffffff' });
+      });
+      
+      playAgainBtn.on('pointerout', () => {
+        playAgainBtn.setStyle({ backgroundColor: '#222', fill: '#00ff00' });
+      });
+      
+      playAgainBtn.on('pointerdown', () => {
+        this.scene.scene.start('MatchOnlineScene');
+      });
+
+      this.scene.tweens.add({
+        alpha: { from: 0, to: 1 },
+        delay: 100,
+        duration: 500,
+        ease: 'Power1',
+        targets: [victoryText, playAgainBtn],
+        y: '+=20',
+      });
+  }
 }
