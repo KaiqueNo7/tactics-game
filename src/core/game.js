@@ -2,8 +2,8 @@ import TurnManager from './turn-manager.js';
 import Player from './player.js';
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 import socket from '../services/game-api-service.js';
+import { setupSocketListeners } from '../services/listener-socket-events.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
-import setupSocketListeners from '../services/listener-socket-events.js';
 
 const HERO_CLASSES = {
   Blade,
@@ -89,7 +89,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
       };
     });
 
-    setupSocketListeners(this.scene, this.socket); 
+    setupSocketListeners(this.scene, this.socket, this.turnManager, this.board, this); 
   }
 
   setupInitialPositions() {
@@ -116,6 +116,15 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
   setGameState(gameState) {
     this.gameState = gameState;
+  }
+
+  sendGameStateUpdate() {
+    if (this.socket && this.roomId) {
+      this.socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
+        roomId: this.roomId,
+        gameState: this.gameState
+      });
+    }
   }
 
   finishGame() {
@@ -155,6 +164,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
   updateCurrentTurn(playerId) {
     this.gameState.currentTurnPlayerId = playerId;
     this.gameState.lastActionTimestamp = new Date().getTime();
+
+    this.sendGameStateUpdate();
   }  
 
   updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects }) {
@@ -174,6 +185,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
     console.log(`- Vida: ${hero.currentHealth}`);
   
     this.gameState.lastActionTimestamp = Date.now();
+
+    this.sendGameStateUpdate();
   }
   
   updateHeroPosition(heroId, newPosition) {
@@ -188,6 +201,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
     hero.position = newPosition;
     this.gameState.lastActionTimestamp = Date.now();
+
+    this.sendGameStateUpdate();
   }
   
 }

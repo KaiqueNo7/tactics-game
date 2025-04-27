@@ -15,4 +15,7 @@ export const SOCKET_EVENTS = {
   HERO_ATTACK_REQUEST: 'hero_attack_request',
   HERO_COUNTER_ATTACK: 'hero:counter-attack',
   HERO_COUNTER_ATTACK_REQUEST: 'hero_counter_attack_request',
+  UPDATE_GAME_STATE: 'update_game_state',
+  SYNC_GAME_STATE: 'sync_game_state',
+  RECONNECTING_PLAYER: 'reconnecting_player',
 };

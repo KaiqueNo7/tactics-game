@@ -1,9 +1,7 @@
 // services/socket-listeners.js
 import { SOCKET_EVENTS } from "../../api/events.js";
 
-export default function setupSocketListeners(scene, socket) {
-  const { board, gameManager, turnManager } = scene; 
-
+export function setupSocketListeners(scene, socket, turnManager, board, gameManager) {
   socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroId, targetLabel }) => {
     const realHero = board.getHeroById(heroId);
     const targetHex = board.getHexByLabel(targetLabel);
@@ -46,6 +44,10 @@ export default function setupSocketListeners(scene, socket) {
     gameManager.setGameState({ winner });
     gameManager.finishGame();
   });
+
+  socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
+    scene.game.gameManager.rebuildFromState(gameState);
+  });  
 }
 
 export function removeSocketListeners(socket) {

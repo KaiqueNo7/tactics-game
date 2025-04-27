@@ -20,6 +20,7 @@ server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 const waitingQueue = [];
 const matches = {};
 const goodLuckCache = new Map();
+const disconnectedPlayers = new Map();
 
 io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.QUIT_QUEUE, () => {
@@ -152,25 +153,87 @@ io.on('connection', (socket) => {
     io.to(roomId).emit('GOOD_LUCK_RESULT', gotLucky);
   });
 
+  socket.on(SOCKET_EVENTS.UPDATE_GAME_STATE, ({ roomId, gameState }) => {
+    const match = matches[roomId];
+    if (!match) return;
+  
+    match.gameState = gameState;
+    console.log(`[SERVER] gameState atualizado para sala ${roomId}`);
+  });
+
   socket.on('disconnect', () => {
     console.log(`Jogador desconectado: ${socket.id}`);
     
+    // Remove da fila de espera (se estava lá)
     const index = waitingQueue.findIndex(s => s.id === socket.id);
-    if (index !== -1) waitingQueue.splice(index, 1);
+    if (index !== -1) {
+      waitingQueue.splice(index, 1);
+    }
+  
+    let foundRoomId = null;
   
     for (const [roomId, match] of Object.entries(matches)) {
       if (!match?.player1 || !match?.player2) continue;
   
       if (match.player1.id === socket.id || match.player2.id === socket.id) {
-        const winnerId = (socket.id === match.player1.id) ? match.player2.id : match.player1.id;
-        console.log(`Finalizando partida ${roomId}. Vencedor: ${winnerId}`);
-        
-        if (winnerId) {
+        foundRoomId = roomId;
+  
+        console.log(`Jogador da partida ${roomId} desconectou. Aguardando reconexão...`);
+  
+        // Marca desconexão e cria timeout para finalizar se não reconectar
+        const timeout = setTimeout(() => {
+          console.log(`Jogador não reconectou. Finalizando partida ${roomId}.`);
+          const winnerId = (match.player1.id === socket.id) ? match.player2.id : match.player1.id;
+          
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
-        }
-        delete matches[roomId];
+          delete matches[roomId];
+  
+          disconnectedPlayers.delete(socket.id);
+  
+          // Limpa listeners
+        }, 30000); // 30 segundos para reconectar
+  
+        disconnectedPlayers.set(socket.id, { roomId, timeout });
+  
         break;
       }
     }
+  
+    if (!foundRoomId) {
+      // Se não estava em partida, limpa listeners direto
+    }
+  });
+  
+  // Novo evento para reconexão
+  socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ oldSocketId, roomId }) => {
+    const match = matches[roomId];
+    if (!match) return;
+  
+    console.log(`Jogador reconectando: ${oldSocketId} -> ${socket.id} na sala ${roomId}`);
+  
+    if (match.player1.id === oldSocketId) {
+      match.player1.id = socket.id;
+    } else if (match.player2.id === oldSocketId) {
+      match.player2.id = socket.id;
+    } else {
+      console.warn(`Tentativa de reconexão inválida para socket ${socket.id}`);
+      return;
+    }
+  
+    socket.join(roomId);
+  
+    // Cancela o timeout de finalização
+    const data = disconnectedPlayers.get(oldSocketId);
+    if (data) {
+      clearTimeout(data.timeout);
+      disconnectedPlayers.delete(oldSocketId);
+    }
+  
+    // Aqui você pode mandar o gameState atual também se quiser:
+    if (match.gameState) {
+      socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, { gameState: match.gameState });
+    }
+  
+    console.log(`Reconexão bem-sucedida para o jogador ${socket.id} na sala ${roomId}`);
   });
 });
