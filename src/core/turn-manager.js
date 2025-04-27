@@ -1,7 +1,7 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class TurnManager extends Phaser.Data.DataManager {
-  constructor(scene, players, socket, roomId, startedPlayerIndex) {
+  constructor(scene, players, socket, roomId, startedPlayerIndex, gameManager) {
     super(scene, 'TurnManager');
     this.scene = scene;
     this.players = players;
@@ -9,6 +9,9 @@ export default class TurnManager extends Phaser.Data.DataManager {
     this.roomId = roomId;
     this.currentPlayerIndex = startedPlayerIndex;
     this.startedPlayerIndex = startedPlayerIndex;
+
+    this.gameManager = gameManager;
+    
     this.currentTurn = this.createNewTurn(this.players[this.currentPlayerIndex], 1);
     this.gameState = {
       status: 'active',
@@ -32,8 +35,12 @@ export default class TurnManager extends Phaser.Data.DataManager {
   }
 
   setupSocketListeners() {
-    this.socket.on(SOCKET_EVENTS.NEXT_TURN, () => {
+    this.socket.on(SOCKET_EVENTS.NEXT_TURN, ({ nextPlayerId }) => {
       this.nextTurn();
+    
+      if (this.gameManager) {
+        this.gameManager.updateCurrentTurn(nextPlayerId);
+      }
     });
   }
 
@@ -73,6 +80,7 @@ export default class TurnManager extends Phaser.Data.DataManager {
   }
 
   nextTurn() {
+    this.gameManager.showGameState();
     this.triggerEndOfTurnSkills();
     this.currentTurn.movedHeros.clear();
     if (this.currentTurn.attackedHeros) {

@@ -32,7 +32,8 @@ export class Ralph extends Hero {
       Ralph.data.stats.ability,
       Ralph.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      1
     );
     this.state.hasPunched = false;
     this.state.firstPunchApplied = false;
@@ -85,7 +86,8 @@ export class Vic extends Hero {
       Vic.data.stats.ability,
       Vic.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      2
     );
   }
 }
@@ -116,7 +118,8 @@ export class Gold extends Hero {
       Gold.data.stats.ability,
       Gold.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      3
     );
   }
 }
@@ -147,7 +150,8 @@ export class Blade extends Hero {
       Blade.data.stats.ability,
       Blade.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      4
     );
   }
 }
@@ -183,7 +187,8 @@ export class Dante extends Hero {
       Dante.data.stats.ability,
       Dante.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      5
     );
   }
 }
@@ -214,7 +219,8 @@ export class Ceos extends Hero {
       Ceos.data.stats.ability,
       Ceos.data.abilities.map(a => a.key),
       null,
-      socket
+      socket,
+      6
     );
   }
 }

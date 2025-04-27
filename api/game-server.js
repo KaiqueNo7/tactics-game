@@ -91,27 +91,34 @@ io.on('connection', (socket) => {
     const match = matches[roomId];
     if (!match) return;
 
-    console.log(`[SERVER] NEXT_TURN recebido. Enviando NEXT_TURN para sala ${roomId}`);
+    match.currentTurnPlayerId = (match.currentTurnPlayerId === match.player1.id) 
+    ? match.player2.id 
+    : match.player1.id;
+
+    console.log(`[SERVER] NEXT_TURN_REQUEST recebido. Próximo turno: ${match.currentTurnPlayerId}`);
     goodLuckCache.delete(roomId);
-    io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN);
+    io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN, {
+      nextPlayerId: match.currentTurnPlayerId
+    });
   })
 
-  socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroPosition, targetLabel }) => {
+  socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroId, targetLabel }) => {
     const match = matches[roomId];
     if (!match) return;
-
-    console.log(`[SERVER] HERO_MOVE_REQUEST recebido. Enviando HERO_MOVED para sala ${roomId}`);
-    socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroPosition, targetLabel });
+  
+    console.log(`[SERVER] HERO_MOVE_REQUEST recebido (heroId: ${heroId}). Enviando HERO_MOVED para sala ${roomId}`);
+    
+    socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, targetLabel });
   });  
 
-  socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, attackerPosition, targetPosition }) => {
+  socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, heroAttackerId, heroTargetId }) => {
     const match = matches[roomId];
     if (!match) return;
 
     console.log(`[SERVER] HERO_ATTACK_REQUEST de ${socket.id} - broadcast para sala ${roomId}`);
     socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
-      attackerPosition,
-      targetPosition
+      heroAttackerId,
+      heroTargetId
     });
   });
 

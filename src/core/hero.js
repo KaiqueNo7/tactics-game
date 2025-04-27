@@ -1,7 +1,7 @@
 import { skills } from '../heroes/skills.js';
 
 class Hero extends Phaser.GameObjects.Container {
-  constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null, socket = null) {
+  constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null, socket = null, id = null) {
     super(scene, x, y);
 
     this.scene = scene;
@@ -41,7 +41,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.setSize(sprite.displayWidth, sprite.displayHeight);
     this.applyTaunt();
     this.setInteractive();
-    this.id = crypto.randomUUID();
+    this.id = id || crypto.randomUUID();
   }
 
   addPlayerId(playerId) {

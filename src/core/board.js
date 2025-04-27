@@ -127,25 +127,30 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }    
 
   setupSocketListeners() {
-    this.socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroPosition, targetLabel }) => {
-      const realHero = this.heros[heroPosition];
+    this.socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroId, targetLabel }) => {
+      const realHero = this.getHeroById(heroId);
       const targetHex = this.getHexByLabel(targetLabel);
     
       if (realHero && targetHex) {
         this.moveHero(realHero, targetHex, true);
+
+        if (this.gameManager) {
+          this.gameManager.updateHeroPosition(heroId, targetLabel);
+        }
       }
     });   
     
-    this.socket.on(SOCKET_EVENTS.HERO_ATTACKED, ({ attackerPosition, targetPosition }) => {
-      const attacker = this.heros[attackerPosition];
-      const target = this.heros[targetPosition];
+    this.socket.on(SOCKET_EVENTS.HERO_ATTACKED, ({ heroAttackerId, heroTargetId }) => {
+      const attacker = this.getHeroById(heroAttackerId);
+      const target = this.getHeroById(heroTargetId);
     
-      if (!attacker || !target) {
-        console.warn(`[HERO_ATTACKED] Herói(s) não encontrado(s):`, attackerPosition, targetPosition);
-        return;
-      }
+      if (attacker && target) {
+        this.attackHero(attacker, target, true);
     
-      this.attackHero(attacker, target, true);
+        if (this.gameManager) {
+          this.gameManager.updateHeroStats(target.id, target.stats.currentHealth, target.state.isAlive);
+        }
+      }    
     });    
   }
 
@@ -264,8 +269,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
       if (!fromSocket && this.socket && this.roomId) {
         this.socket.emit(SOCKET_EVENTS.HERO_ATTACK_REQUEST, {
           roomId: this.roomId,
-          attackerPosition: attacker.state.position,
-          targetPosition: target.state.position
+          heroAttackerId: attacker.id,
+          heroTargetId: target.id
         });
       }
     } else {
@@ -536,6 +541,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     return lineHexes;
   }     
+
+  getHeroById(heroId) {
+    return Object.values(this.heros).find(hero => hero.id === heroId);
+  }
     
   highlightHexes(hexEntries) {
     hexEntries.forEach(({ hex, type }) => {
@@ -593,55 +602,55 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }     
 
   moveHero(hero, targetHex, fromSocket = false) {
-    const gameManager = this.scene.game.gameManager;
-    const turnManager = gameManager.getTurnManager();
-  
-    if (!hero || !targetHex) return;
-  
-    if (!turnManager.canMoveHero(hero)) {
-      this.scene.gameUI.showMessage("Este héroi não pode se mover.");
-      this.clearHighlights();
-      this.selectedHero = null;    
-      return;
-    }
-
-    const fromPosition = hero.state.position;
-  
-    console.log(`Movendo ${hero.name} para ${targetHex.label}`);
-  
-    const currentHex = this.getHexByLabel(hero.state.position);
-    if (currentHex) {
-      currentHex.occupied = false;
-      delete this.heros[currentHex.label];
-  
-      if (!this.heros[currentHex.label] && currentHex.borderGraphics) {
-        currentHex.borderGraphics.clear();
-        currentHex.borderGraphics.destroy();
-        currentHex.borderGraphics = null;
+      const gameManager = this.scene.game.gameManager;
+      const turnManager = gameManager.getTurnManager();
+    
+      if (!hero || !targetHex) return;
+    
+      if (!turnManager.canMoveHero(hero)) {
+        this.scene.gameUI.showMessage("Este herói não pode se mover.");
+        this.clearHighlights();
+        this.selectedHero = null;    
+        return;
       }
-    }
-  
-    targetHex.occupied = true;
-    targetHex.occupiedBy = hero;
-  
-    this.heros[targetHex.label] = hero;
-    hero.state.position = targetHex.label;
-  
-    hero.setPosition(targetHex.x, targetHex.y);
-  
-    turnManager.markHeroAsMoved(hero);
-  
-    this.clearHighlights();
-    this.selectedHero = null;
-  
-    if (!fromSocket && this.socket && this.roomId) {
+
+      const fromPosition = hero.state.position;
+    
+      console.log(`Movendo ${hero.name} para ${targetHex.label}`);
+    
+      const currentHex = this.getHexByLabel(hero.state.position);
+      if (currentHex) {
+        currentHex.occupied = false;
+        delete this.heros[currentHex.label];
+    
+        if (!this.heros[currentHex.label] && currentHex.borderGraphics) {
+          currentHex.borderGraphics.clear();
+          currentHex.borderGraphics.destroy();
+          currentHex.borderGraphics = null;
+        }
+      }
+    
+      targetHex.occupied = true;
+      targetHex.occupiedBy = hero;
+    
+      this.heros[targetHex.label] = hero;
+      hero.state.position = targetHex.label;
+    
+      hero.setPosition(targetHex.x, targetHex.y);
+    
+      turnManager.markHeroAsMoved(hero);
+    
+      this.clearHighlights();
+      this.selectedHero = null;
+    
+      if (!fromSocket && this.socket && this.roomId) {
         this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
           roomId: this.roomId,
-          heroPosition: fromPosition,
+          heroId: hero.id, // 👈 Mudamos isso!
           targetLabel: targetHex.label
         });
       }
-    }      
+  }      
         
   getHexByLabel(label) {
     return this.board.find(hex => hex.label === label);

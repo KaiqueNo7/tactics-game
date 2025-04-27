@@ -35,13 +35,40 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player1.addHeroes(player1Heroes);
     this.player2.addHeroes(player2Heroes);
 
-    this.turnManager = new TurnManager(this.scene, [this.player1, this.player2], this.socket, this.roomId, this.startedPlayerIndex);
+    this.turnManager = new TurnManager(this.scene, [this.player1, this.player2], this.socket, this.roomId, this.startedPlayerIndex, this);
     this.currentTurn = this.turnManager.currentTurn;
 
     this.setupInitialPositions();
     this.listnerSocketEvents();
 
     this.turnManager.triggerStartOfTurnSkills(this.turnManager.players);
+
+    this.gameState = {
+      matchId: null,
+      players: {
+        player1: {
+          id: null,
+          name: null,
+          heroes: []
+        },
+        player2: {
+          id: null,
+          name: null,
+          heroes: []
+        }
+      },
+      heroes: {
+        hero1: { id: 'hero1', position: 'A1', currentHealth: 100, isAlive: true },
+        hero2: { id: 'hero2', position: 'B2', currentHealth: 80, isAlive: true },
+        hero3: { id: 'hero3', position: 'C3', currentHealth: 90, isAlive: true },
+        hero4: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true },
+        hero5: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true },
+        hero6: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true }
+      },
+      currentTurnPlayerId: 'player1',
+      lastActionTimestamp: Date.now(),
+      status: 'in_progress'
+    }  
   }
 
   setupInitialPositions() {
@@ -89,4 +116,39 @@ export default class GameManager extends Phaser.GameObjects.Container {
   getTurnManager() {
     return this.turnManager;
   }
+
+  showGameState() {
+    console.log("====== ESTADO ATUAL DO JOGO ======");
+    console.log("Turno do jogador:", this.gameState.currentTurnPlayerId);
+    console.log("Heroes:");
+  
+    Object.entries(this.gameState.heroes).forEach(([heroId, heroData]) => {
+      console.log(`- ID: ${heroId}, Posição: ${heroData.position}, Vida: ${heroData.currentHealth}, Ataack: ${heroData.stats.attack}, Vivo: ${heroData.isAlive}`);
+    });
+  
+    console.log("Última ação em:", new Date(this.gameState.lastActionTimestamp).toLocaleTimeString());
+    console.log("==================================");
+  }  
+
+  updateCurrentTurn(playerId) {
+    this.gameState.currentTurnPlayerId = playerId;
+    this.gameState.lastActionTimestamp = new Date().getTime();
+  }  
+
+  updateHeroStats(heroId, currentHealth, isAlive) {
+    if (!this.gameState.heroes[heroId]) {
+      this.gameState.heroes[heroId] = {};
+    }
+    this.gameState.heroes[heroId].currentHealth = currentHealth;
+    this.gameState.heroes[heroId].isAlive = isAlive;
+    this.gameState.lastActionTimestamp = Date.now();
+  }  
+
+  updateHeroPosition(heroId, newPosition) {
+    if (!this.gameState.heroes[heroId]) {
+      this.gameState.heroes[heroId] = {};
+    }
+    this.gameState.heroes[heroId].position = newPosition;
+    this.gameState.lastActionTimestamp = Date.now();
+  }  
 }
