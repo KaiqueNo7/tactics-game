@@ -29,8 +29,10 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player2 = new Player(player2Data.name, [], player2Data.id);
     this.player2.setNumber(player2Data.number);
 
-    const player1Heroes = player1Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
-    const player2Heroes = player2Data.heros.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
+    console.log(player1Data.heroes, player2Data.heroes);
+
+    const player1Heroes = player1Data.heroes.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
+    const player2Heroes = player2Data.heroes.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
 
     this.player1.addHeroes(player1Heroes);
     this.player2.addHeroes(player2Heroes);
@@ -44,47 +46,64 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.turnManager.triggerStartOfTurnSkills(this.turnManager.players);
 
     this.gameState = {
-      matchId: null,
+      matchId: this.roomId,
       players: {
         player1: {
-          id: null,
-          name: null,
-          heroes: []
+          id: this.player1.id,
+          name: this.player1.name,
+          heroes: this.player1.heroes.map(hero => hero.id)
         },
         player2: {
-          id: null,
-          name: null,
-          heroes: []
+          id: this.player2.id,
+          name: this.player2.name,
+          heroes: this.player2.heroes.map(hero => hero.id)
         }
       },
-      heroes: {
-        hero1: { id: 'hero1', position: 'A1', currentHealth: 100, isAlive: true },
-        hero2: { id: 'hero2', position: 'B2', currentHealth: 80, isAlive: true },
-        hero3: { id: 'hero3', position: 'C3', currentHealth: 90, isAlive: true },
-        hero4: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true },
-        hero5: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true },
-        hero6: { id: 'hero4', position: 'D4', currentHealth: 70, isAlive: true }
-      },
-      currentTurnPlayerId: 'player1',
+      heroes: {},
+      currentTurnPlayerId: this.turnManager.getCurrentPlayer().id,
       lastActionTimestamp: Date.now(),
       status: 'in_progress'
-    }  
+    };    
+
+    this.player1.heroes.forEach(hero => {
+      this.gameState.heroes[hero.id] = {
+        id: hero.id,
+        name: hero.name,
+        position: hero.getBoardPosition(),
+        currentAttack: hero.stats.attack,
+        currentHealth: hero.stats.currentHealth,
+        statusEffects: hero.state.statusEffects,
+        isAlive: true
+      };
+    });
+
+    this.player2.heroes.forEach(hero => {
+      this.gameState.heroes[hero.id] = {
+        id: hero.id,
+        name: hero.name,
+        position: hero.getBoardPosition(),
+        currentAttack: hero.stats.attack,
+        currentHealth: hero.stats.currentHealth,
+        statusEffects: hero.state.statusEffects,
+        isAlive: true
+      };
+    });
   }
 
   setupInitialPositions() {
-    this.player2.heros[0].state.position = 'B1';
-    this.player2.heros[1].state.position = 'C1';
-    this.player2.heros[2].state.position = 'D1';
+    this.player2.heroes[0].state.position = 'B1';
+    this.player2.heroes[1].state.position = 'C1';
+    this.player2.heroes[2].state.position = 'D1';
 
-    this.player1.heros[0].state.position = 'C6';
-    this.player1.heros[1].state.position = 'D7';
-    this.player1.heros[2].state.position = 'B7';
+    this.player1.heroes[0].state.position = 'C6';
+    this.player1.heroes[1].state.position = 'D7';
+    this.player1.heroes[2].state.position = 'B7';
 
-    this.player1.heros.forEach(hero => {
+    this.player1.heroes.forEach(hero => {
       this.board.placeHero(hero, hero.state.position, this.player1.number);
     });
 
-    this.player2.heros.forEach(hero => {
+    this.player2.heroes.forEach(hero => {
       this.board.placeHero(hero, hero.state.position, this.player2.number);
     });
   }
@@ -123,10 +142,21 @@ export default class GameManager extends Phaser.GameObjects.Container {
     console.log("Heroes:");
   
     Object.entries(this.gameState.heroes).forEach(([heroId, heroData]) => {
-      console.log(`- ID: ${heroId}, Posição: ${heroData.position}, Vida: ${heroData.currentHealth}, Ataack: ${heroData.stats.attack}, Vivo: ${heroData.isAlive}`);
+      console.log(`- ID: ${heroId}`);
+      console.log(`  - Nome: ${heroData.name}`);
+      console.log(`  - Posição: ${heroData.position}`);
+      console.log(`  - Vida: ${heroData.currentHealth}`);
+      console.log(`  - Ataque: ${heroData.currentAttack}`);
+      console.log(`  - Efeitos: ${heroData.statusEffects.length > 0 ? heroData.statusEffects.join(', ') : 'Nenhum'}`);
+      console.log(`  - Vivo: ${heroData.isAlive}`);
     });
   
-    console.log("Última ação em:", new Date(this.gameState.lastActionTimestamp).toLocaleTimeString());
+    if (this.gameState.lastActionTimestamp) {
+      console.log("Última ação em:", new Date(this.gameState.lastActionTimestamp).toLocaleTimeString());
+    } else {
+      console.log("Última ação em: [Timestamp inválido]");
+    }
+  
     console.log("==================================");
   }  
 
@@ -135,20 +165,37 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.gameState.lastActionTimestamp = new Date().getTime();
   }  
 
-  updateHeroStats(heroId, currentHealth, isAlive) {
-    if (!this.gameState.heroes[heroId]) {
-      this.gameState.heroes[heroId] = {};
+  updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects }) {
+    const hero = this.gameState.heroes[heroId];
+    
+    if (!hero) {
+      console.warn(`Hero ID ${heroId} não encontrado para atualização.`);
+      return;
     }
-    this.gameState.heroes[heroId].currentHealth = currentHealth;
-    this.gameState.heroes[heroId].isAlive = isAlive;
-    this.gameState.lastActionTimestamp = Date.now();
-  }  
+  
+    if (currentHealth !== undefined) hero.currentHealth = currentHealth;
+    if (isAlive !== undefined) hero.isAlive = isAlive;
+    if (currentAttack !== undefined) hero.currentAttack = currentAttack;
+    if (statusEffects !== undefined) hero.statusEffects = statusEffects;
 
-  updateHeroPosition(heroId, newPosition) {
-    if (!this.gameState.heroes[heroId]) {
-      this.gameState.heroes[heroId] = {};
-    }
-    this.gameState.heroes[heroId].position = newPosition;
+    console.log(`Atualizando stats do herói ${heroId}:`);
+    console.log(`- Vida: ${hero.currentHealth}`);
+  
     this.gameState.lastActionTimestamp = Date.now();
-  }  
+  }
+  
+  updateHeroPosition(heroId, newPosition) {
+    const hero = this.gameState.heroes[heroId];
+    
+    if (!hero) {
+      console.warn(`Hero ID ${heroId} não encontrado para atualização de posição.`);
+      return;
+    }
+  
+    console.log(`Atualizando posição do herói ${heroId} para ${newPosition}`);
+
+    hero.position = newPosition;
+    this.gameState.lastActionTimestamp = Date.now();
+  }
+  
 }

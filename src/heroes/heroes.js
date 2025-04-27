@@ -17,7 +17,8 @@ export class Ralph extends Hero {
     ],
     frame: 2,
     name: 'Ralph',
-    stats: { ability: null, attack: 3, hp: 17 }
+    stats: { ability: null, attack: 3, hp: 17 },
+    id: 1
   };
 
   constructor(scene, x, y, socket) {
@@ -33,7 +34,7 @@ export class Ralph extends Hero {
       Ralph.data.abilities.map(a => a.key),
       null,
       socket,
-      1
+      Ralph.data.id
     );
     this.state.hasPunched = false;
     this.state.firstPunchApplied = false;
@@ -71,7 +72,8 @@ export class Vic extends Hero {
     ],
     frame: 1,
     name: 'Vic',
-    stats: { ability: null, attack: 1, hp: 19 }
+    stats: { ability: null, attack: 1, hp: 19 },
+    id: 2
   };
 
   constructor(scene, x, y, socket) {
@@ -87,7 +89,7 @@ export class Vic extends Hero {
       Vic.data.abilities.map(a => a.key),
       null,
       socket,
-      2
+      Vic.data.id
     );
   }
 }
@@ -103,7 +105,8 @@ export class Gold extends Hero {
     ],
     frame: 0,
     name: 'Gold',
-    stats: { ability: 'Sprint', attack: 1, hp: 18 }
+    stats: { ability: 'Sprint', attack: 1, hp: 18 },
+    id: 3
   };
 
   constructor(scene, x, y, socket) {
@@ -119,7 +122,7 @@ export class Gold extends Hero {
       Gold.data.abilities.map(a => a.key),
       null,
       socket,
-      3
+      Gold.data.id
     );
   }
 }
@@ -135,7 +138,8 @@ export class Blade extends Hero {
     ],
     frame: 4,
     name: 'Blade',
-    stats: { ability: null, attack: 4, hp: 16 }
+    stats: { ability: null, attack: 4, hp: 16 },
+    id: 4
   };
 
   constructor(scene, x, y, socket) {
@@ -151,7 +155,7 @@ export class Blade extends Hero {
       Blade.data.abilities.map(a => a.key),
       null,
       socket,
-      4
+      Blade.data.id
     );
   }
 }
@@ -172,7 +176,8 @@ export class Dante extends Hero {
     ],
     frame: 5,
     name: 'Dante',
-    stats: { ability: 'Ranged', attack: 2, hp: 18 }
+    stats: { ability: 'Ranged', attack: 2, hp: 18 },
+    id: 5
   };
 
   constructor(scene, x, y, socket) {
@@ -188,7 +193,7 @@ export class Dante extends Hero {
       Dante.data.abilities.map(a => a.key),
       null,
       socket,
-      5
+      Dante.data.id
     );
   }
 }
@@ -204,7 +209,8 @@ export class Ceos extends Hero {
     ],
     frame: 3,
     name: 'Ceos',
-    stats: { ability: 'Taunt', attack: 1, hp: 26 }
+    stats: { ability: 'Taunt', attack: 1, hp: 26 },
+    id: 6
   };
 
   constructor(scene, x, y, socket) {
@@ -220,7 +226,7 @@ export class Ceos extends Hero {
       Ceos.data.abilities.map(a => a.key),
       null,
       socket,
-      6
+      Ceos.data.id
     );
   }
 }

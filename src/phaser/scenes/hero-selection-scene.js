@@ -550,8 +550,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const player1 = this.players.find(p => p.number === 1);
     const player2 = this.players.find(p => p.number === 2);
   
-    player1.heros = this.selectedHeroesP1;
-    player2.heros = this.selectedHeroesP2;
+    player1.heroes = this.selectedHeroesP1;
+    player2.heroes = this.selectedHeroesP2;
   
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
       heroes: {

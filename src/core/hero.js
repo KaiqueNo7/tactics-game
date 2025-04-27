@@ -104,6 +104,11 @@ class Hero extends Phaser.GameObjects.Container {
     this.statsText.setDepth(10);
   }
 
+  getBoardPosition() {
+    const hex = this.scene.board.getHexByLabel(this.state.position);
+    return hex.label;
+  }
+
   triggerSkills(triggerType, target = null) {
     if (!this.skills || this.skills.length === 0) return;
     if (!Array.isArray(this.skills)) return;
@@ -134,7 +139,14 @@ class Hero extends Phaser.GameObjects.Container {
     }
         
     this.triggerSkills('onDamage', attacker);
+    
     this.updateHeroStats();
+    this.scene.game.gameManager.updateHeroStats(this.id, {
+      currentHealth: this.stats.currentHealth,
+      isAlive: this.state.isAlive,
+      currentAttack: this.stats.attack,
+      statusEffects: this.state.statusEffects
+    });
         
     return totalDamage;
   }

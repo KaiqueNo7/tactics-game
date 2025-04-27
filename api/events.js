@@ -13,4 +13,6 @@ export const SOCKET_EVENTS = {
   HERO_MOVE_REQUEST: 'hero_move_request',
   HERO_ATTACKED: 'hero:attacked',
   HERO_ATTACK_REQUEST: 'hero_attack_request',
+  HERO_COUNTER_ATTACK: 'hero:counter-attack',
+  HERO_COUNTER_ATTACK_REQUEST: 'hero_counter_attack_request',
 };

@@ -10,7 +10,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.hexWidth = hexRadius * 2;
     this.hexHeight = Math.sqrt(3) * hexRadius;
     this.board = [];
-    this.heros = {};
+    this.heroes = {};
     this.highlightedHexes = [];
     this.selectedHero = null;
     this.hexagons = [];
@@ -57,7 +57,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     hex.occupied = true;
     hex.occupiedBy = hero;
-    this.heros[position] = hero;
+    this.heroes[position] = hero;
     hero.state.position = position;
 
     hero.placeOnBoard(this.scene, hex, playerNumber, this.boardContainer);
@@ -82,9 +82,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
       return;
     }
     
-    if (!currentPlayer.heros.includes(hero)) {
+    if (!currentPlayer.heroes.includes(hero)) {
       if (this.selectedHero && this.selectedHero.attackTarget) {
-        if (turnManager.currentTurn.attackedHeros.has(this.selectedHero)) {
+        if (turnManager.currentTurn.attackedHeroes.has(this.selectedHero)) {
           this.scene.gameUI.showMessage('Este herói já atacou neste turno.');
         } else {
           this.attackHero(this.selectedHero, hero);
@@ -134,9 +134,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       if (realHero && targetHex) {
         this.moveHero(realHero, targetHex, true);
 
-        if (this.gameManager) {
-          this.gameManager.updateHeroPosition(heroId, targetLabel);
-        }
+        this.scene.game.gameManager.updateHeroPosition(heroId, targetLabel);
       }
     });   
     
@@ -146,10 +144,15 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
       if (attacker && target) {
         this.attackHero(attacker, target, true);
+      }    
+    });    
+
+    this.socket.on(SOCKET_EVENTS.HERO_COUNTER_ATTACK, ({ heroAttackerId, heroTargetId }) => {
+      const attacker = this.getHeroById(heroAttackerId);
+      const target = this.getHeroById(heroTargetId);
     
-        if (this.gameManager) {
-          this.gameManager.updateHeroStats(target.id, target.stats.currentHealth, target.state.isAlive);
-        }
+      if (attacker && target) {
+        target.counterAttack(attacker);
       }    
     });    
   }
@@ -210,23 +213,23 @@ export default class Board extends Phaser.GameObjects.GameObject {
     const turnManager = gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
   
-    if (!currentPlayer.heros.includes(attacker)) {
+    if (!currentPlayer.heroes.includes(attacker)) {
       this.scene.gameUI.showMessage("Você só pode atacar com seus heróis.");
       return;
     }
   
-    if (!turnManager.currentTurn.attackedHeros) {
-      turnManager.currentTurn.attackedHeros = new Set();
+    if (!turnManager.currentTurn.attackedHeroes) {
+      turnManager.currentTurn.attackedHeroes = new Set();
     }
   
-    if (turnManager.currentTurn.attackedHeros.has(attacker)) {
+    if (turnManager.currentTurn.attackedHeroes.has(attacker)) {
       this.scene.gameUI.showMessage("Este herói já atacou neste turno.");
       this.selectedHero = null;
       this.clearHighlights();
       return;
     }
   
-    if (currentPlayer.heros.includes(target)) {
+    if (currentPlayer.heroes.includes(target)) {
       this.selectedHero = null;
       this.clearHighlights();
       return;
@@ -240,7 +243,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (distance <= attacker.attackRange) {
       const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
       const tauntEnemies = enemyHexes
-        .map(hex => this.heros[hex.label])
+        .map(hex => this.heroes[hex.label])
         .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
   
       if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
@@ -258,7 +261,13 @@ export default class Board extends Phaser.GameObjects.GameObject {
       if (!turnManager.currentTurn.counterAttack) {
         const distanceTarget = this.calculateDistance(targetHex, attackerHex);
         if (distanceTarget <= target.attackRange) {
-          target.counterAttack(attacker);
+          if (!fromSocket && this.socket && this.roomId) {
+            this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
+              roomId: this.roomId,
+              heroAttackerId: attacker.id,
+              heroTargetId: target.id
+            });
+          }
           turnManager.currentTurn.counterAttack = true;
         }
       }
@@ -278,11 +287,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
 
     if (!fromSocket) {
-      const allHerosAttacked = currentPlayer.heros
+      const allHeroesAttacked = currentPlayer.heroes
         .filter(hero => hero.state.isAlive)
-        .every(hero => turnManager.currentTurn.attackedHeros.has(hero));
+        .every(hero => turnManager.currentTurn.attackedHeroes.has(hero));
 
-      if (allHerosAttacked) {
+      if (allHeroesAttacked) {
         turnManager.currentTurn.attackedAll = true;
         this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { roomId: this.roomId });
       }
@@ -292,7 +301,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   handleHeroDeath(hero, hex) {
     this.scene.gameManager.turnManager.checkGameState();
     
-    delete this.heros[hex.label];
+    delete this.heroes[hex.label];
     
     if (hero.healthIcon) hero.healthIcon.destroy();
     if (hero.healthText) hero.healthText.destroy();
@@ -543,7 +552,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }     
 
   getHeroById(heroId) {
-    return Object.values(this.heros).find(hero => hero.id === heroId);
+    return Object.values(this.heroes).find(hero => hero.id === heroId);
   }
     
   highlightHexes(hexEntries) {
@@ -584,7 +593,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         });
     
         highlight.on('pointerdown', () => {
-          this.attackHero(this.selectedHero, this.heros[hex.label]);
+          this.attackHero(this.selectedHero, this.heroes[hex.label]);
         });
       }
     
@@ -621,9 +630,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const currentHex = this.getHexByLabel(hero.state.position);
       if (currentHex) {
         currentHex.occupied = false;
-        delete this.heros[currentHex.label];
+        delete this.heroes[currentHex.label];
     
-        if (!this.heros[currentHex.label] && currentHex.borderGraphics) {
+        if (!this.heroes[currentHex.label] && currentHex.borderGraphics) {
           currentHex.borderGraphics.clear();
           currentHex.borderGraphics.destroy();
           currentHex.borderGraphics = null;
@@ -633,7 +642,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       targetHex.occupied = true;
       targetHex.occupiedBy = hero;
     
-      this.heros[targetHex.label] = hero;
+      this.heroes[targetHex.label] = hero;
       hero.state.position = targetHex.label;
     
       hero.setPosition(targetHex.x, targetHex.y);

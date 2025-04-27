@@ -122,6 +122,17 @@ io.on('connection', (socket) => {
     });
   });
 
+  socket.on(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, ({ roomId, heroAttackerId, heroTargetId }) => {
+    const match = matches[roomId];
+    if (!match) return;
+
+    console.log(`[SERVER] HERO_COUNTER_ATTACK_REQUEST de ${socket.id} - broadcast para sala ${roomId}`);
+    io.to(roomId).emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK, {
+      heroAttackerId,
+      heroTargetId
+    });
+  });
+
   socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ roomId, winnerId }) => {
     io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
     delete matches[roomId];

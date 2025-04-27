@@ -207,7 +207,7 @@ export default class UIManager {
         strokeThickness: 2
       }).setOrigin(0, 0.5);
   
-      player.heros.forEach((character, index) => {
+      player.heroes.forEach((character, index) => {
         const y = playerIndex === 0
           ? this.scene.scale.height / 2 + 120 + index * spacingY
           : this.scene.scale.height / 2 - 160 - index * spacingY;
