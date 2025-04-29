@@ -49,18 +49,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
       xOffset += this.hexWidth * 0.75;
     }
   }
-
-  placeHero(hero, position, playerNumber) {
-    const hex = this.getHexByLabel(position);
-    if (!hex || !this.scene) return;
-    
-    hex.occupied = true;
-    hex.occupiedBy = hero;
-    this.heroes[position] = hero;
-    hero.state.position = position;
-
-    hero.placeOnBoard(this.scene, hex, playerNumber, this.boardContainer);
-  }
     
   selectHero(hero) {
     if(!hero.state.isAlive) return;
@@ -70,7 +58,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       return;
     }    
 
-    const gameManager = this.scene.game.gameManager;
+    const gameManager = this.scene.gameManager;
     const turnManager = gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
     
@@ -536,50 +524,39 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }
     
   highlightHexes(hexEntries) {
+    const selectedHero = this.selectedHero;
+  
     hexEntries.forEach(({ hex, type }) => {
       const texture = type === 'enemy' ? 'hex_highlight_enemy' : 'hex_highlight';
-    
-      const highlight = this.scene.add.image(hex.x, hex.y, texture);
-      highlight.setOrigin(0.5);
-      highlight.setDepth(1);
-      highlight.setDisplaySize(this.spriteSize || 92, this.spriteSize || 92);
-      highlight.setAlpha(0.4);
-      highlight.setAngle(30);
-      highlight.setInteractive();
-    
+  
+      const highlight = this.scene.add.image(hex.x, hex.y, texture)
+        .setOrigin(0.5)
+        .setDepth(1)
+        .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
+        .setAlpha(0.4)
+        .setAngle(30)
+        .setInteractive();
+  
+      highlight.on('pointerover', () => highlight.setAlpha(0.6));
+      highlight.on('pointerout', () => highlight.setAlpha(0.4));
+  
+      highlight.on('pointerdown', () => {
+        if (!selectedHero) return;
+  
+        if (type === 'move') {
+          this.moveHero(selectedHero, hex);
+        } else if (type === 'enemy') {
+          const target = this.heroes[hex.label];
+          if (target) {
+            this.attackHero(selectedHero, target);
+          }
+        }
+      });
+  
       this.boardContainer.add(highlight);
-    
-      if (type === 'move') {
-        highlight.on('pointerover', () => {
-          highlight.setAlpha(0.6);
-        });
-    
-        highlight.on('pointerout', () => {
-          highlight.setAlpha(0.4);
-        });
-    
-        highlight.on('pointerdown', () => {
-          this.moveHero(this.selectedHero, hex);
-        });
-      }
-    
-      if (type === 'enemy') {
-        highlight.on('pointerover', () => {
-          highlight.setAlpha(0.6);
-        });
-    
-        highlight.on('pointerout', () => {
-          highlight.setAlpha(0.4);
-        });
-    
-        highlight.on('pointerdown', () => {
-          this.attackHero(this.selectedHero, this.heroes[hex.label]);
-        });
-      }
-    
       this.highlightedHexes.push(highlight);
     });
-  }
+  }  
         
   clearHighlights() {
     this.highlightedHexes.forEach(h => {
@@ -591,10 +568,19 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }     
 
   moveHero(hero, targetHex, fromSocket = false) {
-      const gameManager = this.scene.game.gameManager;
+    console.log(hero);
+
+      const gameManager = this.scene.gameManager;
       const turnManager = gameManager.getTurnManager();
     
-      if (!hero || !targetHex) return;
+      console.log('moveHero chamado com:');
+      console.log('hero:', hero);
+      console.log('targetHex:', targetHex);
+
+      if (!hero || !targetHex){
+        console.log('Herói ou hexágono alvo inválido.');
+        return;
+      } 
     
       if (!turnManager.canMoveHero(hero)) {
         this.scene.gameUI.showMessage("Este herói não pode se mover.");
@@ -602,8 +588,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
         this.selectedHero = null;    
         return;
       }
-
-      const fromPosition = hero.state.position;
     
       console.log(`Movendo ${hero.name} para ${targetHex.label}`);
     
@@ -635,7 +619,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       if (!fromSocket && this.socket && this.roomId) {
         this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
           roomId: this.roomId,
-          heroId: hero.id, // 👈 Mudamos isso!
+          heroId: hero.id,
           targetLabel: targetHex.label
         });
       }

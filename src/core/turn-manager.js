@@ -29,7 +29,7 @@ export default class TurnManager {
     this.whoStarted = this.startedPlayerIndex;
 
     const isMyTurn = this.currentTurn.player.id === this.socket.id;
-    this.scene.uiManager.setEndTurnButtonEnabled(isMyTurn);
+    this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);
   }
 
   markHeroAsMoved(hero) {

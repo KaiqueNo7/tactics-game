@@ -187,32 +187,6 @@ class Hero extends Phaser.GameObjects.Container {
     this.updateHeroStats();
   }
 
-  placeOnBoard(scene, hex, playerNumber, container) {
-    this.setPosition(hex.x, hex.y);
-    
-    const hexColor = playerNumber === 1 ? 'hexagon_blue' : 'hexagon_red';
-    
-    this.hexBg = scene.add.image(0, 0, hexColor)
-      .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
-      .setAngle(30);
-    
-    this.add(this.hexBg);
-    
-    scene.uiManager.createStatsUI(this);
-    
-    this.on('pointerdown', () => {
-      if (scene.board.selectedHero) {
-        scene.board.attackHero(scene.board.selectedHero, this);
-      } else {
-        scene.board.selectHero(this);
-      }
-    });
-    
-    container.add(this);
-    
-    this.setDepth(2);
-  }
-
   startTurn() {
       this.processStatusEffects();
       this.triggerSkills('onTurnStart');

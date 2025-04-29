@@ -102,11 +102,11 @@ export default class GameManager extends Phaser.GameObjects.Container {
     this.player1.heroes[2].state.position = 'B7';
 
     this.player1.heroes.forEach(hero => {
-      this.board.placeHero(hero, hero.state.position, this.player1.number);
+      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
     });
 
     this.player2.heroes.forEach(hero => {
-      this.board.placeHero(hero, hero.state.position, this.player2.number);
+      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_red');
     });
   }
 

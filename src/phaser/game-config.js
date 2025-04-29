@@ -1,4 +1,4 @@
-import BoardScene from './scenes/board-scene.js';
+import GameScene from './scenes/game-scene.js';
 import MainMenuScene from './scenes/main-menu-scene.js';
 import HeroSelectionScene from './scenes/hero-selection-scene.js';
 import MatchOnlineScene from './scenes/match-online-scene.js';
@@ -20,7 +20,7 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     mode: Phaser.Scale.FIT
   },
-  scene: [FindingMatchScene, PreMatchScene, HeroSelectionScene, BoardScene],
+  scene: [FindingMatchScene, PreMatchScene, HeroSelectionScene, GameScene],
   type: Phaser.AUTO,
   width: 800
 };

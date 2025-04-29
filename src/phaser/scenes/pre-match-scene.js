@@ -34,7 +34,7 @@ export default class PreMatchScene extends Phaser.Scene {
     });
   
     this.time.delayedCall(2500, () => {
-      this.scene.start('BoardScene', {
+      this.scene.start('GameScene', {
         players,
         roomId,
         startedPlayerIndex,

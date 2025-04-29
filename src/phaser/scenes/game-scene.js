@@ -1,12 +1,13 @@
 import Board from '../../core/board.js';
-import GameManager from '../../core/game.js';
+import GameManager from '../../core/game-manager.js';
 import UIManager from '../../ui/hud.js';
 import GameUI from '../../ui/game-ui.js';
 import socket from '../../services/game-api-service.js';
+import BoardInputManager from '../../ui/board-input-manager.js';
 
-export default class BoardScene extends Phaser.Scene {
+export default class GameScene extends Phaser.Scene {
   constructor() {
-    super('BoardScene');
+    super('GameScene');
   }
 
   preload() {
@@ -32,10 +33,6 @@ export default class BoardScene extends Phaser.Scene {
   }
 
   create(data) {
-    const bg = this.add.image(0, 0, 'background');
-    bg.setOrigin(0);
-    bg.setDisplaySize(this.scale.width, this.scale.height);
-  
     const { roomId, players, myPlayerId, startedPlayerIndex } = data;
   
     this.roomId = roomId;
@@ -43,37 +40,37 @@ export default class BoardScene extends Phaser.Scene {
     this.myPlayerId = myPlayerId;
     this.startedPlayerIndex = startedPlayerIndex;
   
-    this.gameUI = new GameUI(this);
-  
-    if (!this.textures.exists('boardCanvas')) {
-      this.canvas = this.textures.createCanvas('boardCanvas', this.cameras.main.width, this.cameras.main.height);
-    } else {
-      this.canvas = this.textures.get('boardCanvas');
-    }
-  
+    this.gameUI = new GameUI(this, socket);
+    this.gameUI.createBackground();
+    this.gameUI.createEndTurnButton();
+
     this.board = new Board(this, 45, socket, this.roomId);
     this.board.initializeBoard();
     this.board.createHexagons();
+
+    this.inputManager = new BoardInputManager(this, this.board, socket);
   
     const player1Data = players.find(p => p.number === 1);
     const player2Data = players.find(p => p.number === 2);
   
     this.uiManager = new UIManager(this, this.roomId);
-    this.uiManager.createEndTurnButton()
 
-    this.gameManager = new GameManager(this, this.board, player1Data, player2Data, this.roomId, this.startedPlayerIndex);
-    this.game.gameManager = this.gameManager;
+    this.gameManager = new GameManager(
+      this,
+      this.board, 
+      player1Data, 
+      player2Data, 
+      this.roomId, 
+      this.startedPlayerIndex
+    );
   
     const turnManager = this.gameManager.getTurnManager();
+    const currentTurnPlayer = turnManager.currentTurn.player;
+    const currentTurnRoundNumber = turnManager.currentTurn.roundNumber; 
   
-    this.uiManager.updateTurnPanel(turnManager.currentTurn.player, turnManager.currentTurn.roundNumber);
-    this.uiManager.updateGamePanel(turnManager.players);
-  }       
-
-  init(data) {
-    this.selectedHeroesP1 = data.player1;
-    this.selectedHeroesP2 = data.player2;
-  }    
+    this.gameUI.updateTurnPanel(currentTurnPlayer, currentTurnRoundNumber);
+    this.gameUI.updateGamePanel(turnManager.players);
+  }        
 
   update() {
     //
