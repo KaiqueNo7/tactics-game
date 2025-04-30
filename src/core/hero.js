@@ -170,10 +170,16 @@ class Hero extends Phaser.GameObjects.Container {
   die() {
     console.log(`${this.name} foi derrotado!`);
     this.state.isAlive = false;
+  
+    if (this.scene.gameManager.gameState.heroes[this.id]) {
+      this.scene.gameManager.gameState.heroes[this.id].isAlive = false;
+    }
+  
     const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
     this.scene.gameUI.updateGamePanel(this.scene.gameManager.turnManager.players);
     this.scene.board.handleHeroDeath(this, hexHeroDie);
   }
+  
 
   processStatusEffects() {
     this.state.statusEffects = this.state.statusEffects.filter(effect => {

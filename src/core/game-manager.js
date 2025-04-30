@@ -143,27 +143,7 @@ export default class GameManager extends Phaser.GameObjects.Container {
   }
 
   showGameState() {
-    console.log("====== ESTADO ATUAL DO JOGO ======");
-    console.log("Turno do jogador:", this.gameState.currentTurnPlayerId);
-    console.log("Heroes:");
-  
-    Object.entries(this.gameState.heroes).forEach(([heroId, heroData]) => {
-      console.log(`- ID: ${heroId}`);
-      console.log(`  - Nome: ${heroData.name}`);
-      console.log(`  - Posição: ${heroData.position}`);
-      console.log(`  - Vida: ${heroData.currentHealth}`);
-      console.log(`  - Ataque: ${heroData.currentAttack}`);
-      console.log(`  - Efeitos: ${heroData.statusEffects.length > 0 ? heroData.statusEffects.join(', ') : 'Nenhum'}`);
-      console.log(`  - Vivo: ${heroData.isAlive}`);
-    });
-  
-    if (this.gameState.lastActionTimestamp) {
-      console.log("Última ação em:", new Date(this.gameState.lastActionTimestamp).toLocaleTimeString());
-    } else {
-      console.log("Última ação em: [Timestamp inválido]");
-    }
-  
-    console.log("==================================");
+    console.log(this.gameState);
   }  
 
   updateCurrentTurn(playerId) {
