@@ -39,8 +39,8 @@ export default class GameScene extends Phaser.Scene {
     this.players = players;
     this.myPlayerId = myPlayerId;
     this.startedPlayerIndex = startedPlayerIndex;
-  
-    this.gameUI = new GameUI(this, socket);
+
+    this.gameUI = new GameUI(this, socket, this.roomId);
     this.gameUI.createBackground();
     this.gameUI.createEndTurnButton();
 

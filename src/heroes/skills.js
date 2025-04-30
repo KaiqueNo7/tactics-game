@@ -95,7 +95,7 @@ export const skills = {
   goodLuck: {
     apply: async (hero, target) => {
       if (!target) {
-        const roomId = hero.scene.game.gameManager.roomId;
+        const roomId = hero.scene.gameManager.roomId;
 
         const gotLucky = await new Promise(resolve => {
           hero.socket.once('GOOD_LUCK_RESULT', resolve);

@@ -12,10 +12,6 @@ export default class TurnManager {
     this.gameManager = gameManager;
     
     this.currentTurn = this.createNewTurn(this.players[this.currentPlayerIndex], 1);
-    this.gameState = {
-      status: 'active',
-      winner: null
-    };
 
     this.determineStartingPlayer();
   }
@@ -83,13 +79,13 @@ export default class TurnManager {
     this.currentTurn = this.createNewTurn(currentPlayer, newRoundNumber);
     this.scene.board.clearSelectedHero();
     this.checkGameState();
-    this.scene.uiManager.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
+    this.scene.gameUI.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
     this.scene.board.clearHighlights();
     this.triggerStartOfTurnSkills(this.players);
     this.scene.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
 
     const isMyTurn = this.currentTurn.player.id === this.socket.id;
-    this.scene.uiManager.setEndTurnButtonEnabled(isMyTurn);
+    this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);
 
     return this.currentTurn;
   }

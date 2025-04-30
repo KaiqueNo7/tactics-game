@@ -1,14 +1,15 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class GameUI extends Phaser.GameObjects.Container {
-  constructor(scene, socket) {
-    super(scene)
+  constructor(scene, socket, roomId) {
+    super(scene, socket, roomId)
 
     this.scene = scene;
     this.messageQueue = [];
     this.isShowingMessage = false;
     this.socket = socket;
     this.heroes = {};
+    this.roomId = roomId;
 
     this.buttonEnabled = false;
 
