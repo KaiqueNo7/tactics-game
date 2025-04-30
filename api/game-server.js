@@ -182,7 +182,7 @@ io.on('connection', (socket) => {
   
         // Marca desconexão e cria timeout para finalizar se não reconectar
         const timeout = setTimeout(() => {
-          console.log(`Jogador não reconectou. Finalizando partida ${roomId}.`);
+          // console.log(`Jogador não reconectou. Finalizando partida ${roomId}.`);
           const winnerId = (match.player1.id === socket.id) ? match.player2.id : match.player1.id;
           
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });

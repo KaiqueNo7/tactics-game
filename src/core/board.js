@@ -177,7 +177,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   attackHero(attacker, target, fromSocket = false) {
     if (!attacker || !target || attacker === target) return;
   
-    const gameManager = this.scene.game.gameManager;
+    const gameManager = this.scene.gameManager;
     const turnManager = gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
   
@@ -518,10 +518,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
     return lineHexes;
   }     
-
-  getHeroById(heroId) {
-    return Object.values(this.heroes).find(hero => hero.id === heroId);
-  }
     
   highlightHexes(hexEntries) {
     const selectedHero = this.selectedHero;
@@ -568,14 +564,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }     
 
   moveHero(hero, targetHex, fromSocket = false) {
-    console.log(hero);
-
       const gameManager = this.scene.gameManager;
       const turnManager = gameManager.getTurnManager();
-    
-      console.log('moveHero chamado com:');
-      console.log('hero:', hero);
-      console.log('targetHex:', targetHex);
 
       if (!hero || !targetHex){
         console.log('Herói ou hexágono alvo inválido.');

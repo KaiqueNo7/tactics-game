@@ -4,6 +4,7 @@ import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 import socket from '../services/game-api-service.js';
 import { setupSocketListeners } from '../services/listener-socket-events.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
+import { boardSocketListeners } from '../services/board-socket-events.js';
 
 const HERO_CLASSES = {
   Blade,
@@ -29,8 +30,6 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
     this.player2 = new Player(player2Data.name, [], player2Data.id);
     this.player2.setNumber(player2Data.number);
-
-    console.log(player1Data.heroes, player2Data.heroes);
 
     const player1Heroes = player1Data.heroes.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
     const player2Heroes = player2Data.heroes.map(name => new HERO_CLASSES[name](scene, 0, 0, this.socket));
@@ -89,7 +88,8 @@ export default class GameManager extends Phaser.GameObjects.Container {
       };
     });
 
-    setupSocketListeners(this.scene, this.socket, this.turnManager, this.board, this); 
+    setupSocketListeners(this.scene, this.socket, this.turnManager, this); 
+    boardSocketListeners(this.board, this.socket, this);
   }
 
   setupInitialPositions() {
@@ -135,6 +135,11 @@ export default class GameManager extends Phaser.GameObjects.Container {
 
   getTurnManager() {
     return this.turnManager;
+  }
+
+  getHeroById(heroId) {
+    const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
+    return allHeroes.find(hero => hero.id === heroId);
   }
 
   showGameState() {

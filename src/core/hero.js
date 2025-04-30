@@ -141,7 +141,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.triggerSkills('onDamage', attacker);
     
     this.updateHeroStats();
-    this.scene.game.gameManager.updateHeroStats(this.id, {
+    this.scene.gameManager.updateHeroStats(this.id, {
       currentHealth: this.stats.currentHealth,
       isAlive: this.state.isAlive,
       currentAttack: this.stats.attack,
@@ -171,7 +171,7 @@ class Hero extends Phaser.GameObjects.Container {
     console.log(`${this.name} foi derrotado!`);
     this.state.isAlive = false;
     const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
-    this.scene.uiManager.updateGamePanel(this.scene.game.gameManager.turnManager.players);
+    this.scene.gameUI.updateGamePanel(this.scene.gameManager.turnManager.players);
     this.scene.board.handleHeroDeath(this, hexHeroDie);
   }
 
