@@ -1,6 +1,7 @@
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import createButton from '../../utils/helpers.js';
+import Player from '../../core/player.js';
 
 export default class FindingMatchScene extends Phaser.Scene {
   constructor() {
@@ -34,7 +35,18 @@ export default class FindingMatchScene extends Phaser.Scene {
       this.scene.start('MatchOnlineScene');
     });
 
-    socket.emit(SOCKET_EVENTS.FINDING_MATCH, {name: this.registry.get('playerName'), playerId: this.registry.get('playerId')});
+    const player = new Player(
+      this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
+      [],
+      this.registry.get('playerId') || crypto.randomUUID(),
+      null
+    );    
+
+    localStorage.setItem('playerId', player.id);
+
+    socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
+      player: player.toJSON()
+    });
 
     socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {
       const mySocketId = socket.id;

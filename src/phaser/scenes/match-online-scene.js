@@ -34,8 +34,13 @@ export default class MatchOnlineScene extends Phaser.Scene {
     // Criar botão
     const startMatchButton = createButton(this, width / 2, 270, 'PARTIDA ALEATÓRIA', () => {
       const playerName = this.nameInput.value.trim();
+      let playerId = localStorage.getItem('playerId');
+
+      playerId = crypto.randomUUID();
 
       this.registry.set('playerName', playerName);
+      this.registry.set('playerId', playerId);
+
       if(playerName.length < 5){
         console.log('Nome deve ter 5 ou mais letras');
         return; 
@@ -48,23 +53,20 @@ export default class MatchOnlineScene extends Phaser.Scene {
       this.scene.start('FindingMatchScene');
     });
 
-    // ⚡ Desativar botão inicialmente
     startMatchButton.setInteractive(false);
-    startMatchButton.alpha = 0.5; // Deixar meio transparente pra mostrar que tá desativado
+    startMatchButton.alpha = 0.5;
 
-    // ⚡ Listener no input pra habilitar quando tiver 5+ letras
     this.nameInput.addEventListener('input', () => {
       const value = this.nameInput.value.trim();
       if (value.length >= 5) {
         startMatchButton.setInteractive(true);
-        startMatchButton.alpha = 1; // Totalmente visível
+        startMatchButton.alpha = 1;
       } else {
         startMatchButton.setInteractive(false);
-        startMatchButton.alpha = 0.5; // Meio apagado
+        startMatchButton.alpha = 0.5;
       }
     });
 
-    // Botão voltar
     createButton(this, width / 2, 370, 'VOLTAR', () => {
       this.nameInput.remove();
       this.scene.start('MainMenuScene');
