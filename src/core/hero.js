@@ -160,7 +160,7 @@ class Hero extends Phaser.GameObjects.Container {
   increaseAttack(amount) {
     this.stats.attack += amount;
 
-    let color = amount > 0 ? '#87CEFA' : '#ff8080';
+    let color = amount > 0 ? '#87CEFA' : '#FFFF00';
     let amountText = amount > 0 ? `+${amount}` : amount;
 
     this.scene.uiManager.showFloatingAmount(this, amountText, -20, color);
@@ -208,6 +208,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.scene.time.delayedCall(1000, () => {
       console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
       target.takeDamage(this.stats.attack, this, true);
+      this.triggerSkills('onCounterAttack', target);
       this.updateHeroStats();
     });
   }

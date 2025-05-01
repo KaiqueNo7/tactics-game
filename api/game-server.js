@@ -163,8 +163,6 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Jogador desconectado: ${socket.id}`);
-    
-    // Remove da fila de espera (se estava lá)
     const index = waitingQueue.findIndex(s => s.id === socket.id);
     if (index !== -1) {
       waitingQueue.splice(index, 1);
@@ -180,31 +178,20 @@ io.on('connection', (socket) => {
   
         console.log(`Jogador da partida ${roomId} desconectou. Aguardando reconexão...`);
   
-        // Marca desconexão e cria timeout para finalizar se não reconectar
         const timeout = setTimeout(() => {
-          // console.log(`Jogador não reconectou. Finalizando partida ${roomId}.`);
           const winnerId = (match.player1.id === socket.id) ? match.player2.id : match.player1.id;
-          
+  
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
           delete matches[roomId];
-  
           disconnectedPlayers.delete(socket.id);
-  
-          // Limpa listeners
-        }, 30000); // 30 segundos para reconectar
+        }, 30000);
   
         disconnectedPlayers.set(socket.id, { roomId, timeout });
-  
         break;
       }
     }
+  });  
   
-    if (!foundRoomId) {
-      // Se não estava em partida, limpa listeners direto
-    }
-  });
-  
-  // Novo evento para reconexão
   socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ oldSocketId, roomId }) => {
     const match = matches[roomId];
     if (!match) return;

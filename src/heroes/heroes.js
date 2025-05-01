@@ -138,7 +138,7 @@ export class Blade extends Hero {
     ],
     frame: 4,
     name: 'Blade',
-    stats: { ability: null, attack: 4, hp: 16 },
+    stats: { ability: null, attack: 3, hp: 16 },
     id: 4
   };
 
@@ -209,7 +209,7 @@ export class Ceos extends Hero {
     ],
     frame: 3,
     name: 'Ceos',
-    stats: { ability: 'Taunt', attack: 1, hp: 26 },
+    stats: { ability: 'Taunt', attack: 1, hp: 32 },
     id: 6
   };
 

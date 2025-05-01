@@ -32,9 +32,9 @@ export const skills = {
         const maybeHero = board.heroes[hex.label];
         if (
           maybeHero &&
-                    maybeHero !== hero &&
-                    maybeHero.state.isAlive &&
-                    maybeHero.playerId !== hero.playerId
+          maybeHero !== hero &&
+          maybeHero.state.isAlive &&
+          maybeHero.playerId !== hero.playerId
         ) {
           hits.push(maybeHero);
         } else {
@@ -42,9 +42,8 @@ export const skills = {
         }
       }
         
-      hits.forEach((h, index) => {
-        const dmg = index === 0 ? hero.stats.attack : Math.floor(hero.stats.attack * 0.5);
-        h.takeDamage(dmg, hero);
+      hits.forEach((h) => {
+        h.takeDamage(hero.stats.attack, hero);
       });
     },
     description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas.',
@@ -140,7 +139,7 @@ export const skills = {
     },
     description: 'Envenena o inimigo causando 1 de dano por turno.',
     name: 'Poison Attack',
-    triggers: ['onAttack']        
+    triggers: ['onAttack', 'onCounterAttack']        
   },
   trustInTeam: {
     apply: (hero) => {
