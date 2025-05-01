@@ -14,7 +14,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
 
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
-      fontSize: '48px',
+      fontSize: '32px',
       fontFamily: '"Press Start 2P"',
     }).setOrigin(0.5);
 
@@ -22,13 +22,14 @@ export default class MatchOnlineScene extends Phaser.Scene {
     this.nameInput.type = 'text';
     this.nameInput.placeholder = 'Digite seu nome';
     this.nameInput.style.position = 'absolute';
-    this.nameInput.style.top = `${height / 2 - 120}px`;
-    this.nameInput.style.left = `${width / 2 + 120}px`;
+    this.nameInput.style.top = '30%';
+    this.nameInput.style.left = '50%';
+    this.nameInput.style.transform = 'translate(-50%, -50%)';
     this.nameInput.style.width = '300px';
     this.nameInput.style.fontSize = '18px';
     this.nameInput.style.padding = '10px';
     this.nameInput.style.zIndex = 1000;
-    document.body.appendChild(this.nameInput);
+    document.body.appendChild(this.nameInput);    
 
     // Criar botão
     const startMatchButton = createButton(this, width / 2, 270, 'PARTIDA ALEATÓRIA', () => {

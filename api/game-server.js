@@ -29,13 +29,15 @@ io.on('connection', (socket) => {
     if (index !== -1) waitingQueue.splice(index, 1);
   });
 
-  socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ name }) => {
-    if (waitingQueue.find(s => s.id === socket.id)) return;
+  socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ name, playerId }) => {
+    if (waitingQueue.find(s => s.playerId === playerId)) return;
 
     console.log(`Jogador ${socket.id} (${name}) entrou na fila`);
-    socket.playerName = name ? name : 'Jogador_' + Math.floor(Math.random() * 1000);
-
-    waitingQueue.push(socket);
+    socket.playerName = name || 'Jogador_' + Math.floor(Math.random() * 1000);
+    socket.playerId = playerId;
+  
+    waitingQueue.push({ socket, playerId });
+  
 
     if (waitingQueue.length >= 2) {
       const playerSocket1 = waitingQueue.shift();

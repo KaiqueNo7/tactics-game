@@ -15,7 +15,7 @@ export default class GameScene extends Phaser.Scene {
       frameHeight: 64,
       frameWidth: 59
     });        
-    this.load.image('background', 'assets/background/01.png');
+    this.load.image('background_game', 'assets/background/01.png');
     this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
     this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
     this.load.image('hex_highlight', 'assets/sprites/hexagon_free.png');

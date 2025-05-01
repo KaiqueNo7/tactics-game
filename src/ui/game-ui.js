@@ -32,7 +32,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   createEndTurnButton() {
     this.endTurnButtonContainer = this.scene.add.container(
-      this.scene.scale.width - 145,
+      this.scene.scale.width - 100,
       this.scene.scale.height / 2
     );
 
@@ -74,7 +74,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }
 
   createBackground() {
-    const bg = this.scene.add.image(0, 0, 'background');
+    const bg = this.scene.add.image(0, 0, 'background_game');
     bg.setOrigin(0);
     bg.setDisplaySize(this.scene.scale.width, this.scene.scale.height);
   }
@@ -121,7 +121,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   updateTurnPanel(currentPlayer, roundNumber) {
     this.turnPanelContainer = this.scene.add.container(
-      this.scene.scale.width - 145,
+      this.scene.scale.width - 100,
       this.scene.scale.height / 2 - 60
     );
     
@@ -191,17 +191,17 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }    
 
   updateGamePanel(players) {
-    const tileSize = 90;
-    const spriteScale = 0.4;
-    const spacingY = 50;
-    const startX = this.scene.scale.width - 145;
+    const tileSize = 100;
+    const spriteScale = 0.5;
+    const spacingY = 60;
+    const startX = this.scene.scale.width - 100;
   
     players.forEach((player, playerIndex) => {
       const playerNameY = playerIndex === 0
-        ? this.scene.scale.height / 2 + 170
-        : this.scene.scale.height / 2 - 210;
+        ? 35
+        : this.scene.scale.height - 35;
   
-     this.scene.add.text(startX + 30, playerNameY, player.name, {
+     this.scene.add.text(this.scene.scale.width / 2 - 50, playerNameY, player.name, {
         color: '#FFD700',
         fontSize: '14px',
         fontStyle: 'bold',

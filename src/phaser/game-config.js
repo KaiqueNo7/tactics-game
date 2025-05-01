@@ -6,23 +6,37 @@ import FindingMatchScene from './scenes/finding-match-scene.js';
 import PreMatchScene from './scenes/pre-match-scene.js';
 
 const config = {
-  alignContent: 'center',
+  type: Phaser.AUTO,
+  width: window.innerWidth,
+  height: window.innerHeight,
   backgroundColor: '#333333',
-  justifyContent: 'center',
   parent: 'game-container',
   physics: {
+    default: 'arcade',
     arcade: {
-      debug: false,
-    },
-    default: 'arcade'
+      debug: false
+    }
   },
   scale: {
-    autoCenter: Phaser.Scale.CENTER_BOTH,
-    mode: Phaser.Scale.FIT
+    mode: Phaser.Scale.FIT,
+    autoCenter: Phaser.Scale.CENTER_BOTH
   },
-  scene: [FindingMatchScene, PreMatchScene, HeroSelectionScene, GameScene],
-  type: Phaser.AUTO,
-  width: 800
+  render: {
+    pixelArt: true,
+    antialias: false
+  },
+  fps: {
+    target: 60,
+    forceSetTimeOut: true
+  },
+  scene: [
+    // MainMenuScene,
+    // MatchOnlineScene,
+    FindingMatchScene,
+    PreMatchScene,
+    HeroSelectionScene,
+    GameScene
+  ]
 };
 
 new Phaser.Game(config);
