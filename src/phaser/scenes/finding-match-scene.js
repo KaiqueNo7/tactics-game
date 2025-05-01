@@ -14,12 +14,27 @@ export default class FindingMatchScene extends Phaser.Scene {
 
   create() {
     const { width } = this.scale;
-
+  
+    // Recupera ou gera o playerId
+    let playerId = localStorage.getItem('playerId');
+    if (!playerId) {
+      playerId = crypto.randomUUID();
+      localStorage.setItem('playerId', playerId);
+    }
+  
+    // Cria o objeto player
+    const player = new Player(
+      this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
+      [],
+      playerId,
+      null
+    );
+  
     this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
       color: '#ffffff',
       fontSize: '48px',
     }).setOrigin(0.5);
-      
+  
     this.dots = '';
     this.time.addEvent({
       callback: () => {
@@ -28,38 +43,45 @@ export default class FindingMatchScene extends Phaser.Scene {
       },
       delay: 500,
       loop: true
-    });    
-
+    });
+  
     createButton(this, width / 2, 500, 'CANCELAR', () => {
       socket.emit(SOCKET_EVENTS.QUIT_QUEUE);
       this.scene.start('MatchOnlineScene');
     });
+  
 
-    const player = new Player(
-      this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
-      [],
-      this.registry.get('playerId') || crypto.randomUUID(),
-      null
-    );    
+    socket.once(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
+      console.log('Reconectado com sucesso!');
 
-    localStorage.setItem('playerId', player.id);
+      console.log('Estado do jogo recebido:', gameState);
 
-    socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
-      player: player.toJSON()
+      this.scene.start('GameScene', { gameState });
     });
+  
+    socket.once('RECONNECT_FAILED', () => {
+      console.log('Reconexão falhou. Entrando normalmente.');
 
+      socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
+        player: player.toJSON()
+      });
+    });
+  
+    socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, {
+      playerId
+    });
+  
     socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {
       const mySocketId = socket.id;
       const myPlayer = players.find(p => p.id === mySocketId);
       const opponentPlayer = players.find(p => p.id !== mySocketId);
-      
+  
       this.scene.start('HeroSelectionScene', {
         myPlayer,
         opponentPlayer,
         players,
         roomId
       });
-    });      
-  }
-
+    });
+  }  
 }

@@ -33,44 +33,46 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create(data) {
-    const { roomId, players, myPlayerId, startedPlayerIndex } = data;
+    const state = data.players ? data : data.gameState;
+
+    const { roomId, players, myPlayerId, startedPlayerIndex } = state;
   
     this.roomId = roomId;
     this.players = players;
     this.myPlayerId = myPlayerId;
     this.startedPlayerIndex = startedPlayerIndex;
-
+  
     this.gameUI = new GameUI(this, socket, this.roomId);
     this.gameUI.createBackground();
     this.gameUI.createEndTurnButton();
-
+  
     this.board = new Board(this, 45, socket, this.roomId);
     this.board.initializeBoard();
     this.board.createHexagons();
-
+  
     this.inputManager = new BoardInputManager(this, this.board, socket);
   
     const player1Data = players.find(p => p.number === 1);
     const player2Data = players.find(p => p.number === 2);
   
     this.uiManager = new UIManager(this, this.roomId);
-
-    this.gameManager = new GameManager(
-      this,
-      this.board, 
-      player1Data, 
-      player2Data, 
-      this.roomId, 
-      this.startedPlayerIndex
+  
+    this.gameManager = new GameManager(this);
+    this.gameManager.initFromMatch(
+      player1Data,
+      player2Data,
+      this.roomId,
+      this.startedPlayerIndex,
+      this.board
     );
   
     const turnManager = this.gameManager.getTurnManager();
     const currentTurnPlayer = turnManager.currentTurn.player;
-    const currentTurnRoundNumber = turnManager.currentTurn.roundNumber; 
+    const currentTurnRoundNumber = turnManager.currentTurn.roundNumber;
   
     this.gameUI.updateTurnPanel(currentTurnPlayer, currentTurnRoundNumber);
     this.gameUI.updateGamePanel(turnManager.players);
-  }        
+  } 
 
   update() {
     //

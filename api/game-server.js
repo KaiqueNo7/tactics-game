@@ -36,7 +36,8 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ player }) => {
-    console.log('Recebido:', player); 
+    socket.playerId = player.id;
+
     if (!player || typeof player.id !== 'string' || typeof player.name !== 'string') {
       console.warn(`Conexão inválida de ${socket.id}: dados de player ausentes ou inválidos`);
       return;
@@ -164,6 +165,8 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     waitingQueue.delete(socket.id);
 
+    const playerId = socket.playerId;
+
     for (const [roomId, match] of matches.entries()) {
       if (match.player1.id === socket.id || match.player2.id === socket.id) {
         const timeout = setTimeout(() => {
@@ -173,34 +176,40 @@ io.on('connection', (socket) => {
           matches.delete(roomId);
         }, 30000);
 
-        disconnectedPlayers.set(socket.id, { roomId, timeout });
+        disconnectedPlayers.set(playerId, {
+          socketId: socket.id,
+          roomId,
+          timeout
+        });
+        
         break;
       }
     }
   });
 
-  socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ oldSocketId, roomId }) => {
-    const match = matches.get(roomId);
-    if (!match) return;
-
-    if (match.player1.id === oldSocketId) {
-      match.player1.id = socket.id;
-    } else if (match.player2.id === oldSocketId) {
-      match.player2.id = socket.id;
-    } else {
+socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
+    const data = disconnectedPlayers.get(playerId);
+    
+    if (!data) {
+      socket.emit('RECONNECT_FAILED');
       return;
     }
 
+    const { roomId, timeout } = data;
+    const match = matches.get(roomId);
+    if (!match) return;
+
     socket.join(roomId);
+    clearTimeout(timeout);
+    disconnectedPlayers.delete(playerId);
 
-    const data = disconnectedPlayers.get(oldSocketId);
-    if (data) {
-      clearTimeout(data.timeout);
-      disconnectedPlayers.delete(oldSocketId);
-    }
-
+    // Sincroniza o gameState, se existir
     if (match.gameState) {
-      socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, { gameState: match.gameState });
+      socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, {
+        gameState: match.gameState
+      });
     }
+
+    console.log(`Jogador ${playerId} reconectado na sala ${roomId}`);
   });
 });
