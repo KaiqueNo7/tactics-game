@@ -6,7 +6,6 @@ export function setupSocketListeners(scene, socket, turnManager, gameManager) {
     gameManager.updateCurrentTurn(nextPlayerId);
   });
 
-  // Evento de fim de jogo
   socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winnerId }) => {
     console.log('Game finished event received:', winnerId);
     const winner = gameManager.getPlayerById(winnerId);
@@ -14,10 +13,6 @@ export function setupSocketListeners(scene, socket, turnManager, gameManager) {
     gameManager.setGameState({ winner });
     gameManager.finishGame();
   });
-
-  socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
-    scene.game.gameManager.rebuildFromState(gameState);
-  });  
 }
 
 export function removeSocketListeners(socket) {

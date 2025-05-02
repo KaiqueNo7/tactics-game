@@ -3,7 +3,7 @@ export default class PreMatchScene extends Phaser.Scene {
     super('PreMatchScene');
   }
 
-  create({ players, roomId, startedPlayerIndex, myPlayerId }) {
+  create({ players, roomId, startedPlayerIndex }) {
     const { width, height } = this.scale;
   
     const player1 = players.find(p => p.number === 1);
@@ -38,7 +38,6 @@ export default class PreMatchScene extends Phaser.Scene {
         players,
         roomId,
         startedPlayerIndex,
-        myPlayerId
       });
     });
   }  

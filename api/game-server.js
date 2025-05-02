@@ -174,7 +174,7 @@ io.on('connection', (socket) => {
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
           io.socketsLeave(roomId);
           matches.delete(roomId);
-        }, 30000);
+        }, 20000);
 
         disconnectedPlayers.set(playerId, {
           socketId: socket.id,
@@ -203,7 +203,6 @@ socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
     clearTimeout(timeout);
     disconnectedPlayers.delete(playerId);
 
-    // Sincroniza o gameState, se existir
     if (match.gameState) {
       socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, {
         gameState: match.gameState

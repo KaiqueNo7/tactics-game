@@ -4,6 +4,7 @@ import HeroSelectionScene from './scenes/hero-selection-scene.js';
 import MatchOnlineScene from './scenes/match-online-scene.js';
 import FindingMatchScene from './scenes/finding-match-scene.js';
 import PreMatchScene from './scenes/pre-match-scene.js';
+import ReconnectionScene from './scenes/reconection-scene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -35,7 +36,8 @@ const config = {
     FindingMatchScene,
     PreMatchScene,
     HeroSelectionScene,
-    GameScene
+    GameScene,
+    ReconnectionScene
   ]
 };
 

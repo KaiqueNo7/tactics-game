@@ -59,13 +59,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.players = players;
 
     this.socket = socket;
-    
-    this.myPlayer = players.find(p => p.id === socket.id);
-    this.opponentPlayer = players.find(p => p.id !== socket.id);
-    
-    this.playerNumber = this.myPlayer.number;
   
-    console.log(`Você é o Jogador ${this.playerNumber} na sala ${roomId}`);
+    console.log(`Você está na sala ${roomId}`);
 
     const padding = 100;
     const { width } = this.scale;
@@ -138,7 +133,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
       const player2 = players.find(p => p.number === 2);
 
       this.scene.start('PreMatchScene', {
-        myPlayerId: this.myPlayer.id,
         players: [
           { ...player1, heroesData: resolvedHeroes(this.selectedHeroesP1) },
           { ...player2, heroesData: resolvedHeroes(this.selectedHeroesP2) }
@@ -497,12 +491,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
   updateNamePlayerText() {
     const current = this.selectionOrder[this.currentStep];
     if (!current) return;
-  
-    const currentSelection = current.player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
-    const selected = currentSelection.length;
-    const total = current.count;
-  
-    this.namePlayerText.setText(`Jogador ${this.myPlayer.name}`);
 
     if (current.player === this.playerNumber) {
       this.turnInfoText.setText('É a sua vez de escolher um herói').setStyle({ color: '#ffd700' });

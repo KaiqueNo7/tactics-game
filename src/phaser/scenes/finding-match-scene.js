@@ -15,7 +15,6 @@ export default class FindingMatchScene extends Phaser.Scene {
   create() {
     const { width } = this.scale;
   
-    // Recupera ou gera o playerId
     let playerId = localStorage.getItem('playerId');
     if (!playerId) {
       playerId = crypto.randomUUID();
@@ -55,8 +54,10 @@ export default class FindingMatchScene extends Phaser.Scene {
       console.log('Reconectado com sucesso!');
 
       console.log('Estado do jogo recebido:', gameState);
-
-      this.scene.start('GameScene', { gameState });
+      
+      this.scene.start('ReconnectionScene', {
+        gameState,
+       });
     });
   
     socket.once('RECONNECT_FAILED', () => {
@@ -71,14 +72,8 @@ export default class FindingMatchScene extends Phaser.Scene {
       playerId
     });
   
-    socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {
-      const mySocketId = socket.id;
-      const myPlayer = players.find(p => p.id === mySocketId);
-      const opponentPlayer = players.find(p => p.id !== mySocketId);
-  
+    socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {  
       this.scene.start('HeroSelectionScene', {
-        myPlayer,
-        opponentPlayer,
         players,
         roomId
       });

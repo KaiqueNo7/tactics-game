@@ -35,11 +35,14 @@ export default class GameScene extends Phaser.Scene {
   create(data) {
     const state = data.players ? data : data.gameState;
 
-    const { roomId, players, myPlayerId, startedPlayerIndex } = state;
+    const reconnect = data.reconnect ?? false;
+
+    const { roomId, players, startedPlayerIndex } = state;
+
+    console.log(roomId, players, startedPlayerIndex);
   
     this.roomId = roomId;
     this.players = players;
-    this.myPlayerId = myPlayerId;
     this.startedPlayerIndex = startedPlayerIndex;
   
     this.gameUI = new GameUI(this, socket, this.roomId);
@@ -58,13 +61,20 @@ export default class GameScene extends Phaser.Scene {
     this.uiManager = new UIManager(this, this.roomId);
   
     this.gameManager = new GameManager(this);
-    this.gameManager.initFromMatch(
-      player1Data,
-      player2Data,
-      this.roomId,
-      this.startedPlayerIndex,
-      this.board
-    );
+
+    console.log(reconnect);
+
+    if(reconnect) {
+      this.gameManager.rebuildFromState(state, this.board);
+    } else {
+      this.gameManager.initFromMatch(
+        player1Data,
+        player2Data,
+        this.roomId,
+        this.startedPlayerIndex,
+        this.board
+      );
+    }
   
     const turnManager = this.gameManager.getTurnManager();
     const currentTurnPlayer = turnManager.currentTurn.player;
