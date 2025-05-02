@@ -87,7 +87,7 @@ class Hero extends Phaser.GameObjects.Container {
     
   setSelected(selected) {
     this.isSelected = selected;
-  }    
+  }   
 
   createStatsText(scene, hex) { 
     if (this.statsText) this.statsText.destroy();

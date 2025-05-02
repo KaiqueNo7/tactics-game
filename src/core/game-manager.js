@@ -1,19 +1,10 @@
 import TurnManager from './turn-manager.js';
 import Player from './player.js';
-import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 import socket from '../services/game-api-service.js';
 import { setupSocketListeners } from '../services/listener-socket-events.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
 import { boardSocketListeners } from '../services/board-socket-events.js';
-
-const HERO_CLASSES = {
-  Blade,
-  Ceos,
-  Dante,
-  Gold,
-  Ralph,
-  Vic
-};
+import { createHeroByName } from '../heroes/heroFactory.js';
 
 export default class GameManager extends Phaser.Events.EventEmitter {
   constructor(scene) {
@@ -34,10 +25,11 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.player2.setNumber(player2Data.number);
 
     const player1Heroes = player1Data.heroes.map(name =>
-      new HERO_CLASSES[name](this.scene, 0, 0, this.socket)
+      createHeroByName(name, this.scene, 0, 0, this.socket)
     );
+    
     const player2Heroes = player2Data.heroes.map(name =>
-      new HERO_CLASSES[name](this.scene, 0, 0, this.socket)
+      createHeroByName(name, this.scene, 0, 0, this.socket)
     );
 
     this.player1.addHeroes(player1Heroes);
@@ -48,52 +40,63 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   rebuildFromState(gameState, board) {
     this.board = board;
-    this.roomId = gameState.matchId;
-
+    this.roomId = gameState.roomId;
+  
     const players = gameState.players.map(playerData => {
-      const player = new Player(playerData.name, [], playerData.id);
-      player.setNumber(playerData.number);
-      return player;
-    });
-
-    players.forEach(player => {
-      const heroInstances = player.heroes.map(heroId => {
-        const heroData = gameState.heroes[heroId];
-        const HeroClass = HERO_CLASSES[heroData.name];
-        const hero = new HeroClass(this.scene, 0, 0, this.socket);
-
-        hero.setId(heroData.id);
-        hero.setBoardPosition(heroData.position);
-        hero.stats.attack = heroData.currentAttack;
-        hero.stats.currentHealth = heroData.currentHealth;
-        hero.state.statusEffects = heroData.statusEffects || [];
-
+      const player = new Player(playerData.name, [], playerData.id, playerData.number);
+      
+      const heroes = playerData.heroes.map(heroData => {
+        const hero = createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
+  
+        hero.stats.attack = heroData.stats.attack;
+        hero.stats.currentHealth = heroData.stats.currentHealth;
+        hero.state.position = heroData.state.position;
+        hero.state.isAlive = heroData.state.isAlive;
+        hero.state.statusEffects = heroData.state.statusEffects || [];
+  
         return hero;
       });
-
-      player.addHeroes(heroInstances);
+  
+      player.addHeroes(heroes);
+      return player;
     });
-
+  
     this.player1 = players.find(p => p.number === 1);
     this.player2 = players.find(p => p.number === 2);
-
-    this.setupMatch([this.player1, this.player2], gameState);
-  }
+  
+    this.player1.heroes.forEach(hero => {
+      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
+    });
+  
+    this.player2.heroes.forEach(hero => {
+      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_red');
+    });
+  
+    this.setupMatch(players, gameState);
+  }  
 
   setupMatch(players, gameState = null) {
+    let currentTurnIndex = false;
+
+    if(gameState) {
+      currentTurnIndex = players.findIndex(player => player.id === gameState.currentTurnPlayerId);
+    }
+
     this.turnManager = new TurnManager(
       this.scene,
       players,
       this.socket,
       this.roomId,
       this.startedPlayerIndex,
-      this
+      this,
+      currentTurnIndex
     );
 
     this.currentTurn = this.turnManager.currentTurn;
 
     if (!gameState) {
       this.setupInitialPositions();
+      this.turnManager.determineStartingPlayer();
       this.turnManager.triggerStartOfTurnSkills(players);
     }
 
@@ -113,18 +116,25 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       players: [this.player1, this.player2].map(p => ({
         id: p.id,
         name: p.name,
+        number: p.number,
         heroes: p.heroes.map(hero => ({
           id: hero.id,
           name: hero.name,
+          stats: {
+            attack: hero.stats.attack,
+            currentHealth: hero.stats.currentHealth,
+          },
+          state: {
+            position: hero.state.position,
+            isAlive: hero.state.isAlive,
+            statusEffects: hero.state.statusEffects || [],
+          }
         })),
-        // heroesData: p.heroes.map(hero => ({
-        number: p.number
       })),
       currentTurnPlayerId: this.turnManager.getCurrentPlayer().id,
       lastActionTimestamp: Date.now(),
       status: 'in_progress'
     };
-
   }
 
   setupInitialPositions() {
@@ -185,39 +195,37 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   }  
 
   updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects }) {
-    const hero = this.gameState.heroes[heroId];
-    
-    if (!hero) {
-      console.warn(`Hero ID ${heroId} não encontrado para atualização.`);
+    for (const player of this.gameState.players) {
+      const hero = player.heroes.find(h => h.id === heroId);
+      if (!hero) continue;
+  
+      if (currentHealth !== undefined) hero.stats.currentHealth = currentHealth;
+      if (isAlive !== undefined) hero.state.isAlive = isAlive;
+      if (currentAttack !== undefined) hero.stats.attack = currentAttack;
+      if (statusEffects !== undefined) hero.state.statusEffects = statusEffects;
+  
+      this.gameState.lastActionTimestamp = Date.now();
+      this.sendGameStateUpdate();
       return;
     }
   
-    if (currentHealth !== undefined) hero.currentHealth = currentHealth;
-    if (isAlive !== undefined) hero.isAlive = isAlive;
-    if (currentAttack !== undefined) hero.currentAttack = currentAttack;
-    if (statusEffects !== undefined) hero.statusEffects = statusEffects;
-
-    console.log(`Atualizando stats do herói ${heroId}:`);
-    console.log(`- Vida: ${hero.currentHealth}`);
-  
-    this.gameState.lastActionTimestamp = Date.now();
-
-    this.sendGameStateUpdate();
+    console.warn(`Herói com ID ${heroId} não encontrado para update de stats.`);
   }
   
   updateHeroPosition(heroId, newPosition) {
-    const hero = this.gameState.heroes[heroId];
-    
-    if (!hero) {
-      console.warn(`Hero ID ${heroId} não encontrado para atualização de posição.`);
+    for (const player of this.gameState.players) {
+      const hero = player.heroes.find(h => h.id === heroId);
+      console.log(hero);
+
+      if (!hero) continue;
+  
+      console.log(`Atualizando posição do herói ${hero.name} para ${newPosition}`);
+      hero.state.position = newPosition;
+      this.gameState.lastActionTimestamp = Date.now();
+      this.sendGameStateUpdate();
       return;
     }
   
-    console.log(`Atualizando posição do herói ${heroId} para ${newPosition}`);
-
-    hero.position = newPosition;
-    this.gameState.lastActionTimestamp = Date.now();
-
-    this.sendGameStateUpdate();
-  }
+    console.warn(`Herói com ID ${heroId} não encontrado para update de posição.`);
+  }  
 }

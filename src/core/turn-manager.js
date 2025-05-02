@@ -1,19 +1,17 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class TurnManager {
-  constructor(scene, players, socket, roomId, startedPlayerIndex, gameManager) {
+  constructor(scene, players, socket, roomId, startedPlayerIndex, gameManager, currentPlayerIndex = null) {
     this.scene = scene;
     this.players = players;
     this.socket = socket;
     this.roomId = roomId;
-    this.currentPlayerIndex = startedPlayerIndex;
+    this.currentPlayerIndex = currentPlayerIndex ?? startedPlayerIndex;
     this.startedPlayerIndex = startedPlayerIndex;
 
     this.gameManager = gameManager;
     
     this.currentTurn = this.createNewTurn(this.players[this.currentPlayerIndex], 1);
-
-    this.determineStartingPlayer();
   }
 
   determineStartingPlayer () {
@@ -21,8 +19,6 @@ export default class TurnManager {
     this.currentTurn.player = this.players[this.startedPlayerIndex];
   
     this.scene.gameUI.showMessage(`${this.currentTurn.player.name} começa o jogo!`);
-  
-    this.whoStarted = this.startedPlayerIndex;
 
     const isMyTurn = this.currentTurn.player.id === this.socket.id;
     this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);

@@ -35,6 +35,8 @@ export default class GameScene extends Phaser.Scene {
   create(data) {
     const state = data.players ? data : data.gameState;
 
+    console.log('GameScene create', state);
+
     const reconnect = data.reconnect ?? false;
 
     const { roomId, players, startedPlayerIndex } = state;
@@ -61,8 +63,6 @@ export default class GameScene extends Phaser.Scene {
     this.uiManager = new UIManager(this, this.roomId);
   
     this.gameManager = new GameManager(this);
-
-    console.log(reconnect);
 
     if(reconnect) {
       this.gameManager.rebuildFromState(state, this.board);

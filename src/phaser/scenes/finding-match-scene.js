@@ -61,12 +61,16 @@ export default class FindingMatchScene extends Phaser.Scene {
     });
   
     socket.once('RECONNECT_FAILED', () => {
-      console.log('Reconexão falhou. Entrando normalmente.');
-
-      socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
-        player: player.toJSON()
-      });
+      console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
+    
+      // Espera um tempo para o jogador ver a mensagem, então volta ao matchmaking
+      setTimeout(() => {
+        socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
+          player: player.toJSON()
+        });
+      }, 3000);
     });
+    
   
     socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, {
       playerId

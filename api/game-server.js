@@ -164,51 +164,92 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     waitingQueue.delete(socket.id);
-
+  
     const playerId = socket.playerId;
-
+  
     for (const [roomId, match] of matches.entries()) {
       if (match.player1.id === socket.id || match.player2.id === socket.id) {
+        const opponentId = match.player1.id === socket.id ? match.player2.id : match.player1.id;
+  
+        // Verifica se o oponente já está desconectado
+        const opponentDisconnected = Array.from(disconnectedPlayers.values()).some(
+          p => p.socketId === opponentId
+        );
+  
+        if (opponentDisconnected) {
+          // Ambos saíram: fim imediato da partida
+          io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId: null });
+          io.socketsLeave(roomId);
+          matches.delete(roomId);
+          disconnectedPlayers.delete(playerId);
+          disconnectedPlayers.delete(match.player1.id);
+          disconnectedPlayers.delete(match.player2.id);
+          return;
+        }
+  
         const timeout = setTimeout(() => {
           const winnerId = match.player1.id === socket.id ? match.player2.id : match.player1.id;
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
           io.socketsLeave(roomId);
           matches.delete(roomId);
+          disconnectedPlayers.delete(playerId);
         }, 20000);
-
+  
         disconnectedPlayers.set(playerId, {
           socketId: socket.id,
           roomId,
           timeout
         });
-        
+  
         break;
       }
     }
   });
+  
 
-socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
+  socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
     const data = disconnectedPlayers.get(playerId);
-    
+  
     if (!data) {
       socket.emit('RECONNECT_FAILED');
       return;
     }
-
-    const { roomId, timeout } = data;
+  
+    const { roomId, timeout, socketId: oldSocketId } = data;
     const match = matches.get(roomId);
-    if (!match) return;
-
+  
+    if (!match) {
+      socket.emit('RECONNECT_FAILED');
+      disconnectedPlayers.delete(playerId);
+      return;
+    }
+  
+    const opponentId = match.player1.id === oldSocketId ? match.player2.id : match.player1.id;
+    const opponentDisconnected = Array.from(disconnectedPlayers.values()).some(
+      p => p.socketId === opponentId
+    );
+  
+    if (opponentDisconnected) {
+      socket.emit('RECONNECT_FAILED');
+      return;
+    }
+  
+    if (match.player1.id === oldSocketId) {
+      match.player1.id = socket.id;
+    } else if (match.player2.id === oldSocketId) {
+      match.player2.id = socket.id;
+    }
+  
     socket.join(roomId);
     clearTimeout(timeout);
     disconnectedPlayers.delete(playerId);
-
+  
     if (match.gameState) {
       socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, {
         gameState: match.gameState
       });
     }
-
+  
     console.log(`Jogador ${playerId} reconectado na sala ${roomId}`);
   });
 });
