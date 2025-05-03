@@ -13,16 +13,29 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.socket = socket;
   }
 
+  checkGameState() {
+    const alivePlayers = this.gameState.players.filter(player =>
+      player.heroes.some(char => char.state.isAlive)
+    );
+
+    if (alivePlayers.length === 1) {
+      const winner = alivePlayers[0];
+      this.setGameState({ status: 'finished', winner: winner.name });
+      this.finishGame();
+      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winner: winner.name });
+    }
+
+    return this.gameState;
+  }
+
   initFromMatch(player1Data, player2Data, roomId, startedPlayerIndex, board) {
     this.board = board;
     this.roomId = roomId;
     this.startedPlayerIndex = startedPlayerIndex;
 
     this.player1 = new Player(player1Data.name, [], player1Data.id);
-    this.player1.setNumber(player1Data.number);
 
     this.player2 = new Player(player2Data.name, [], player2Data.id);
-    this.player2.setNumber(player2Data.number);
 
     const player1Heroes = player1Data.heroes.map(name =>
       createHeroByName(name, this.scene, 0, 0, this.socket)
@@ -43,7 +56,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.roomId = gameState.roomId;
   
     const players = gameState.players.map(playerData => {
-      const player = new Player(playerData.name, [], playerData.id, playerData.number);
+      const player = new Player(playerData.name, [], playerData.id, playerData.index);
       
       const heroes = playerData.heroes.map(heroData => {
         const hero = createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
@@ -61,8 +74,8 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       return player;
     });
   
-    this.player1 = players.find(p => p.number === 1);
-    this.player2 = players.find(p => p.number === 2);
+    this.player1 = players.find(p => p.index === 1);
+    this.player2 = players.find(p => p.index === 2);
   
     this.player1.heroes.forEach(hero => {
       this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
@@ -116,7 +129,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       players: [this.player1, this.player2].map(p => ({
         id: p.id,
         name: p.name,
-        number: p.number,
+        index: p.index,
         heroes: p.heroes.map(hero => ({
           id: hero.id,
           name: hero.name,
@@ -215,8 +228,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   updateHeroPosition(heroId, newPosition) {
     for (const player of this.gameState.players) {
       const hero = player.heroes.find(h => h.id === heroId);
-      console.log(hero);
-
       if (!hero) continue;
   
       console.log(`Atualizando posição do herói ${hero.name} para ${newPosition}`);

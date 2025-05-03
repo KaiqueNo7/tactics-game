@@ -19,49 +19,58 @@ const io = new Server(server, {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
 
-// Estruturas otimizadas
-const waitingQueue = new Map(); // socket.id => { playerId, name }
-const matches = new Map();      // roomId => Match Object
+const waitingQueue = new Map();
+const matches = new Map();
 const goodLuckCache = new Map();
 const disconnectedPlayers = new Map();
+const playerIdToSocketId = new Map();
 
-// Função utilitária
 function getMatch(roomId) {
   return matches.get(roomId);
 }
 
 io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.QUIT_QUEUE, () => {
-    waitingQueue.delete(socket.id);
+    if (socket.playerId) {
+      waitingQueue.delete(socket.playerId);
+    }
   });
-
+  
   socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ player }) => {
-    socket.playerId = player.id;
-
     if (!player || typeof player.id !== 'string' || typeof player.name !== 'string') {
       console.warn(`Conexão inválida de ${socket.id}: dados de player ausentes ou inválidos`);
       return;
     }
-
+  
+    socket.playerId = player.id;
+    playerIdToSocketId.set(player.id, socket.id);
+  
     const safeName = (player.name || '').trim().substring(0, 20) || `Jogador_${Math.floor(Math.random() * 1000)}`;
-  
-    if (waitingQueue.has(socket.id)) return;
-  
-    waitingQueue.set(socket.id, {
+
+    if (waitingQueue.has(player.id)) return;
+
+    waitingQueue.set(player.id, {
       id: player.id,
       name: safeName,
-      number: null,     
-      heroes: []          
+      index: null,
+      heroes: []
     });
 
+    console.log('Tamanho da fila:', waitingQueue.size, 'Jogadores:', [...waitingQueue.keys()]);
+
     if (waitingQueue.size >= 2) {
-      const [id1, p1] = waitingQueue.entries().next().value;
-      waitingQueue.delete(id1);
-      const [id2, p2] = waitingQueue.entries().next().value;
-      waitingQueue.delete(id2);
+      const iterator = waitingQueue.entries();
+      const [playerId1, p1] = iterator.next().value;
+      waitingQueue.delete(playerId1);
+      const [playerId2, p2] = iterator.next().value;
+      waitingQueue.delete(playerId2);
   
-      const sock1 = io.sockets.sockets.get(id1);
-      const sock2 = io.sockets.sockets.get(id2);
+      const socketId1 = playerIdToSocketId.get(playerId1);
+      const socketId2 = playerIdToSocketId.get(playerId2);
+  
+      const sock1 = io.sockets.sockets.get(socketId1);
+      const sock2 = io.sockets.sockets.get(socketId2);
+  
       if (!sock1 || !sock2) return;
   
       const roomId = uuidv4();
@@ -69,9 +78,9 @@ io.on('connection', (socket) => {
       sock2.join(roomId);
   
       const match = {
-        player1: { ...p1, id: id1, number: 1 },
-        player2: { ...p2, id: id2, number: 2 },
-        currentTurnPlayerId: id1,
+        player1: { ...p1, id: playerId1, index: 1 },
+        player2: { ...p2, id: playerId2, index: 2 },
+        currentTurnPlayerId: playerId1,
         selectedHeroes: [],
       };
   
@@ -83,7 +92,6 @@ io.on('connection', (socket) => {
       });
     }
   });
-  
 
   socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
     const match = getMatch(roomId);
@@ -163,32 +171,30 @@ io.on('connection', (socket) => {
   });
 
   socket.on('disconnect', () => {
-    waitingQueue.delete(socket.id);
+    if (!socket.playerId) return;
   
     const playerId = socket.playerId;
   
-    for (const [roomId, match] of matches.entries()) {
-      if (match.player1.id === socket.id || match.player2.id === socket.id) {
-        const opponentId = match.player1.id === socket.id ? match.player2.id : match.player1.id;
+    waitingQueue.delete(playerId);
+    playerIdToSocketId.delete(playerId);
   
-        // Verifica se o oponente já está desconectado
-        const opponentDisconnected = Array.from(disconnectedPlayers.values()).some(
-          p => p.socketId === opponentId
-        );
+    for (const [roomId, match] of matches.entries()) {
+      if (match.player1.id === playerId || match.player2.id === playerId) {
+        const opponentId = match.player1.id === playerId ? match.player2.id : match.player1.id;
+  
+        const opponentDisconnected = disconnectedPlayers.has(opponentId);
   
         if (opponentDisconnected) {
-          // Ambos saíram: fim imediato da partida
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId: null });
           io.socketsLeave(roomId);
           matches.delete(roomId);
           disconnectedPlayers.delete(playerId);
-          disconnectedPlayers.delete(match.player1.id);
-          disconnectedPlayers.delete(match.player2.id);
+          disconnectedPlayers.delete(opponentId);
           return;
         }
   
         const timeout = setTimeout(() => {
-          const winnerId = match.player1.id === socket.id ? match.player2.id : match.player1.id;
+          const winnerId = opponentId;
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
           io.socketsLeave(roomId);
           matches.delete(roomId);
@@ -206,7 +212,6 @@ io.on('connection', (socket) => {
     }
   });
   
-
   socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
     const data = disconnectedPlayers.get(playerId);
   
@@ -215,7 +220,7 @@ io.on('connection', (socket) => {
       return;
     }
   
-    const { roomId, timeout, socketId: oldSocketId } = data;
+    const { roomId, timeout } = data;
     const match = matches.get(roomId);
   
     if (!match) {
@@ -224,22 +229,16 @@ io.on('connection', (socket) => {
       return;
     }
   
-    const opponentId = match.player1.id === oldSocketId ? match.player2.id : match.player1.id;
-    const opponentDisconnected = Array.from(disconnectedPlayers.values()).some(
-      p => p.socketId === opponentId
-    );
+    const opponentId = match.player1.id === playerId ? match.player2.id : match.player1.id;
+    const opponentDisconnected = disconnectedPlayers.has(opponentId);
   
     if (opponentDisconnected) {
       socket.emit('RECONNECT_FAILED');
       return;
     }
   
-    if (match.player1.id === oldSocketId) {
-      match.player1.id = socket.id;
-    } else if (match.player2.id === oldSocketId) {
-      match.player2.id = socket.id;
-    }
-  
+    playerIdToSocketId.set(playerId, socket.id);
+    socket.playerId = playerId;
     socket.join(roomId);
     clearTimeout(timeout);
     disconnectedPlayers.delete(playerId);
@@ -251,5 +250,5 @@ io.on('connection', (socket) => {
     }
   
     console.log(`Jogador ${playerId} reconectado na sala ${roomId}`);
-  });
+  });  
 });

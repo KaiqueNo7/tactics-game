@@ -15,13 +15,12 @@ export default class FindingMatchScene extends Phaser.Scene {
   create() {
     const { width } = this.scale;
   
-    let playerId = localStorage.getItem('playerId');
+    let playerId = sessionStorage.getItem('playerId');
     if (!playerId) {
       playerId = crypto.randomUUID();
-      localStorage.setItem('playerId', playerId);
-    }
+      sessionStorage.setItem('playerId', playerId);
+    }    
   
-    // Cria o objeto player
     const player = new Player(
       this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
       [],
@@ -63,7 +62,6 @@ export default class FindingMatchScene extends Phaser.Scene {
     socket.once('RECONNECT_FAILED', () => {
       console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
     
-      // Espera um tempo para o jogador ver a mensagem, então volta ao matchmaking
       setTimeout(() => {
         socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
           player: player.toJSON()

@@ -53,6 +53,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
   selectHero(hero) {
     if(!hero.state.isAlive) return;
 
+    console.log(hero.playerId, this.socket.id);
+
     if (hero.playerId !== this.socket.id) {
       this.scene.gameUI.showMessage('Esse herói não é seu.');
       return;
@@ -252,17 +254,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
       }
     } else {
       this.scene.gameUI.showMessage(`${target.name} está fora do alcance de ataque.`);
-    }
-
-    if (!fromSocket) {
-      const allHeroesAttacked = currentPlayer.heroes
-        .filter(hero => hero.state.isAlive)
-        .every(hero => turnManager.currentTurn.attackedHeroes.has(hero));
-
-      if (allHeroesAttacked) {
-        turnManager.currentTurn.attackedAll = true;
-        this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { roomId: this.roomId });
-      }
     }
   }
       
@@ -566,6 +557,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   moveHero(hero, targetHex, fromSocket = false) {
       const gameManager = this.scene.gameManager;
       const turnManager = gameManager.getTurnManager();
+      const heroId = hero.id;
 
       if (!hero || !targetHex){
         console.log('Herói ou hexágono alvo inválido.');
@@ -605,6 +597,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
       this.clearHighlights();
       this.selectedHero = null;
+
+      gameManager.updateHeroPosition(heroId, targetHex.label);
     
       if (!fromSocket && this.socket && this.roomId) {
         this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {

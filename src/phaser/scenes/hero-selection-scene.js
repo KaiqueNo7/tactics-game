@@ -27,7 +27,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];
 
-    // Ordem personalizada de seleção
     this.selectionOrder = [
       { count: 1, player: 1 },
       { count: 2, player: 2 },
@@ -65,8 +64,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const padding = 100;
     const { width } = this.scale;
 
-    const player1 = this.players.find(p => p.number === 1);
-    const player2 = this.players.find(p => p.number === 2);
+    const player1 = this.players.find(p => p.index === 1);
+    const player2 = this.players.find(p => p.index === 2);
 
     this.player1NameText = this.add.text(padding, 40, player1.name, {
       color: '#ffffff',
@@ -129,8 +128,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
       const resolvedHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
 
-      const player1 = players.find(p => p.number === 1);
-      const player2 = players.find(p => p.number === 2);
+      const player1 = players.find(p => p.index === 1);
+      const player2 = players.find(p => p.index === 2);
 
       this.scene.start('PreMatchScene', {
         players: [
@@ -535,8 +534,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
   startGame() {
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
   
-    const player1 = this.players.find(p => p.number === 1);
-    const player2 = this.players.find(p => p.number === 2);
+    const player1 = this.players.find(p => p.index === 1);
+    const player2 = this.players.find(p => p.index === 2);
   
     player1.heroes = this.selectedHeroesP1;
     player2.heroes = this.selectedHeroesP2;

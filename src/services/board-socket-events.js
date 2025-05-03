@@ -7,7 +7,6 @@ export function boardSocketListeners (board, socket, gameManager) {
 
     if (realHero && targetHex) {
       board.moveHero(realHero, targetHex, true);
-      gameManager.updateHeroPosition(heroId, targetLabel);
     }
   });
 

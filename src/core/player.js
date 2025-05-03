@@ -1,13 +1,9 @@
 export default class Player {
-  constructor(name, heroes = [], id, number) {
+  constructor(name, heroes = [], id, index) {
     this.id = id;
     this.name = name;
     this.heroes = heroes;
-    this.number = number;
-  }
-
-  setNumber(number){
-    this.number = number;
+    this.index = index;
   }
 
   addHeroes(heroes){
@@ -26,7 +22,7 @@ export default class Player {
       heroes: this.heroes.map(char => char.toJSON()),
       id: this.id,
       name: this.name,
-      number: this.number
+      index: this.index
     };
   }
 }

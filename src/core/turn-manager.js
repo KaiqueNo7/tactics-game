@@ -1,5 +1,3 @@
-import { SOCKET_EVENTS } from "../../api/events.js";
-
 export default class TurnManager {
   constructor(scene, players, socket, roomId, startedPlayerIndex, gameManager, currentPlayerIndex = null) {
     this.scene = scene;
@@ -27,35 +25,24 @@ export default class TurnManager {
   markHeroAsMoved(hero) {
     this.currentTurn.movedHeroes.add(hero);
     this.triggerOnMoveSkills(this.players);
-    if (this.currentTurn.movedHeroes.size === this.currentTurn.player.heroes.length) {
-      this.currentTurn.movedAll = true;
-    }
   }
 
   markHeroAsAttacked(hero) {
     this.currentTurn.attackedHeroes.add(hero);
-    const aliveHeroes = this.currentTurn.player.heroes.filter(char => char.state.isAlive);
-    if (this.currentTurn.attackedHeroes.size === aliveHeroes.length) {
-      this.currentTurn.attackedAll = true;
-    }
   }
 
   canMoveHero(hero) {
     return !this.currentTurn.movedHeroes.has(hero) &&
-           !this.currentTurn.attackedHeroes.has(hero) &&
-           !this.currentTurn.movedAll;
+           !this.currentTurn.attackedHeroes.has(hero)
   }
 
-  createNewTurn(player, roundNumber) {
+  createNewTurn(playerId, numberTurn) {
     return {
-      attackedAll: false,
       attackedHeroes: new Set(),
       counterAttack: false,
-      movedAll: false,
       movedHeroes: new Set(),
-      phase: 'start',
-      player,
-      roundNumber
+      playerId: playerId,
+      numberTurn: numberTurn,
     };
   }
 
@@ -63,9 +50,7 @@ export default class TurnManager {
     this.gameManager.showGameState();
     this.triggerEndOfTurnSkills();
     this.currentTurn.movedHeroes.clear();
-    if (this.currentTurn.attackedHeroes) {
-      this.currentTurn.attackedHeroes.clear();
-    }
+    this.currentTurn.attackedHeroes.clear();
 
     this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
     const currentPlayer = this.players[this.currentPlayerIndex];
@@ -74,7 +59,6 @@ export default class TurnManager {
 
     this.currentTurn = this.createNewTurn(currentPlayer, newRoundNumber);
     this.scene.board.clearSelectedHero();
-    this.checkGameState();
     this.scene.gameUI.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
     this.scene.board.clearHighlights();
     this.triggerStartOfTurnSkills(this.players);
@@ -82,8 +66,6 @@ export default class TurnManager {
 
     const isMyTurn = this.currentTurn.player.id === this.socket.id;
     this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);
-
-    return this.currentTurn;
   }
 
   triggerStartOfTurnSkills(players) {
@@ -115,34 +97,7 @@ export default class TurnManager {
     });
   }
 
-  checkGameState() {
-    const alivePlayers = this.players.filter(player =>
-      player.heroes.some(char => char.state.isAlive)
-    );
-
-    if (alivePlayers.length === 1) {
-      const winner = alivePlayers[0];
-      this.scene.gameManager.setGameState({ status: 'finished', winner });
-      this.scene.gameManager.finishGame();
-      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winner: winner.name });
-    }
-
-    return this.gameState;
-  }
-
   getCurrentPlayer() {
     return this.currentTurn.player;
-  }
-
-  toJSON() {
-    return {
-      currentPlayer: this.currentTurn.player.name,
-      gameState: this.gameState,
-      players: this.players.map(player => ({
-        heroes: player.heroes.map(char => char.toJSON()),
-        name: player.name
-      })),
-      roundNumber: this.currentTurn.roundNumber
-    };
   }
 }

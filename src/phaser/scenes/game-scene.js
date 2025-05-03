@@ -57,8 +57,8 @@ export default class GameScene extends Phaser.Scene {
   
     this.inputManager = new BoardInputManager(this, this.board, socket);
   
-    const player1Data = players.find(p => p.number === 1);
-    const player2Data = players.find(p => p.number === 2);
+    const player1Data = players.find(p => p.index === 1);
+    const player2Data = players.find(p => p.index === 2);
   
     this.uiManager = new UIManager(this, this.roomId);
   
