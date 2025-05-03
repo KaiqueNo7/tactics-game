@@ -1,25 +1,13 @@
 export default class TurnManager {
-  constructor(scene, players, socket, roomId, startedPlayerIndex, gameManager, currentPlayerIndex = null) {
-    this.scene = scene;
-    this.players = players;
-    this.socket = socket;
-    this.roomId = roomId;
-    this.currentPlayerIndex = currentPlayerIndex ?? startedPlayerIndex;
-    this.startedPlayerIndex = startedPlayerIndex;
+  constructor(board, gameUI, playerId, gameManager) {
+    this.board = board;
+    this.gameUI = gameUI;
+    this.startedPlayerId = playerId;
 
     this.gameManager = gameManager;
-    
-    this.currentTurn = this.createNewTurn(this.players[this.currentPlayerIndex], 1);
-  }
+    this.gameState = gameManager.gameState;
 
-  determineStartingPlayer () {
-    this.currentPlayerIndex = this.startedPlayerIndex;
-    this.currentTurn.player = this.players[this.startedPlayerIndex];
-  
-    this.scene.gameUI.showMessage(`${this.currentTurn.player.name} começa o jogo!`);
-
-    const isMyTurn = this.currentTurn.player.id === this.socket.id;
-    this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);
+    this.currentTurn = this.gameState.currentTurn;
   }
 
   markHeroAsMoved(hero) {
@@ -46,26 +34,28 @@ export default class TurnManager {
     };
   }
 
-  nextTurn() {
+  nextTurn(playerId) {
     this.gameManager.showGameState();
-    this.triggerEndOfTurnSkills();
-    this.currentTurn.movedHeroes.clear();
-    this.currentTurn.attackedHeroes.clear();
+    const currentPlayer = this.gameManager.getPlayerById(playerId);
+    this.triggerEndOfTurnSkills(currentPlayer);
 
-    this.currentPlayerIndex = (this.currentPlayerIndex + 1) % this.players.length;
-    const currentPlayer = this.players[this.currentPlayerIndex];
-    const isBackToStarter = (this.currentPlayerIndex === this.startedPlayerIndex);
-    const newRoundNumber = this.currentTurn.roundNumber + (isBackToStarter ? 1 : 0);
+    
+    const isBackToStarter = (this.currentTurn.playerId === this.startedPlayerId);
+    const numberTurn = this.currentTurn.numberTurn + (isBackToStarter ? 1 : 0);
 
-    this.currentTurn = this.createNewTurn(currentPlayer, newRoundNumber);
-    this.scene.board.clearSelectedHero();
-    this.scene.gameUI.updateTurnPanel(this.currentTurn.player, this.currentTurn.roundNumber);
-    this.scene.board.clearHighlights();
-    this.triggerStartOfTurnSkills(this.players);
-    this.scene.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
+    this.currentTurn = this.createNewTurn(currentPlayer.id, numberTurn);
+    this.board.clearSelectedHero();
+    this.board.clearHighlights();
 
-    const isMyTurn = this.currentTurn.player.id === this.socket.id;
-    this.scene.gameUI.setEndTurnButtonEnabled(isMyTurn);
+    this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
+
+    const currentPlayerIndex = this.gameManager.getPlayers().findIndex(player => player.id === playerId);
+
+    this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
+    this.gameUI.showMessage(currentPlayer + ' - Sua vez!');
+
+    const isMyTurn = this.currentTurn.playerId === sessionStorage.getItem('playerId');
+    this.gameUI.setEndTurnButtonEnabled(isMyTurn);
   }
 
   triggerStartOfTurnSkills(players) {

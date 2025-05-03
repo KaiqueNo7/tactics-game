@@ -3,17 +3,17 @@ export default class PreMatchScene extends Phaser.Scene {
     super('PreMatchScene');
   }
 
-  create({ players, roomId, startedPlayerIndex }) {
+  create({ gameState }) {
     const { width, height } = this.scale;
   
-    const player1 = players.find(p => p.index === 1);
-    const player2 = players.find(p => p.index === 2);
+    const player1 = gameState.players[0];
+    const player2 = gameState.players[1];
   
-    player1.heroesData.forEach((hero, i) => {
+    player1.heroes.forEach((hero, i) => {
       this.add.sprite(100 + i * 70, height / 2, 'heroes', hero.frame).setScale(2);
     });
   
-    player2.heroesData.forEach((hero, i) => {
+    player2.heroes.forEach((hero, i) => {
       this.add.sprite(width - 100 - i * 70, height / 2, 'heroes', hero.frame).setScale(2);
     });
   
@@ -35,9 +35,7 @@ export default class PreMatchScene extends Phaser.Scene {
   
     this.time.delayedCall(2500, () => {
       this.scene.start('GameScene', {
-        players,
-        roomId,
-        startedPlayerIndex,
+        gameState
       });
     });
   }  

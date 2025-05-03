@@ -2,14 +2,32 @@ import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js';
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 
-const HERO_CLASSES = {
-  Blade,
-  Ceos,
-  Dante,
-  Gold,
-  Ralph,
-  Vic
-};
+function buildGameState(roomId, players, currentTurn, startedPlayerId) {
+  return {
+    roomId,
+    players,
+    currentTurn,
+    startedPlayerId,
+    lastActionTimestamp: Date.now(),
+    status: 'in_progress'
+  };
+}
+
+function createTurn(startedPlayerId) {
+  return {
+    attackedHeroes: new Set(),
+    counterAttack: false,
+    movedHeroes: new Set(),
+    playerId: startedPlayerId,
+    numberTurn: 1,
+  };
+}
+
+function setupInitialPositions(heros, postionsAvaliable){
+  heros.forEach((hero, index) => {
+    hero.state.position = postionsAvaliable[index]
+  });
+}
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
@@ -64,16 +82,16 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const padding = 100;
     const { width } = this.scale;
 
-    const player1 = this.players.find(p => p.index === 1);
-    const player2 = this.players.find(p => p.index === 2);
+    this.player1 = players[0];
+    this.player2 = players[1];
 
-    this.player1NameText = this.add.text(padding, 40, player1.name, {
+    this.player1NameText = this.add.text(padding, 40, this.player1.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
       fontSize: '20px'
     }).setOrigin(0, 0.5);
     
-    this.player2NameText = this.add.text(width - padding, 40, player2.name, {
+    this.player2NameText = this.add.text(width - padding, 40, this.player2.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
       fontSize: '20px'
@@ -125,21 +143,56 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.autoSelectHeroesForTesting();
 
-    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerIndex }) => {
-      const resolvedHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
+    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerId }) => {
+      const resolveHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
+      
+      const player1 = this.player1;
+      const player2 = this.player2;
+    
+      const enrichedPlayers = [
+        {
+          ...player1,
+          heroes: resolveHeroes(this.selectedHeroesP1).map(h => ({
+            id: h.id,
+            name: h.name,
+            stats: {
+              attack: h.stats.attack,
+              currentHealth: h.stats.hp
+            },
+            state: {
+              position: null,
+              isAlive: true,
+              statusEffects: []
+            }
+          }))
+        },
+        {
+          ...player2,
+          heroes: resolveHeroes(this.selectedHeroesP2).map(h => ({
+            id: h.id,
+            name: h.name,
+            stats: {
+              attack: h.stats.attack,
+              currentHealth: h.stats.hp
+            },
+            state: {
+              position: null,
+              isAlive: true,
+              statusEffects: []
+            }
+          }))
+        }
+      ];
 
-      const player1 = players.find(p => p.index === 1);
-      const player2 = players.find(p => p.index === 2);
+      setupInitialPositions(enrichedPlayers[0].heroes, ['B7', 'C6', 'D7']);
+      setupInitialPositions(enrichedPlayers[1].heroes, ['B1', 'C1', 'D1']);      
 
-      this.scene.start('PreMatchScene', {
-        players: [
-          { ...player1, heroesData: resolvedHeroes(this.selectedHeroesP1) },
-          { ...player2, heroesData: resolvedHeroes(this.selectedHeroesP2) }
-        ],
-        roomId: roomId,
-        startedPlayerIndex
-      });
-    });
+      const currentTurn = createTurn(startedPlayerId);
+    
+      const gameState = buildGameState(roomId, enrichedPlayers, currentTurn, startedPlayerId);
+    
+      this.scene.start('PreMatchScene', { gameState });
+    });    
       
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
@@ -534,8 +587,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
   startGame() {
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
   
-    const player1 = this.players.find(p => p.index === 1);
-    const player2 = this.players.find(p => p.index === 2);
+    const player1 = this.player1;
+    const player2 = this.player1;
   
     player1.heroes = this.selectedHeroesP1;
     player2.heroes = this.selectedHeroesP2;

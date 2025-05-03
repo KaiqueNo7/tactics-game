@@ -28,36 +28,18 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     return this.gameState;
   }
 
-  initFromMatch(player1Data, player2Data, roomId, startedPlayerIndex, board) {
+  buildFromGameState(state, board, gameUI) {
+    this.gameState = state;
     this.board = board;
-    this.roomId = roomId;
-    this.startedPlayerIndex = startedPlayerIndex;
+    this.gameUI = gameUI;
+    this.roomId = state.roomId;
+    this.startedPlayerId = state.startedPlayerId;
 
-    this.player1 = new Player(player1Data.name, [], player1Data.id);
-
-    this.player2 = new Player(player2Data.name, [], player2Data.id);
-
-    const player1Heroes = player1Data.heroes.map(name =>
-      createHeroByName(name, this.scene, 0, 0, this.socket)
-    );
-    
-    const player2Heroes = player2Data.heroes.map(name =>
-      createHeroByName(name, this.scene, 0, 0, this.socket)
-    );
-
-    this.player1.addHeroes(player1Heroes);
-    this.player2.addHeroes(player2Heroes);
-
-    this.setupMatch([this.player1, this.player2]);
-  }
-
-  rebuildFromState(gameState, board) {
-    this.board = board;
-    this.roomId = gameState.roomId;
+    console.log(state);
   
-    const players = gameState.players.map(playerData => {
-      const player = new Player(playerData.name, [], playerData.id, playerData.index);
-      
+    const players = state.players.map(playerData => {
+      const player = new Player(playerData.name, [], playerData.id);
+  
       const heroes = playerData.heroes.map(heroData => {
         const hero = createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
   
@@ -74,102 +56,47 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       return player;
     });
   
-    this.player1 = players.find(p => p.index === 1);
-    this.player2 = players.find(p => p.index === 2);
+    this.player1 = players[0];
+    this.player2 = players[1];
   
     this.player1.heroes.forEach(hero => {
       this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
     });
-  
+
     this.player2.heroes.forEach(hero => {
       this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_red');
     });
   
-    this.setupMatch(players, gameState);
+    this.setupMatch(players, state);
   }  
 
-  setupMatch(players, gameState = null) {
-    let currentTurnIndex = false;
-
-    if(gameState) {
-      currentTurnIndex = players.findIndex(player => player.id === gameState.currentTurnPlayerId);
+  setupMatch(players, gameState) {
+    if(!gameState) {
+      console.warn('Sem estado de jogo');
+      return
     }
 
     this.turnManager = new TurnManager(
-      this.scene,
-      players,
-      this.socket,
-      this.roomId,
-      this.startedPlayerIndex,
+      this.board,
+      this.gameUI,
+      this.startedPlayerId,
       this,
-      currentTurnIndex
     );
 
     this.currentTurn = this.turnManager.currentTurn;
 
-    if (!gameState) {
-      this.setupInitialPositions();
-      this.turnManager.determineStartingPlayer();
-      this.turnManager.triggerStartOfTurnSkills(players);
-    }
+    this.turnManager.triggerStartOfTurnSkills(players);
 
-    this.buildGameState(gameState);
-    setupSocketListeners(this.scene, this.socket, this.turnManager, this);
+    const playerIndex = players.findIndex(player => player.id === this.startedPlayerId);
+
+    this.gameUI.updateTurnPanel(playerIndex, this.currentTurn.numberTurn);
+
+    setupSocketListeners(this.socket, this.turnManager, this);
     boardSocketListeners(this.board, this.socket, this);
   }
-
-  buildGameState(existingState) {
-    if (existingState) {
-      this.gameState = existingState;
-      return;
-    }
-
-    this.gameState = {
-      roomId: this.roomId,
-      players: [this.player1, this.player2].map(p => ({
-        id: p.id,
-        name: p.name,
-        index: p.index,
-        heroes: p.heroes.map(hero => ({
-          id: hero.id,
-          name: hero.name,
-          stats: {
-            attack: hero.stats.attack,
-            currentHealth: hero.stats.currentHealth,
-          },
-          state: {
-            position: hero.state.position,
-            isAlive: hero.state.isAlive,
-            statusEffects: hero.state.statusEffects || [],
-          }
-        })),
-      })),
-      currentTurnPlayerId: this.turnManager.getCurrentPlayer().id,
-      lastActionTimestamp: Date.now(),
-      status: 'in_progress'
-    };
-  }
-
-  setupInitialPositions() {
-    this.player2.heroes[0].state.position = 'B1';
-    this.player2.heroes[1].state.position = 'C1';
-    this.player2.heroes[2].state.position = 'D1';
-
-    this.player1.heroes[0].state.position = 'C6';
-    this.player1.heroes[1].state.position = 'D7';
-    this.player1.heroes[2].state.position = 'B7';
-
-    this.player1.heroes.forEach(hero => {
-      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
-    });
-
-    this.player2.heroes.forEach(hero => {
-      this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_red');
-    });
-  }
-
-  getPlayerById(id) {
-    return [this.player1, this.player2].find(p => p.id === id);
+  
+  getPlayerById(playerId) {
+    return [this.player1, this.player2].find(p => p.id === playerId);
   }
 
   sendGameStateUpdate() {
@@ -189,6 +116,10 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   getTurnManager() {
     return this.turnManager;
+  }
+
+  getPlayers() {
+    return [this.player1, this.player2];
   }
 
   getHeroById(heroId) {

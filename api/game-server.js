@@ -52,7 +52,6 @@ io.on('connection', (socket) => {
     waitingQueue.set(player.id, {
       id: player.id,
       name: safeName,
-      index: null,
       heroes: []
     });
 
@@ -78,8 +77,8 @@ io.on('connection', (socket) => {
       sock2.join(roomId);
   
       const match = {
-        player1: { ...p1, id: playerId1, index: 1 },
-        player2: { ...p2, id: playerId2, index: 2 },
+        player1: { ...p1, id: playerId1 },
+        player2: { ...p2, id: playerId2 },
         currentTurnPlayerId: playerId1,
         selectedHeroes: [],
       };
@@ -103,9 +102,11 @@ io.on('connection', (socket) => {
     const match = getMatch(roomId);
     if (!match) return;
 
-    const startedPlayerIndex = Math.floor(Math.random() * 2);
+    const startedPlayerIndex = Math.floor(Math.random() * 2) + 1;
+    const startedPlayerId = startedPlayerIndex === 1 ? match.player1.id : match.player2.id;
+
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
-      heroes, players, roomId, startedPlayerIndex
+      heroes, players, roomId, startedPlayerId
     });
   });
 

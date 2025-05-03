@@ -119,20 +119,20 @@ export default class GameUI extends Phaser.GameObjects.Container {
     hero.add(hero.healthText);
   }       
 
-  updateTurnPanel(currentPlayer, roundNumber) {
+  updateTurnPanel(playerIndex, turnNumber) {
     this.turnPanelContainer = this.scene.add.container(
       this.scene.scale.width - 100,
       this.scene.scale.height / 2 - 60
     );
     
-    const hexTile = currentPlayer.number == 1 ? 'hex_tile_p1' : 'hex_tile_p2';
+    const hexTile = playerIndex == 0 ? 'hex_tile_p1' : 'hex_tile_p2';
     
     this.turnPanelBackground = this.scene.add.image(0, 0, hexTile)
       .setOrigin(0.5)
       .setScale(1.5)
       .setInteractive({ useHandCursor: true });
     
-    this.roundNumberText = this.scene.add.text(0, 0, roundNumber, {
+    this.turnNumberText = this.scene.add.text(0, 0, turnNumber, {
       align: 'center',
       color: '#FFFFFF',
       fontSize: '18px',
@@ -152,7 +152,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
     
     this.turnPanelContainer.add(this.turnPanelBackground);
     this.turnPanelContainer.add(this.turnLabelText);
-    this.turnPanelContainer.add(this.roundNumberText);
+    this.turnPanelContainer.add(this.turnNumberText);
   }    
 
   placeHeroOnBoard(hero, position, hexColor) {
