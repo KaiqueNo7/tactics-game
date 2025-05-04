@@ -11,8 +11,6 @@ class Hero extends Phaser.GameObjects.Container {
 
     this.playerId = playerId;
 
-    createSpriteHero();
-
     const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex);
     sprite.setScale(0.8);
     this.add(sprite);
@@ -166,15 +164,31 @@ class Hero extends Phaser.GameObjects.Container {
     console.log(`${this.name} foi derrotado!`);
     this.state.isAlive = false;
   
-    if (this.scene.gameManager.gameState.heroes[this.id]) {
-      this.scene.gameManager.gameState.heroes[this.id].isAlive = false;
+    const gameState = this.scene?.gameManager?.gameState;
+    const heroId = this.id;
+  
+    if (gameState?.players) {
+      for (const player of gameState.players) {
+        const hero = player.heroes.find(h => h.id === heroId);
+        if (hero) {
+          hero.state.isAlive = false;
+          break;
+        }
+      }
+    } else {
+      console.warn(`gameState.players não está disponível ao matar ${this.name}`);
     }
   
-    const hexHeroDie = this.scene.board.getHexByLabel(this.state.position);
-    this.scene.gameUI.updateGamePanel(this.scene.gameManager.turnManager.players);
-    this.scene.board.handleHeroDeath(this, hexHeroDie);
-  }
+    const hexHeroDie = this.state.position
+      ? this.scene.board?.getHexByLabel(this.state.position)
+      : null;
   
+    if (hexHeroDie) {
+      this.scene.board?.handleHeroDeath(this, hexHeroDie);
+    }
+  
+    this.scene.gameUI?.updateGamePanel(this.scene.gameManager?.turnManager?.players ?? []);
+  }  
 
   processStatusEffects() {
     this.state.statusEffects = this.state.statusEffects.filter(effect => {

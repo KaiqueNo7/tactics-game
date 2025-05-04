@@ -256,7 +256,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   }
       
   handleHeroDeath(hero, hex) {
-    this.scene.gameManager.turnManager.checkGameState();
+    this.scene.gameManager.checkGameState();
     
     delete this.heroes[hex.label];
     
