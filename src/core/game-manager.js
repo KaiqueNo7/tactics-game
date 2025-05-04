@@ -91,6 +91,9 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     this.gameUI.updateTurnPanel(playerIndex, this.currentTurn.numberTurn);
 
+    const isMyTurn = this.startedPlayerId === sessionStorage.getItem('playerId');
+    this.gameUI.setEndTurnButtonEnabled(isMyTurn);
+
     setupSocketListeners(this.socket, this.turnManager, this);
     boardSocketListeners(this.board, this.socket, this);
   }

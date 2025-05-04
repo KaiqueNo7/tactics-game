@@ -33,19 +33,22 @@ export default class GameScene extends Phaser.Scene {
   }
 
   create(state) {
+    const { roomId } = state.gameState
+
+    this.roomId = roomId;
+
     this.gameUI = new GameUI(this, socket, this.roomId);
     this.gameUI.createBackground();
     this.gameUI.createEndTurnButton();
   
-    this.board = new Board(this, 45, socket, this.roomId);
+    this.uiManager = new UIManager(this, this.roomId);
+    this.gameManager = new GameManager(this);
+
+    this.board = new Board(this, socket, this.roomId, this.gameManager);
     this.board.initializeBoard();
     this.board.createHexagons();
   
     this.inputManager = new BoardInputManager(this, this.board, socket);
-  
-    this.uiManager = new UIManager(this, this.roomId);
-  
-    this.gameManager = new GameManager(this);
 
     this.gameManager.buildFromGameState(state.gameState, this.board, this.gameUI);
 

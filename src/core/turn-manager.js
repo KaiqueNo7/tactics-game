@@ -12,7 +12,7 @@ export default class TurnManager {
 
   markHeroAsMoved(hero) {
     this.currentTurn.movedHeroes.add(hero);
-    this.triggerOnMoveSkills(this.players);
+    this.triggerOnMoveSkills(this.gameManager.getPlayers());
   }
 
   markHeroAsAttacked(hero) {
@@ -39,7 +39,6 @@ export default class TurnManager {
     const currentPlayer = this.gameManager.getPlayerById(playerId);
     this.triggerEndOfTurnSkills(currentPlayer);
 
-    
     const isBackToStarter = (this.currentTurn.playerId === this.startedPlayerId);
     const numberTurn = this.currentTurn.numberTurn + (isBackToStarter ? 1 : 0);
 
@@ -52,7 +51,7 @@ export default class TurnManager {
     const currentPlayerIndex = this.gameManager.getPlayers().findIndex(player => player.id === playerId);
 
     this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
-    this.gameUI.showMessage(currentPlayer + ' - Sua vez!');
+    this.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
 
     const isMyTurn = this.currentTurn.playerId === sessionStorage.getItem('playerId');
     this.gameUI.setEndTurnButtonEnabled(isMyTurn);
@@ -78,8 +77,7 @@ export default class TurnManager {
     });
   }
 
-  triggerEndOfTurnSkills() {
-    const currentPlayer = this.players[this.currentPlayerIndex];
+  triggerEndOfTurnSkills(currentPlayer) {
     currentPlayer.heroes.forEach(hero => {
       if (hero.state.isAlive) {
         hero.endTurn();
@@ -88,6 +86,8 @@ export default class TurnManager {
   }
 
   getCurrentPlayer() {
-    return this.currentTurn.player;
+   const player = this.gameManager.getPlayerById(this.currentTurn.playerId);
+
+    return player;
   }
 }

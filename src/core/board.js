@@ -1,14 +1,15 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class Board extends Phaser.GameObjects.GameObject {
-  constructor(scene, hexRadius = 40, socket, roomId) {
+  constructor(scene, socket, roomId, gameManager) {
     super(scene, 'Board');
     this.scene = scene;
     this.socket = socket;
     this.roomId = roomId;
-    this.hexRadius = hexRadius;
-    this.hexWidth = hexRadius * 2;
-    this.hexHeight = Math.sqrt(3) * hexRadius;
+    this.gameManager = gameManager;
+    this.hexRadius = 45;
+    this.hexWidth = this.hexRadius * 2;
+    this.hexHeight = Math.sqrt(3) * this.hexRadius;
     this.board = [];
     this.heroes = {};
     this.highlightedHexes = [];
@@ -53,15 +54,12 @@ export default class Board extends Phaser.GameObjects.GameObject {
   selectHero(hero) {
     if(!hero.state.isAlive) return;
 
-    console.log(hero.playerId, this.socket.id);
-
-    if (hero.playerId !== this.socket.id) {
+    if (hero.playerId !== sessionStorage.getItem('playerId')) {
       this.scene.gameUI.showMessage('Esse herói não é seu.');
       return;
     }    
 
-    const gameManager = this.scene.gameManager;
-    const turnManager = gameManager.getTurnManager();
+    const turnManager = this.gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
     
     if (this.selectedHero === hero) {

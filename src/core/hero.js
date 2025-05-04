@@ -7,17 +7,19 @@ class Hero extends Phaser.GameObjects.Container {
     this.scene = scene;
     scene.add.existing(this);
 
-    this.socket = socket || scene.socket;
+    this.socket = socket;
 
     this.playerId = playerId;
 
-    const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex || 0);
+    createSpriteHero();
+
+    const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex);
     sprite.setScale(0.8);
     this.add(sprite);
     this.sprite = sprite;
         
     this.isSelected = false;
-    this.frameIndex = frameIndex || 0;
+    this.frameIndex = frameIndex;
     this.name = name;
     this.attack = attack;
     this.hp = hp;
@@ -39,9 +41,13 @@ class Hero extends Phaser.GameObjects.Container {
 
     this.effectSprites = {};
     this.setSize(sprite.displayWidth, sprite.displayHeight);
-    this.applyTaunt();
+  
     this.setInteractive();
-    this.id = id || crypto.randomUUID();
+    this.id = id;
+
+    if (this.ability === 'Taunt') {
+      this.applyTaunt();
+    }
   }
 
   addPlayerId(playerId) {
@@ -56,14 +62,8 @@ class Hero extends Phaser.GameObjects.Container {
   } 
 
   applyTaunt() {
-    if (this.ability === 'Taunt') {
-      this.addTauntEffect();
-    }
-  }
-
-  addTauntEffect() {
     if (this.shieldSprite) return;
-    
+  
     const shield = this.scene.add.image(0, 0, 'shield');
     shield.setScale(0.5);
     shield.setDepth(15);
@@ -102,11 +102,6 @@ class Hero extends Phaser.GameObjects.Container {
 
     this.statsText.setOrigin(0.5);
     this.statsText.setDepth(10);
-  }
-
-  getBoardPosition() {
-    const hex = this.scene.board.getHexByLabel(this.state.position);
-    return hex.label;
   }
 
   triggerSkills(triggerType, target = null) {

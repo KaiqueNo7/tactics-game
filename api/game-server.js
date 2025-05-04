@@ -55,8 +55,6 @@ io.on('connection', (socket) => {
       heroes: []
     });
 
-    console.log('Tamanho da fila:', waitingQueue.size, 'Jogadores:', [...waitingQueue.keys()]);
-
     if (waitingQueue.size >= 2) {
       const iterator = waitingQueue.entries();
       const [playerId1, p1] = iterator.next().value;
@@ -112,6 +110,7 @@ io.on('connection', (socket) => {
 
   socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId }) => {
     const match = getMatch(roomId);
+
     if (!match) return;
 
     match.currentTurnPlayerId =
@@ -120,6 +119,8 @@ io.on('connection', (socket) => {
         : match.player1.id;
 
     goodLuckCache.delete(roomId);
+
+    console.log(match.currentTurnPlayerId);
 
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN, {
       nextPlayerId: match.currentTurnPlayerId
