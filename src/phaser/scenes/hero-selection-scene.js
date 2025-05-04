@@ -5,9 +5,9 @@ import buildGameState from '../../core/game-state.js';
 
 function createTurn(startedPlayerId) {
   return {
-    attackedHeroes: new Set(),
+    attackedHeroes: [],
     counterAttack: false,
-    movedHeroes: new Set(),
+    movedHeroes: [],
     playerId: startedPlayerId,
     numberTurn: 1,
   };

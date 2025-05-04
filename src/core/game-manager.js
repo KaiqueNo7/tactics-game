@@ -89,15 +89,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     this.currentTurn = this.turnManager.currentTurn;
 
-    this.turnManager.triggerStartOfTurnSkills(players);
-
-    const playerIndex = players.findIndex(player => player.id === this.startedPlayerId);
-
-    this.gameUI.updateTurnPanel(playerIndex, this.currentTurn.numberTurn);
-
-    const isMyTurn = this.startedPlayerId === sessionStorage.getItem('playerId');
-    this.gameUI.setEndTurnButtonEnabled(isMyTurn);
-
     setupSocketListeners(this.socket, this.turnManager, this);
     boardSocketListeners(this.board, this.socket, this);
   }
@@ -108,7 +99,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   sendGameStateUpdate() {
     if (this.socket && this.roomId) {
-      console.log(this.gameState);
       this.socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
         roomId: this.roomId,
         gameState: this.gameState
@@ -147,14 +137,14 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   }
 
   showGameState() {
-    console.log(this.gameState);
+    // console.log(this.gameState);
   }  
 
   updateCurrentTurn(currentTurn) {
     const playerId = currentTurn.playerId;
     const numberTurn = currentTurn.numberTurn;
-    const attackedHeroes = new Set(Object.keys(currentTurn.attackedHeroes || {}));
-    const movedHeroes = new Set(Object.keys(currentTurn.movedHeroes || {}));
+    const attackedHeroes = currentTurn.attackedHeroes || [];
+    const movedHeroes = currentTurn.movedHeroes || [];
     const counterAttack = currentTurn.counterAttack;
 
     this.gameState.currentTurn = {

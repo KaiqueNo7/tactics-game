@@ -54,10 +54,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   selectHero(hero) {
     if(!hero.state.isAlive) return;
 
-    if (hero.playerId !== sessionStorage.getItem('playerId')) {
-      this.scene.gameUI.showMessage('Esse herói não é seu.');
-      return;
-    }    
+    if (hero.playerId !== sessionStorage.getItem('playerId')) return;   
 
     const turnManager = this.gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
@@ -70,20 +67,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
     
     if (!currentPlayer.heroes.includes(hero)) {
-      if (this.selectedHero && this.selectedHero.attackTarget) {
-        if (turnManager.currentTurn.attackedHeroes.has(this.selectedHero)) {
-          this.scene.gameUI.showMessage('Este herói já atacou neste turno.');
-        } else {
-          this.attackHero(this.selectedHero, hero);
-          turnManager.markHeroAsAttacked(this.selectedHero);
-
-          this.selectedHero.setSelected(false);
-          this.selectedHero = null;
-          this.clearHighlights();
-        }
-      } else {
-        this.scene.gameUI.showMessage('Aguarde a sua vez!');
-      }
+      this.scene.gameUI.showMessage('Aguarde a sua vez!');
     
       return;
     }
@@ -185,12 +169,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
       this.scene.gameUI.showMessage("Você só pode atacar com seus heróis.");
       return;
     }
-  
-    if (!turnManager.currentTurn.attackedHeroes) {
-      turnManager.currentTurn.attackedHeroes = new Set();
-    }
-  
-    if (turnManager.currentTurn.attackedHeroes.has(attacker)) {
+
+    if (turnManager.currentTurn.attackedHeroes.includes(attacker.id)) {
       this.scene.gameUI.showMessage("Este herói já atacou neste turno.");
       this.selectedHero = null;
       this.clearHighlights();
@@ -207,51 +187,46 @@ export default class Board extends Phaser.GameObjects.GameObject {
     const targetHex = this.getHexByLabel(target.state.position);
     if (!attackerHex || !targetHex) return;
   
-    const distance = this.calculateDistance(attackerHex, targetHex);
-    if (distance <= attacker.attackRange) {
-      const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
-      const tauntEnemies = enemyHexes
-        .map(hex => this.gameManager.getHeroByPosition(hex.label))
-        .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
-        
-      if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
-        this.scene.gameUI.showMessage("Você deve atacar o inimigo com TAUNT");
-        this.clearSelectedHero();
-        this.clearHighlights();
-        return;
-      }
-  
-      attacker.attackTarget(target);
-      turnManager.markHeroAsAttacked(attacker);
-  
-      console.log(`${attacker.name} atacou ${target.name}!`);
-  
-      if (!turnManager.currentTurn.counterAttack) {
-        const distanceTarget = this.calculateDistance(targetHex, attackerHex);
-        if (distanceTarget <= target.attackRange) {
-          if (!fromSocket && this.socket && this.roomId) {
-            this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
-              roomId: this.roomId,
-              heroAttackerId: attacker.id,
-              heroTargetId: target.id
-            });
-          }
-          turnManager.currentTurn.counterAttack = true;
-        }
-      }
-
+    const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
+    const tauntEnemies = enemyHexes
+      .map(hex => this.gameManager.getHeroByPosition(hex.label))
+      .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
+      
+    if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
+      this.scene.gameUI.showMessage("Você deve atacar o inimigo com TAUNT");
       this.clearSelectedHero();
       this.clearHighlights();
-  
-      if (!fromSocket && this.socket && this.roomId) {
-        this.socket.emit(SOCKET_EVENTS.HERO_ATTACK_REQUEST, {
-          roomId: this.roomId,
-          heroAttackerId: attacker.id,
-          heroTargetId: target.id
-        });
+      return;
+    }
+
+    attacker.attackTarget(target);
+    turnManager.markHeroAsAttacked(attacker.id);
+
+    console.log(`${attacker.name} atacou ${target.name}!`);
+
+    if (!turnManager.currentTurn.counterAttack && target.state.isAlive) {
+      const distanceTarget = this.calculateDistance(targetHex, attackerHex);
+      if (distanceTarget <= target.attackRange) {
+        if (!fromSocket && this.socket && this.roomId) {
+          this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
+            roomId: this.roomId,
+            heroAttackerId: attacker.id,
+            heroTargetId: target.id
+          });
+        }
+        turnManager.currentTurn.counterAttack = true;
       }
-    } else {
-      this.scene.gameUI.showMessage(`${target.name} está fora do alcance de ataque.`);
+    }
+
+    this.clearSelectedHero();
+    this.clearHighlights();
+
+    if (!fromSocket && this.socket && this.roomId) {
+      this.socket.emit(SOCKET_EVENTS.HERO_ATTACK_REQUEST, {
+        roomId: this.roomId,
+        heroAttackerId: attacker.id,
+        heroTargetId: target.id
+      });
     }
   }
       
@@ -562,7 +537,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
         return;
       } 
     
-      if (!turnManager.canMoveHero(hero)) {
+      if (!turnManager.canMoveHero(heroId)) {
         this.scene.gameUI.showMessage("Este herói não pode se mover.");
         this.clearHighlights();
         this.selectedHero = null;    
@@ -591,7 +566,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
       hero.setPosition(targetHex.x, targetHex.y);
     
-      turnManager.markHeroAsMoved(hero);
+      turnManager.markHeroAsMoved(hero.id);
     
       this.clearHighlights();
       this.selectedHero = null;
