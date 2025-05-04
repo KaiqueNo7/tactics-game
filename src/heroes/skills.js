@@ -1,14 +1,11 @@
 export const skills = {
   absorbRoots: {
-    apply: (hero, target) => {
-      if(target){
-        target.takeDamage(hero.attack, hero);
+    apply: (hero) => {
         hero.heal(hero.stats.attack);
-      }
     },
     description: 'Recupera vida equivalente ao dano causado.',
     name: 'Absorb Roots',
-    triggers: ['onAttack']
+    triggers: ['onAttack', 'onCounterAttack']
   },
   autoDefense: {
     apply: () => {
@@ -42,7 +39,7 @@ export const skills = {
         }
       }
         
-      hits.forEach((h) => {
+      hits.slice(1).forEach((h) => {
         h.takeDamage(hero.stats.attack, hero);
       });
     },
@@ -56,14 +53,16 @@ export const skills = {
         const bonusDamage = hero.stats.attack + 2;
         console.log(`${hero.name} causa dano extra a ${target.name} devido a "Broken Defense"!`);
         target.takeDamage(bonusDamage, hero);
+        hero.damageApplied = true;
       } else {
         console.log(`${hero.name} ataca ${target.name} normalmente.`);
         target.takeDamage(hero.stats.attack, hero);
+        hero.damageApplied = true;
       }
     },
     description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
     name: 'Broken Defense',
-    triggers: ['onAttack']
+    triggers: ['onAttack', 'onCounterAttack']
   },  
   firstPunch: {
     apply: (hero, target = null) => {
@@ -77,51 +76,40 @@ export const skills = {
       if (target && !hero.state.hasPunched) {
         console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
         target.takeDamage(hero.stats.attack, hero);
+        hero.damageApplied = true;
         hero.increaseAttack(-2);
         hero.state.hasPunched = true;
-        return;
-      } 
-
-      if (target && hero.state.hasPunched) {
-        target.takeDamage(hero.attack, hero);
         return;
       }
     },
     description: 'O primeiro ataque do herói na partida causa +2 de dano.',
     name: 'First Punch',
-    triggers: ['onTurnStart', 'onAttack']
+    triggers: ['onTurnStart', 'onAttack', 'onCounterAttack']
   },
   goodLuck: {
-    apply: async (hero, target) => {
-      if (!target) {
-        const roomId = hero.scene.gameManager.roomId;
+    apply: async (hero) => {
+      const roomId = hero.scene.gameManager.roomId;
 
-        const gotLucky = await new Promise(resolve => {
-          hero.socket.once('GOOD_LUCK_RESULT', resolve);
-          hero.socket.emit('CHECK_GOOD_LUCK', { roomId });
-        });
-  
-        if (gotLucky) {
-          console.log(`${hero.name} teve sorte! (+1 ataque)`);
-          hero.increaseAttack(1);
-        } else {
-          console.log(`${hero.name} não teve sorte!`);
-        }
-      }
-  
-      if (target) {
-        target.takeDamage(hero.stats.attack, hero);
+      const gotLucky = await new Promise(resolve => {
+        hero.socket.once('GOOD_LUCK_RESULT', resolve);
+        hero.socket.emit('CHECK_GOOD_LUCK', { roomId });
+      });
+
+      if (gotLucky) {
+        console.log(`${hero.name} teve sorte! (+1 ataque)`);
+        hero.increaseAttack(1);
+      } else {
+        console.log(`${hero.name} não teve sorte!`);
       }
     },
     description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
     name: 'Good Luck',
-    triggers: ['onTurnEnd', 'onAttack']
+    triggers: ['onTurnEnd']
   },  
   poisonAttack: {
     apply: (hero, target) => {
       console.log(`${hero.name} envenena ${target.name}!`);
-      target.takeDamage(hero.attack, hero);
-        
+
       const alreadyPoisoned = target.state.statusEffects?.some(
         (effect) => effect.type === 'poison'
       );

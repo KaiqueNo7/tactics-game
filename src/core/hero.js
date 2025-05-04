@@ -54,7 +54,15 @@ class Hero extends Phaser.GameObjects.Container {
 
   attackTarget(target) {
     console.log(`${this.name} ataca ${target.name}!`);
+
+    this.damageApplied = false;
+
     this.triggerSkills('onAttack', target);
+
+    if(!this.damageApplied){
+      target.takeDamage(this.stats.attack, this);
+    }
+
     this.updateHeroStats();
     return true;
   } 
@@ -216,8 +224,14 @@ class Hero extends Phaser.GameObjects.Container {
   counterAttack(target) {
     this.scene.time.delayedCall(1000, () => {
       console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
-      target.takeDamage(this.stats.attack, this, true);
+      this.damageApplied = false;
+
       this.triggerSkills('onCounterAttack', target);
+
+      if(!this.damageApplied){
+        target.takeDamage(this.stats.attack, this, true);
+      }
+
       this.updateHeroStats();
     });
   }

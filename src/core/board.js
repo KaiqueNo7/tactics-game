@@ -211,9 +211,9 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (distance <= attacker.attackRange) {
       const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
       const tauntEnemies = enemyHexes
-        .map(hex => this.heroes[hex.label])
+        .map(hex => this.gameManager.getHeroByPosition(hex.label))
         .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
-  
+        
       if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
         this.scene.gameUI.showMessage("Você deve atacar o inimigo com TAUNT");
         this.clearSelectedHero();
