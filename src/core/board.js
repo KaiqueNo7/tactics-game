@@ -258,7 +258,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   handleHeroDeath(hero, hex) {
     this.scene.gameManager.checkGameState();
     
-    delete this.heroes[hex.label];
+    delete this.heroes[this.gameManager.getHeroByPosition(hex.label)];
     
     if (hero.healthIcon) hero.healthIcon.destroy();
     if (hero.healthText) hero.healthText.destroy();
@@ -282,8 +282,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (hero.hexBg) {
       hero.hexBg.destroy();
     }
-
-    this.scene.gameUI.showMessage(`${hero.name} foi derrotado!`);
   }    
     
   calculateDistance(attackerHex, targetHex) {
@@ -531,8 +529,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (type === 'move') {
           this.moveHero(selectedHero, hex);
         } else if (type === 'enemy') {
-          const target = this.heroes[hex.label];
+          console.log('Atacando inimigo:', hex.label);
+          const target = this.gameManager.getHeroByPosition(hex.label);
           if (target) {
+            console.log('Atacando inimigo:', target.name);
             this.attackHero(selectedHero, target);
           }
         }

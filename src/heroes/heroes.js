@@ -17,7 +17,7 @@ export class Ralph extends Hero {
     ],
     frame: 2,
     name: 'Ralph',
-    stats: { ability: null, attack: 3, hp: 17 },
+    stats: { ability: null, attack: 3, hp: 1 },
     id: 1
   };
 
@@ -72,7 +72,7 @@ export class Vic extends Hero {
     ],
     frame: 1,
     name: 'Vic',
-    stats: { ability: null, attack: 1, hp: 19 },
+    stats: { ability: null, attack: 1, hp: 1 },
     id: 2
   };
 
@@ -105,7 +105,7 @@ export class Gold extends Hero {
     ],
     frame: 0,
     name: 'Gold',
-    stats: { ability: 'Sprint', attack: 1, hp: 18 },
+    stats: { ability: 'Sprint', attack: 1, hp: 1 },
     id: 3
   };
 
@@ -138,7 +138,7 @@ export class Blade extends Hero {
     ],
     frame: 4,
     name: 'Blade',
-    stats: { ability: null, attack: 3, hp: 16 },
+    stats: { ability: null, attack: 3, hp: 1 },
     id: 4
   };
 
@@ -176,7 +176,7 @@ export class Dante extends Hero {
     ],
     frame: 5,
     name: 'Dante',
-    stats: { ability: 'Ranged', attack: 2, hp: 18 },
+    stats: { ability: 'Ranged', attack: 2, hp: 1 },
     id: 5
   };
 
@@ -209,7 +209,7 @@ export class Ceos extends Hero {
     ],
     frame: 3,
     name: 'Ceos',
-    stats: { ability: 'Taunt', attack: 1, hp: 32 },
+    stats: { ability: 'Taunt', attack: 1, hp: 1 },
     id: 6
   };
 

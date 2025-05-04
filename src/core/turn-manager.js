@@ -60,9 +60,13 @@ export default class TurnManager {
     const currentPlayerIndex = this.gameManager.getPlayers().findIndex(player => player.id === playerId);
 
     this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
-    this.gameUI.showMessage(currentPlayer.name + ' - Sua vez!');
 
     const isMyTurn = this.currentTurn.playerId === sessionStorage.getItem('playerId');
+
+    if(isMyTurn){
+      this.gameUI.showMessage('Sua vez!');
+    }
+
     this.gameUI.setEndTurnButtonEnabled(isMyTurn);
   }
 

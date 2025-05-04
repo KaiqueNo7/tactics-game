@@ -29,7 +29,7 @@ export const skills = {
       const line = board.getHexesInLine(fromHex, toHex, 2);
         
       for (const hex of line) {
-        const maybeHero = board.heroes[hex.label];
+        const maybeHero = board.gameManager.getHeroByPosition(hex.label);
         if (
           maybeHero &&
           maybeHero !== hero &&

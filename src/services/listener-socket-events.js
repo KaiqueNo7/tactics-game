@@ -6,11 +6,8 @@ export function setupSocketListeners(socket, turnManager, gameManager) {
   });
 
   socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winnerId }) => {
-    console.log('Game finished event received:', winnerId);
-    const winner = gameManager.getPlayerById(winnerId);
-
-    gameManager.setGameState({ winner });
-    gameManager.finishGame();
+    gameManager.finishGame(winnerId);
+    removeSocketListeners();
   });
 }
 

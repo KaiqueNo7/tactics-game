@@ -178,6 +178,8 @@ io.on('connection', (socket) => {
     playerIdToSocketId.delete(playerId);
   
     for (const [roomId, match] of matches.entries()) {
+      if(match.gameState.status === 'finished') return;
+
       if (match.player1.id === playerId || match.player2.id === playerId) {
         const opponentId = match.player1.id === playerId ? match.player2.id : match.player1.id;
   

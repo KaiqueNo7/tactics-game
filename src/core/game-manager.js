@@ -20,12 +20,8 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     if (alivePlayers.length === 1) {
       const winner = alivePlayers[0];
-      this.setGameState({ status: 'finished', winner: winner.name });
-      this.finishGame();
-      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winner: winner.name });
+      this.finishGame(winner.id);
     }
-
-    return this.gameState;
   }
 
   buildFromGameState(state, board, gameUI) {
@@ -66,6 +62,14 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.player2.heroes.forEach(hero => {
       this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_red');
     });
+
+    const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
+
+    allHeroes.forEach(hero => {
+      if(!hero.state.isAlive){
+        hero.die();
+      }
+    });
   
     this.setupMatch(players, state);
   }  
@@ -104,6 +108,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   sendGameStateUpdate() {
     if (this.socket && this.roomId) {
+      console.log(this.gameState);
       this.socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
         roomId: this.roomId,
         gameState: this.gameState
@@ -111,10 +116,16 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     }
   }
 
-  finishGame() {
-    const { winner } = this.gameState;
-    this.isGameOver = true;
-    this.scene.uiManager.showVictoryUI(winner);
+  finishGame(winnerId) {
+    this.gameState.status = 'finished';
+    this.gameState.winnerId = winnerId;
+
+    const iWon = this.gameState.winnerId === sessionStorage.getItem('playerId');
+
+    this.scene.uiManager.showVictoryUI(iWon);
+    this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
+    
+    this.sendGameStateUpdate();
   }
 
   getTurnManager() {
@@ -128,6 +139,11 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   getHeroById(heroId) {
     const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
     return allHeroes.find(hero => hero.id === heroId);
+  }
+
+  getHeroByPosition(position) {
+    const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
+    return allHeroes.find(hero => hero.state.position === position);
   }
 
   showGameState() {
@@ -150,8 +166,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     };
   
     this.gameState.lastActionTimestamp = Date.now();
-
-    console.log(this.gameState.currentTurn);
   
     this.sendGameStateUpdate();
   }

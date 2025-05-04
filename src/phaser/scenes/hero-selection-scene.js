@@ -1,17 +1,7 @@
 import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
-
-function buildGameState(roomId, players, currentTurn, startedPlayerId) {
-  return {
-    roomId,
-    players,
-    currentTurn,
-    startedPlayerId,
-    lastActionTimestamp: Date.now(),
-    status: 'in_progress'
-  };
-}
+import buildGameState from '../../core/game-state.js';
 
 function createTurn(startedPlayerId) {
   return {
@@ -184,8 +174,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
         }
       ];
 
-      setupInitialPositions(enrichedPlayers[0].heroes, ['B7', 'C6', 'D7']);
-      setupInitialPositions(enrichedPlayers[1].heroes, ['B1', 'C1', 'D1']);      
+      setupInitialPositions(enrichedPlayers[0].heroes, ['B3', 'C3', 'D3']);
+      setupInitialPositions(enrichedPlayers[1].heroes, ['B4', 'C4', 'D4']);      
 
       const currentTurn = createTurn(startedPlayerId);
     

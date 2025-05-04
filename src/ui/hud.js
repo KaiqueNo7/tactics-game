@@ -1,4 +1,3 @@
-import { SOCKET_EVENTS } from "../../api/events.js";
 import socket from "../services/game-api-service.js";
 
 export default class UIManager {
@@ -84,16 +83,18 @@ export default class UIManager {
     this.characterPanel.setVisible(false);
   }
 
-  showVictoryUI(winner) {
+  showVictoryUI(iWon) {
+      const text = iWon ? 'Vitória' : 'Derrota';
+
       const width = this.scene.scale.width;
       const height = this.scene.scale.height;
 
       const overlay = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6);
       overlay.setDepth(99);
       
-      const victoryText = this.scene.add.text(width / 2, height * 0.3, `${winner.name} venceu!`, {
+      const victoryText = this.scene.add.text(width / 2, height * 0.3, text, {
         fill: '#ffffff',
-        fontSize: Math.round(width * 0.05) + 'px', // Tamanho de fonte proporcional
+        fontSize: Math.round(width * 0.05) + 'px',
         fontStyle: 'bold',
         stroke: '#000',
         strokeThickness: 4,
@@ -103,7 +104,7 @@ export default class UIManager {
       const playAgainBtn = this.scene.add.text(width / 2, height * 0.5, 'Jogar novamente', {
         backgroundColor: '#222',
         fill: '#00ff00',
-        fontSize: Math.round(width * 0.035) + 'px', // Tamanho de fonte proporcional
+        fontSize: Math.round(width * 0.035) + 'px', 
         padding: { x: 15, y: 10 },
       })
         .setOrigin(0.5)
