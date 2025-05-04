@@ -7,7 +7,19 @@ export default class TurnManager {
     this.gameManager = gameManager;
     this.gameState = gameManager.gameState;
 
-    this.currentTurn = this.gameState.currentTurn;
+    this.createNewTurn(this.gameState.currentTurn);
+  }
+
+  createNewTurn(turnData) {
+    this.currentTurn = {
+      playerId: turnData.playerId,
+      numberTurn: turnData.numberTurn,
+      attackedHeroes: new Set(Object.keys(turnData.attackedHeroes || {})),
+      movedHeroes: new Set(Object.keys(turnData.movedHeroes || {})),
+      counterAttack: turnData.counterAttack ?? false
+    };
+
+    this.gameManager.updateCurrentTurn(this.currentTurn);
   }
 
   markHeroAsMoved(hero) {
@@ -24,25 +36,22 @@ export default class TurnManager {
            !this.currentTurn.attackedHeroes.has(hero)
   }
 
-  createNewTurn(playerId, numberTurn) {
-    return {
-      attackedHeroes: new Set(),
-      counterAttack: false,
-      movedHeroes: new Set(),
-      playerId: playerId,
-      numberTurn: numberTurn,
-    };
-  }
-
   nextTurn(playerId) {
     this.gameManager.showGameState();
     const currentPlayer = this.gameManager.getPlayerById(playerId);
     this.triggerEndOfTurnSkills(currentPlayer);
 
     const isBackToStarter = (this.currentTurn.playerId === this.startedPlayerId);
-    const numberTurn = this.currentTurn.numberTurn + (isBackToStarter ? 1 : 0);
+    const numberTurn = this.currentTurn.numberTurn + (isBackToStarter ? 0 : 1);
 
-    this.currentTurn = this.createNewTurn(currentPlayer.id, numberTurn);
+    this.createNewTurn({
+      playerId: currentPlayer.id, 
+      numberTurn: numberTurn,
+      attackedHeroes: {},
+      movedHeroes: {},
+      counterAttack: false,
+    });
+
     this.board.clearSelectedHero();
     this.board.clearHighlights();
 

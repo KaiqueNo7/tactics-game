@@ -77,7 +77,6 @@ io.on('connection', (socket) => {
       const match = {
         player1: { ...p1, id: playerId1 },
         player2: { ...p2, id: playerId2 },
-        currentTurnPlayerId: playerId1,
         selectedHeroes: [],
       };
   
@@ -113,17 +112,15 @@ io.on('connection', (socket) => {
 
     if (!match) return;
 
-    match.currentTurnPlayerId =
-      match.currentTurnPlayerId === match.player1.id
+    match.gameState.currentTurn.playerId =
+      match.gameState.currentTurn.playerId === match.player1.id
         ? match.player2.id
         : match.player1.id;
 
     goodLuckCache.delete(roomId);
 
-    console.log(match.currentTurnPlayerId);
-
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN, {
-      nextPlayerId: match.currentTurnPlayerId
+      nextPlayerId: match.gameState.currentTurn.playerId
     });
   });
 

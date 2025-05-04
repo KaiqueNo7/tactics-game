@@ -134,12 +134,28 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     console.log(this.gameState);
   }  
 
-  updateCurrentTurn(playerId) {
-    this.gameState.currentTurnPlayerId = playerId;
-    this.gameState.lastActionTimestamp = new Date().getTime();
+  updateCurrentTurn(currentTurn) {
+    const playerId = currentTurn.playerId;
+    const numberTurn = currentTurn.numberTurn;
+    const attackedHeroes = new Set(Object.keys(currentTurn.attackedHeroes || {}));
+    const movedHeroes = new Set(Object.keys(currentTurn.movedHeroes || {}));
+    const counterAttack = currentTurn.counterAttack;
 
+    this.gameState.currentTurn = {
+      playerId,
+      numberTurn,
+      attackedHeroes,
+      movedHeroes,
+      counterAttack
+    };
+  
+    this.gameState.lastActionTimestamp = Date.now();
+
+    console.log(this.gameState.currentTurn);
+  
     this.sendGameStateUpdate();
-  }  
+  }
+  
 
   updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects }) {
     for (const player of this.gameState.players) {
