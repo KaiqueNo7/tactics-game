@@ -226,12 +226,12 @@ class Hero extends Phaser.GameObjects.Container {
   
 
   startTurn() {
-      this.processStatusEffects();
       this.triggerSkills('onTurnStart');
       this.updateHeroStats();
   }
 
   endTurn() {
+      this.processStatusEffects();
       this.triggerSkills('onTurnEnd');
       this.updateHeroStats();
   }

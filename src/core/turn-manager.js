@@ -26,6 +26,8 @@ export default class TurnManager {
 
     this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
 
+    this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
+
     const isMyTurn = this.currentTurn.playerId === sessionStorage.getItem('playerId');
 
     if(isMyTurn){
@@ -68,8 +70,6 @@ export default class TurnManager {
       movedHeroes: [],
       counterAttack: false,
     });
-
-    this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
   }
 
   triggerStartOfTurnSkills(players) {
