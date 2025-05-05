@@ -117,7 +117,7 @@ export const skills = {
         
       if (!alreadyPoisoned) {
         target.applyStatusEffect({
-          duration: Infinity,
+          duration: 3,
           effect: (target) => {
             console.log(`${target.name} recebe 1 de dano por veneno!`); 
             target.takeDamage(1);

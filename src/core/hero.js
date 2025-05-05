@@ -197,14 +197,33 @@ class Hero extends Phaser.GameObjects.Container {
   processStatusEffects() {
     this.state.statusEffects = this.state.statusEffects.filter(effect => {
       if (effect.effect) effect.effect(this);
-      if (effect.duration > 1 || effect.duration === Infinity) {
+  
+      const stillActive = effect.duration > 1 || effect.duration === Infinity;
+  
+      if (!stillActive) {
+        if (effect.type === 'poison' && this.effectSprites.poison) {
+          this.effectSprites.poison.destroy();
+          delete this.effectSprites.poison;
+        }
+      } else {
         if (effect.duration !== Infinity) effect.duration--;
-        return true;
+  
+        if (effect.type === 'poison' && this.effectSprites.poison) {
+          let alpha = 1;
+
+          if (effect.duration === 2) alpha = 0.85;
+          else if (effect.duration === 1) alpha = 0.7;
+        
+          this.effectSprites.poison.setAlpha(alpha);
+        }
       }
-      return false;
+  
+      return stillActive;
     });
+  
     this.updateHeroStats();
   }
+  
 
   startTurn() {
       this.processStatusEffects();

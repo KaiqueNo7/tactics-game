@@ -58,7 +58,7 @@ export class Vic extends Hero {
     ],
     frame: 1,
     name: 'Vic',
-    stats: { ability: null, attack: 1, hp: 1 },
+    stats: { ability: null, attack: 1, hp: 18 },
     id: 2
   };
 
