@@ -102,9 +102,16 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     return [this.player1, this.player2].find(p => p.id === playerId);
   }
 
+  markGameStateAsChanged() {
+    this.gameState.lastActionTimestamp = Date.now();
+    this.gameState.stateVersion = (this.gameState.stateVersion || 0) + 1;
+  
+    this.sendGameStateUpdate();
+  }
+
   sendGameStateUpdate() {
-    if (this.socket && this.roomId) {
-      this.socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
+    if (this.gameState && this.roomId) {
+      socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
         roomId: this.roomId,
         gameState: this.gameState
       });
@@ -162,12 +169,8 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   }  
 
   updateCurrentTurn(currentTurn) {
-    const playerId = currentTurn.playerId;
-    const numberTurn = currentTurn.numberTurn;
-    const attackedHeroes = currentTurn.attackedHeroes || [];
-    const movedHeroes = currentTurn.movedHeroes || [];
-    const counterAttack = currentTurn.counterAttack;
-
+    const { playerId, numberTurn, attackedHeroes = [], movedHeroes = [], counterAttack = false } = currentTurn;
+  
     this.gameState.currentTurn = {
       playerId,
       numberTurn,
@@ -176,9 +179,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       counterAttack
     };
   
-    this.gameState.lastActionTimestamp = Date.now();
-  
-    this.sendGameStateUpdate();
+    this.markGameStateAsChanged();
   }
 
   updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects, firstAttack }) {
@@ -192,8 +193,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       if (statusEffects !== undefined) hero.state.statusEffects = statusEffects;
       if (firstAttack !== undefined) hero.firstAttack = firstAttack;
   
-      this.gameState.lastActionTimestamp = Date.now();
-      this.sendGameStateUpdate();
+      this.markGameStateAsChanged();
       return;
     }
   
@@ -207,11 +207,11 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   
       console.log(`Atualizando posição do herói ${hero.name} para ${newPosition}`);
       hero.state.position = newPosition;
-      this.gameState.lastActionTimestamp = Date.now();
-      this.sendGameStateUpdate();
+  
+      this.markGameStateAsChanged();
       return;
     }
   
     console.warn(`Herói com ID ${heroId} não encontrado para update de posição.`);
-  }  
+  }
 }

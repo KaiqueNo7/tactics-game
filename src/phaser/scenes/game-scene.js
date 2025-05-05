@@ -32,7 +32,7 @@ export default class GameScene extends Phaser.Scene {
     this.load.image('ui_box_brown', 'assets/ui/ui_box_brown.png');
   }
 
-  create(state) {
+  async create(state) {
     const { roomId } = state.gameState
 
     this.roomId = roomId;
@@ -50,8 +50,8 @@ export default class GameScene extends Phaser.Scene {
   
     this.inputManager = new BoardInputManager(this, this.board, socket);
 
-    this.gameManager.buildFromGameState(state.gameState, this.board, this.gameUI);
-
+    await this.gameManager.buildFromGameState(state.gameState, this.board, this.gameUI);
+    
     this.gameUI.updateGamePanel(this.gameManager.getPlayers());
   } 
 

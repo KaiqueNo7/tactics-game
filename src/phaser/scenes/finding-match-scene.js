@@ -49,7 +49,7 @@ export default class FindingMatchScene extends Phaser.Scene {
     });
   
 
-    socket.once(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
+    socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
       console.log('Reconectado com sucesso!');
 
       console.log('Estado do jogo recebido:', gameState);

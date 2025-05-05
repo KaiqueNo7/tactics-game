@@ -23,11 +23,9 @@ export default class ReconnectionScene extends Phaser.Scene {
       repeat: -1
     });
 
-    this.time.delayedCall(5000, () => { 
-      this.scene.start('GameScene', {
-        gameState,
-        reconnect: true,
-      });
+    this.scene.start('GameScene', {
+      gameState,
+      reconnect: true,
     });
   }
 }

@@ -81,18 +81,20 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   createStatsUI(hero) {
     if (!hero.sprite) return;
-    
+  
     const offsetY = 20;
-    
+  
     hero.attackIcon = this.scene.add.image(-29, offsetY, 'swords');
     hero.attackIcon.setScale(0.8);
     hero.attackIcon.setDepth(1);
     hero.attackIcon.setOrigin(0, 0.5);
     hero.add(hero.attackIcon);
-    
+  
+    const attackColor = hero.stats.attack > hero.attack ? '#87CEFA' : '#FFFFFF';
+  
     hero.attackText = this.scene.add.text(-18, offsetY, `${hero.stats.attack}`, {
       align: 'center',
-      color: '#FFFFFF',
+      color: attackColor,
       fontFamily: 'Arial',
       fontSize: '18px',
       fontStyle: 'bold',
@@ -100,16 +102,18 @@ export default class GameUI extends Phaser.GameObjects.Container {
       strokeThickness: 1.4
     }).setDepth(2).setOrigin(0.4, 0.5);
     hero.add(hero.attackText);
-    
+  
     hero.healthIcon = this.scene.add.image(28, offsetY, 'heart');
     hero.healthIcon.setScale(0.8);
     hero.healthIcon.setDepth(1);
     hero.healthIcon.setOrigin(1, 0.5);
     hero.add(hero.healthIcon);
-    
+  
+    const healthColor = hero.stats.currentHealth < hero.hp ? '#FF6666' : '#FFFFFF';
+  
     hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
       align: 'center',
-      color: '#FFFFFF',
+      color: healthColor,
       fontFamily: 'Arial',
       fontSize: '18px',
       fontStyle: 'bold',
@@ -117,7 +121,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
       strokeThickness: 1.4
     }).setDepth(2).setOrigin(0.6, 0.5);
     hero.add(hero.healthText);
-  }       
+  }     
 
   updateTurnPanel(playerIndex, turnNumber) {
     this.turnPanelContainer = this.scene.add.container(
