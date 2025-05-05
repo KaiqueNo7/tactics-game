@@ -111,11 +111,20 @@ export const skills = {
     apply: (hero, target) => {
       console.log(`${hero.name} envenena ${target.name}!`);
 
-      const alreadyPoisoned = target.state.statusEffects?.some(
+      const poisonEffect = target.state.statusEffects?.find(
         (effect) => effect.type === 'poison'
       );
         
-      if (!alreadyPoisoned) {
+      if(poisonEffect){
+        const bonusDamage = hero.stats.attack + 2;
+
+        poisonEffect.duration = 3;
+
+        target.takeDamage(bonusDamage, hero);
+        hero.damageApplied = true;
+      }
+
+      if (!poisonEffect) {
         target.applyStatusEffect({
           duration: 3,
           effect: (target) => {
@@ -126,7 +135,7 @@ export const skills = {
         });
       }
     },
-    description: 'Envenena o inimigo causando 1 de dano por turno.',
+    description: 'Envenena o inimigo por 3 turnos causando 1 de dano por turno. Causa  +2 de dano contra inimigos já envenenados.',
     name: 'Poison Attack',
     triggers: ['onAttack', 'onCounterAttack']        
   },

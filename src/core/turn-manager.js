@@ -22,8 +22,6 @@ export default class TurnManager {
     this.board.clearSelectedHero();
     this.board.clearHighlights();
 
-    this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
-
     const currentPlayerIndex = this.gameManager.getPlayers().findIndex(player => player.id === turnData.playerId);
 
     this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
@@ -70,6 +68,8 @@ export default class TurnManager {
       movedHeroes: [],
       counterAttack: false,
     });
+
+    this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
   }
 
   triggerStartOfTurnSkills(players) {

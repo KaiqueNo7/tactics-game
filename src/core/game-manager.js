@@ -70,6 +70,10 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       if(!hero.state.isAlive){
         hero.die();
       }
+
+      if (hero.state.isAlive && hero.state.statusEffects.length > 0) {
+        this.rehydrateStatusEffects(hero);
+      }
     });
   
     this.setupMatch(state);
@@ -137,6 +141,22 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     return allHeroes.find(hero => hero.state.position === position);
   }
 
+  rehydrateStatusEffects(hero) {
+    hero.state.statusEffects.forEach(effect => {
+      switch (effect.type) {
+        case 'poison':
+          effect.effect = (target) => {
+            console.log(`${target.name} recebe 1 de dano por veneno!`);
+            target.takeDamage(1);
+          };
+  
+          hero.addPoisonEffect();
+          break;
+      }
+    });
+  }
+  
+
   showGameState() {
     console.log(this.gameState);
   }  
@@ -160,7 +180,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   
     this.sendGameStateUpdate();
   }
-  
 
   updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects, firstAttack }) {
     for (const player of this.gameState.players) {
