@@ -24,6 +24,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.ability = ability;
     this.skills = skillNames.map(skillName => skills[skillName]).filter(skill => skill !== undefined); 
     this.attackRange = ability === 'Ranged' ? 2 : 1;
+    this.firstAttack = false;
 
     this.stats = {
       attack: attack,
@@ -62,7 +63,8 @@ class Hero extends Phaser.GameObjects.Container {
     if(!this.damageApplied){
       target.takeDamage(this.stats.attack, this);
     }
-
+    
+    this.firstAttack = true;
     this.updateHeroStats();
     return true;
   } 
@@ -142,12 +144,6 @@ class Hero extends Phaser.GameObjects.Container {
     this.triggerSkills('onDamage', attacker);
     
     this.updateHeroStats();
-    this.scene.gameManager.updateHeroStats(this.id, {
-      currentHealth: this.stats.currentHealth,
-      isAlive: this.state.isAlive,
-      currentAttack: this.stats.attack,
-      statusEffects: this.state.statusEffects
-    });
         
     return totalDamage;
   }
@@ -232,6 +228,7 @@ class Hero extends Phaser.GameObjects.Container {
         target.takeDamage(this.stats.attack, this, true);
       }
 
+      this.firstAttack = true;
       this.updateHeroStats();
     });
   }
@@ -272,10 +269,14 @@ class Hero extends Phaser.GameObjects.Container {
         this.healthText.setColor('#FFFFFF');
       }
     }
-  }
 
-  hasSkill(skillKey) {
-    return this.skills.some(skill => skill.key === skillKey);
+    this.scene.gameManager.updateHeroStats(this.id, {
+      currentHealth: this.stats.currentHealth,
+      isAlive: this.state.isAlive,
+      currentAttack: this.stats.attack,
+      statusEffects: this.state.statusEffects,
+      firstAttack: this.firstAttack
+    });
   }
 
   toJSON() {

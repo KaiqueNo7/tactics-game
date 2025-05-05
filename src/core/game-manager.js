@@ -44,6 +44,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
         hero.state.position = heroData.state.position;
         hero.state.isAlive = heroData.state.isAlive;
         hero.state.statusEffects = heroData.state.statusEffects || [];
+        hero.firstAttack = heroData.firstAttack;
   
         return hero;
       });
@@ -71,10 +72,10 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       }
     });
   
-    this.setupMatch(players, state);
+    this.setupMatch(state);
   }  
 
-  setupMatch(players, gameState) {
+  setupMatch(gameState) {
     if(!gameState) {
       console.warn('Sem estado de jogo');
       return
@@ -137,7 +138,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   }
 
   showGameState() {
-    // console.log(this.gameState);
+    console.log(this.gameState);
   }  
 
   updateCurrentTurn(currentTurn) {
@@ -161,7 +162,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   }
   
 
-  updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects }) {
+  updateHeroStats(heroId, { currentHealth, isAlive, currentAttack, statusEffects, firstAttack }) {
     for (const player of this.gameState.players) {
       const hero = player.heroes.find(h => h.id === heroId);
       if (!hero) continue;
@@ -170,6 +171,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       if (isAlive !== undefined) hero.state.isAlive = isAlive;
       if (currentAttack !== undefined) hero.stats.attack = currentAttack;
       if (statusEffects !== undefined) hero.state.statusEffects = statusEffects;
+      if (firstAttack !== undefined) hero.firstAttack = firstAttack;
   
       this.gameState.lastActionTimestamp = Date.now();
       this.sendGameStateUpdate();

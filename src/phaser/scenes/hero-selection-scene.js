@@ -145,6 +145,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
           heroes: resolveHeroes(this.selectedHeroesP1).map(h => ({
             id: h.id,
             name: h.name,
+            firstAttack: h.firstAttack,
             stats: {
               attack: h.stats.attack,
               currentHealth: h.stats.hp
@@ -161,6 +162,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
           heroes: resolveHeroes(this.selectedHeroesP2).map(h => ({
             id: h.id,
             name: h.name,
+            firstAttack: h.firstAttack,
             stats: {
               attack: h.stats.attack,
               currentHealth: h.stats.hp

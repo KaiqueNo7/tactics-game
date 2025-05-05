@@ -11,8 +11,6 @@ export default class TurnManager {
   }
 
   createNewTurn(turnData) {
-    console.log(turnData)
-
     this.currentTurn = {
       playerId: turnData.playerId,
       numberTurn: turnData.numberTurn,
@@ -44,8 +42,6 @@ export default class TurnManager {
     this.currentTurn.movedHeroes.push(heroId);
     this.triggerOnMoveSkills(this.gameManager.getPlayers());
     this.gameManager.updateCurrentTurn(this.currentTurn);
-
-    console.log(this.currentTurn.movedHeroes);
   }
   
   markHeroAsAttacked(heroId) {

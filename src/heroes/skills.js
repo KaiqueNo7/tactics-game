@@ -66,19 +66,20 @@ export const skills = {
   },  
   firstPunch: {
     apply: (hero, target = null) => {
-      if (!hero.state.firstPunchApplied && hero.state.isAlive && !hero.state.hasPunched && target === null) {
-        hero.increaseAttack(2);
-        hero.state.firstPunchApplied = true;
-        console.log(`${hero.name} prepara um soco poderoso! (+2 ataque)`);
+      if (!hero.firstAttack && target === null) {
+        if (!hero.firstPunchApplied) {
+          hero.increaseAttack(2);
+          hero.firstPunchApplied = true;
+          console.log(`${hero.name} prepara um soco poderoso! (+2 ataque)`);
+        }
         return;
       }
 
-      if (target && !hero.state.hasPunched) {
+      if (target && !hero.firstAttack) {
         console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
         target.takeDamage(hero.stats.attack, hero);
         hero.damageApplied = true;
         hero.increaseAttack(-2);
-        hero.state.hasPunched = true;
         return;
       }
     },

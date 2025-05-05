@@ -36,8 +36,6 @@ export class Ralph extends Hero {
       socket,
       Ralph.data.id
     );
-    this.state.hasPunched = false;
-    this.state.firstPunchApplied = false;
   }
 
   takeDamage(amount, attacker = null, isCounterAttack = false) {
