@@ -1,7 +1,7 @@
-import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
+import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
 
 const HERO_CLASSES = {
-  Gold,
+  Mineiro,
   Vic,
   Dante,
   Ralph,

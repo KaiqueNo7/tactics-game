@@ -17,7 +17,7 @@ export class Ralph extends Hero {
     ],
     frame: 2,
     name: 'Ralph',
-    stats: { ability: null, attack: 3, hp: 30 },
+    stats: { ability: null, attack: 3, hp: 17 },
     id: 1
   };
 
@@ -58,7 +58,7 @@ export class Vic extends Hero {
     ],
     frame: 1,
     name: 'Vic',
-    stats: { ability: null, attack: 1, hp: 18 },
+    stats: { ability: null, attack: 1, hp: 19 },
     id: 2
   };
 
@@ -80,7 +80,7 @@ export class Vic extends Hero {
   }
 }
 
-export class Gold extends Hero {
+export class Mineiro extends Hero {
   static data = {
     abilities: [
       {
@@ -90,8 +90,8 @@ export class Gold extends Hero {
       }
     ],
     frame: 0,
-    name: 'Gold',
-    stats: { ability: 'Sprint', attack: 1, hp: 30 },
+    name: 'Mineiro',
+    stats: { ability: 'Sprint', attack: 1, hp: 18 },
     id: 3
   };
 
@@ -100,15 +100,15 @@ export class Gold extends Hero {
       scene,
       x,
       y,
-      Gold.data.frame,
-      Gold.data.name,
-      Gold.data.stats.attack,
-      Gold.data.stats.hp,
-      Gold.data.stats.ability,
-      Gold.data.abilities.map(a => a.key),
+      Mineiro.data.frame,
+      Mineiro.data.name,
+      Mineiro.data.stats.attack,
+      Mineiro.data.stats.hp,
+      Mineiro.data.stats.ability,
+      Mineiro.data.abilities.map(a => a.key),
       null,
       socket,
-      Gold.data.id
+      Mineiro.data.id
     );
   }
 }
@@ -124,7 +124,7 @@ export class Blade extends Hero {
     ],
     frame: 4,
     name: 'Blade',
-    stats: { ability: null, attack: 3, hp: 30 },
+    stats: { ability: null, attack: 3, hp: 16 },
     id: 4
   };
 
@@ -162,7 +162,7 @@ export class Dante extends Hero {
     ],
     frame: 5,
     name: 'Dante',
-    stats: { ability: 'Ranged', attack: 2, hp: 30 },
+    stats: { ability: 'Ranged', attack: 2, hp: 18 },
     id: 5
   };
 
@@ -195,7 +195,7 @@ export class Ceos extends Hero {
     ],
     frame: 3,
     name: 'Ceos',
-    stats: { ability: 'Taunt', attack: 1, hp: 30 },
+    stats: { ability: 'Taunt', attack: 1, hp: 33 },
     id: 6
   };
 

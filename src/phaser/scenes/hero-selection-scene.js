@@ -1,4 +1,4 @@
-import { Gold, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
+import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import buildGameState from '../../core/game-state.js';
@@ -24,7 +24,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     super('HeroSelectionScene');
 
     this.HERO_DATA = [
-      Gold.data,
+      Mineiro.data,
       Vic.data,
       Ralph.data,
       Ceos.data,
@@ -198,7 +198,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
   }
 
   autoSelectHeroesForTesting() {
-    const presetP1 = ['Gold', 'Ceos', 'Blade'];
+    const presetP1 = ['Mineiro', 'Ceos', 'Blade'];
     const presetP2 = ['Ralph', 'Vic', 'Dante'];
   
     // Preenche como se fosse a seleção feita manualmente
