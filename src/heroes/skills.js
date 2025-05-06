@@ -67,7 +67,7 @@ export const skills = {
   firstPunch: {
     apply: (hero, target = null) => {
       if (!hero.firstAttack && target === null) {
-        if (!hero.firstPunchApplied) {
+        if (!hero.firstPunchApplied && hero.stats.attack === 3) {
           hero.increaseAttack(2);
           hero.firstPunchApplied = true;
           console.log(`${hero.name} prepara um soco poderoso! (+2 ataque)`);
