@@ -18,4 +18,6 @@ export const SOCKET_EVENTS = {
   UPDATE_GAME_STATE: 'update_game_state',
   SYNC_GAME_STATE: 'sync_game_state',
   RECONNECTING_PLAYER: 'reconnecting_player',
+  TURN_TIMER_TICK: 'turn_timer_tick',
+  TURN_TIMEOUT: 'turn_time_out'
 };

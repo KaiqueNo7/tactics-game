@@ -24,9 +24,45 @@ const matches = new Map();
 const goodLuckCache = new Map();
 const disconnectedPlayers = new Map();
 const playerIdToSocketId = new Map();
+const TURN_DURATION = 5;
+const turnIntervals = new Map();
 
 function getMatch(roomId) {
   return matches.get(roomId);
+}
+
+function startTurnTimer(roomId, playerId) {
+  if (turnIntervals.has(roomId)) {
+    clearInterval(turnIntervals.get(roomId));
+    turnIntervals.delete(roomId);
+  }
+
+  let timeLeft = TURN_DURATION;
+
+  const interval = setInterval(() => {
+    timeLeft--;
+
+    io.to(roomId).emit(SOCKET_EVENTS.TURN_TIMER_TICK, { timeLeft });
+
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      turnIntervals.delete(roomId);
+
+      console.log(`Tempo esgotado para ${roomId}`);
+
+      io.to(roomId).emit(SOCKET_EVENTS.TURN_TIMEOUT, { playerId });
+    }
+  }, 1000);
+
+  turnIntervals.set(roomId, interval);
+}
+
+function clearTurnTimer(roomId) {
+  const interval = turnIntervals.get(roomId);
+  if (interval) {
+    clearInterval(interval);
+    turnIntervals.delete(roomId);
+  }
 }
 
 io.on('connection', (socket) => {
@@ -42,7 +78,15 @@ io.on('connection', (socket) => {
       return;
     }
   
+    setTimeout(() => {
+      if (waitingQueue.has(player.id)) {
+        waitingQueue.delete(player.id);
+        socket.emit(SOCKET_EVENTS.QUIT_QUEUE);
+      }
+    }, 10000);
+
     socket.playerId = player.id;
+
     playerIdToSocketId.set(player.id, socket.id);
   
     const safeName = (player.name || '').trim().substring(0, 20) || `Jogador_${Math.floor(Math.random() * 1000)}`;
@@ -102,15 +146,21 @@ io.on('connection', (socket) => {
     const startedPlayerIndex = Math.floor(Math.random() * 2) + 1;
     const startedPlayerId = startedPlayerIndex === 1 ? match.player1.id : match.player2.id;
 
+    startTurnTimer(roomId, startedPlayerId);
+
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
       heroes, players, roomId, startedPlayerId
     });
   });
 
-  socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId }) => {
+  socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId, playerId }) => {
     const match = getMatch(roomId);
 
     if (!match) return;
+
+    const currentTurnPlayerId = match.gameState.currentTurn.playerId;
+
+    if (playerId !== currentTurnPlayerId) return;
 
     match.gameState.currentTurn.playerId =
       match.gameState.currentTurn.playerId === match.player1.id
@@ -122,6 +172,9 @@ io.on('connection', (socket) => {
     io.to(roomId).emit(SOCKET_EVENTS.NEXT_TURN, {
       nextPlayerId: match.gameState.currentTurn.playerId
     });
+
+    clearTurnTimer(roomId);
+    startTurnTimer(roomId, match.gameState.currentTurn.playerId);
   });
 
   socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroId, targetLabel }) => {

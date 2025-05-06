@@ -1,3 +1,5 @@
+import turnManagerSocketEvents from "../services/turn-manager-socket-events";
+
 export default class TurnManager {
   constructor(board, gameUI, playerId, gameManager) {
     this.board = board;
@@ -8,6 +10,8 @@ export default class TurnManager {
     this.gameState = gameManager.gameState;
 
     this.createNewTurn(this.gameState.currentTurn);
+
+    turnManagerSocketEvents(this);
   }
 
   createNewTurn(turnData) {

@@ -30,6 +30,27 @@ export default class GameUI extends Phaser.GameObjects.Container {
     this.finalY = 150;
   }
 
+  updateTurnTimer(seconds) {
+    if (!this.turnTimerText) {
+      this.turnTimerText = this.scene.add.text(
+        20,
+        this.scene.scale.height / 2,
+        seconds,
+        {       
+          align: 'center',
+          color: '#FFFFFF',
+          fontSize: '32px',
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 1.4 
+        }
+      );
+    } else {
+      this.turnTimerText.setText(seconds);
+    }
+  }
+  
+
   createEndTurnButton() {
     this.endTurnButtonContainer = this.scene.add.container(
       this.scene.scale.width - 100,
@@ -43,7 +64,10 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
     this.endTurnBackground.on('pointerdown', () => {
       if (!this.buttonEnabled) return;
-      this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { roomId: this.roomId });
+      this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { 
+        roomId: this.roomId, 
+        playerId: sessionStorage.getItem('playerId')
+      });
     });
 
     this.endTurnBackground.on('pointerover', () => {
