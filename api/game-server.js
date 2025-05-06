@@ -24,7 +24,7 @@ const matches = new Map();
 const goodLuckCache = new Map();
 const disconnectedPlayers = new Map();
 const playerIdToSocketId = new Map();
-const TURN_DURATION = 5;
+const TURN_DURATION = 180;
 const turnIntervals = new Map();
 
 function getMatch(roomId) {

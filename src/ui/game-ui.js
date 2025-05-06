@@ -31,37 +31,36 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }
 
   updateTurnTimer(seconds) {
-    if (!this.turnTimerText) {
-      this.turnTimerText = this.scene.add.text(
-        20,
-        this.scene.scale.height / 2,
-        seconds,
-        {       
-          align: 'center',
-          color: '#FFFFFF',
-          fontSize: '32px',
-          fontStyle: 'bold',
-          stroke: '#000000',
-          strokeThickness: 1.4 
-        }
-      );
-    } else {
-      this.turnTimerText.setText(seconds);
+    if (seconds > 30) {
+      if (this.turnTimerText) {
+        this.turnTimerText.setVisible(false);
+      }
+      return;
     }
-  }
   
+    const color =
+      seconds <= 10 ? '#FF6666' :
+      seconds <= 30 ? '#FFFF00' :
+      '#FFFFFF';
+  
+    if (this.turnTimerText) {
+      this.turnTimerText.setText(`${seconds}`);
+      this.turnTimerText.setColor(color);
+      this.turnTimerText.setVisible(true);
+    }
+  }  
 
   createEndTurnButton() {
     this.endTurnButtonContainer = this.scene.add.container(
       this.scene.scale.width - 100,
       this.scene.scale.height / 2
     );
-
+  
     this.endTurnBackground = this.scene.add.image(0, 0, 'next_turn')
       .setOrigin(0.5)
       .setScale(1.5)
       .setInteractive({ useHandCursor: true });
-
+  
     this.endTurnBackground.on('pointerdown', () => {
       if (!this.buttonEnabled) return;
       this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { 
@@ -69,20 +68,34 @@ export default class GameUI extends Phaser.GameObjects.Container {
         playerId: sessionStorage.getItem('playerId')
       });
     });
-
+  
     this.endTurnBackground.on('pointerover', () => {
       if (!this.buttonEnabled) return;
       this.endTurnBackground.setTint(0xaaaaaa);
     });
-
+  
     this.endTurnBackground.on('pointerout', () => {
       if (!this.buttonEnabled) return;
       this.endTurnBackground.clearTint();
       this.endTurnBackground.setAlpha(1);
     });
-
-    this.endTurnButtonContainer.add(this.endTurnBackground);
-  }
+  
+    this.turnTimerText = this.scene.add.text(
+      0, 
+      55,
+      '',
+      {
+        align: 'right',
+        color: '#FFFFFF',
+        fontSize: '18px',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 1.4
+      }
+    ).setOrigin(0.5);
+  
+    this.endTurnButtonContainer.add([this.endTurnBackground, this.turnTimerText]);
+  }  
 
   setEndTurnButtonEnabled(enabled) {
     this.buttonEnabled = enabled;
