@@ -1,23 +1,7 @@
 import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
-import buildGameState from '../../core/game-state.js';
-
-function createTurn(startedPlayerId) {
-  return {
-    attackedHeroes: [],
-    counterAttack: false,
-    movedHeroes: [],
-    playerId: startedPlayerId,
-    numberTurn: 1,
-  };
-}
-
-function setupInitialPositions(heros, postionsAvaliable){
-  heros.forEach((hero, index) => {
-    hero.state.position = postionsAvaliable[index]
-  });
-}
+import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
@@ -66,7 +50,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.players = players;
 
     this.socket = socket;
-  
+
     console.log(`Você está na sala ${roomId}`);
 
     const padding = 100;
@@ -74,6 +58,16 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.player1 = players[0];
     this.player2 = players[1];
+
+    const currentPlayerId = sessionStorage.getItem('playerId');
+    if (currentPlayerId === this.player1.id) {
+      this.playerNumber = 1;
+    } else if (currentPlayerId === this.player2.id) {
+      this.playerNumber = 2;
+    } else {
+      console.warn('ID do jogador atual não corresponde a nenhum jogador da sala!');
+      this.scene.start('FindingMatchScene');
+    }
 
     this.player1NameText = this.add.text(padding, 40, this.player1.name, {
       color: '#ffffff',
@@ -126,67 +120,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.drawHeroOptions();
     this.createHeroDetailUI();
     this.updateNamePlayerText();
-    this.setupSocketEvents();
     
     this.heroDisplayP1 = this.add.group();
-    this.heroDisplayP2 = this.add.group();
-
-    this.autoSelectHeroesForTesting();
-
-    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, startedPlayerId }) => {
-      const resolveHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
-      
-      const player1 = this.player1;
-      const player2 = this.player2;
-    
-      const enrichedPlayers = [
-        {
-          ...player1,
-          heroes: resolveHeroes(this.selectedHeroesP1).map(h => ({
-            id: h.id,
-            name: h.name,
-            frame: h.frame,
-            firstAttack: h.firstAttack,
-            stats: {
-              attack: h.stats.attack,
-              currentHealth: h.stats.hp
-            },
-            state: {
-              position: null,
-              isAlive: true,
-              statusEffects: []
-            }
-          }))
-        },
-        {
-          ...player2,
-          heroes: resolveHeroes(this.selectedHeroesP2).map(h => ({
-            id: h.id,
-            name: h.name,
-            frame: h.frame,
-            firstAttack: h.firstAttack,
-            stats: {
-              attack: h.stats.attack,
-              currentHealth: h.stats.hp
-            },
-            state: {
-              position: null,
-              isAlive: true,
-              statusEffects: []
-            }
-          }))
-        }
-      ];
-
-      setupInitialPositions(enrichedPlayers[0].heroes, ['B1', 'C1', 'D1']);
-      setupInitialPositions(enrichedPlayers[1].heroes, ['B7', 'C6', 'D7']);      
-
-      const currentTurn = createTurn(startedPlayerId);
-    
-      const gameState = buildGameState(roomId, enrichedPlayers, currentTurn, startedPlayerId);
-    
-      this.scene.start('PreMatchScene', { gameState });
-    });    
+    this.heroDisplayP2 = this.add.group();   
       
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
@@ -197,87 +133,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
         this.hideHeroDetail();
       }
     });    
-  }
 
-  autoSelectHeroesForTesting() {
-    const presetP1 = ['Mineiro', 'Ceos', 'Blade'];
-    const presetP2 = ['Ralph', 'Vic', 'Dante'];
-  
-    // Preenche como se fosse a seleção feita manualmente
-    this.selectedHeroesP1 = [];
-    this.selectedHeroesP2 = [];
-  
-    presetP1.forEach(name => {
-      const heroData = this.HERO_DATA.find(h => h.name === name);
-      if (heroData) {
-        this.selectedHeroesP1.push(name);
-        this.updateSelectedHeroDisplay(1, heroData);
-      }
-    });
-  
-    presetP2.forEach(name => {
-      const heroData = this.HERO_DATA.find(h => h.name === name);
-      if (heroData) {
-        this.selectedHeroesP2.push(name);
-        this.updateSelectedHeroDisplay(2, heroData);
-      }
-    });
-  
-    // Marca seleção como completa e inicia o jogo
-    this.currentStep = this.selectionOrder.length;
-    this.currentStepCount = 0;
-    this.startGame();
-  }
-
-  setupSocketEvents() {
-    this.socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ heroName, player, step }) => {
-      console.log(`Recebi seleção do jogador ${player}: ${heroName} (step ${step})`);
-  
-      if (player === this.playerNumber) return;
-  
-      const heroData = this.HERO_DATA.find(h => h.name === heroName);
-      if (!heroData) {
-        console.warn(`Herói não encontrado: ${heroName}`);
-        return;
-      }
-  
-      const heroSpriteObj = this.heroSprites.find(h => h.name === heroName);
-      if (heroSpriteObj && heroSpriteObj.hex) {
-        const color = player === 1 ? 0x3344ff : 0xff3333;
-        heroSpriteObj.hex.clear();
-        heroSpriteObj.hex.fillStyle(color, 0.7);
-        heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
-      
-        const size = 50;
-        const x = heroSpriteObj.sprite.x;
-        const y = heroSpriteObj.sprite.y;
-      
-        const points = [];
-        for (let i = 0; i < 6; i++) {
-          const angle = Phaser.Math.DegToRad(60 * i - 30);
-          points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
-        }
-      
-        heroSpriteObj.hex.beginPath();
-        heroSpriteObj.hex.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; i++) {
-          heroSpriteObj.hex.lineTo(points[i].x, points[i].y);
-        }
-        heroSpriteObj.hex.closePath();
-        heroSpriteObj.hex.fillPath();
-        heroSpriteObj.hex.strokePath();
-      }
-
-      const opponentSelection = player === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
-      opponentSelection.push(heroName);
-  
-      this.updateSelectedHeroDisplay(player, heroData);
-
-      this.currentStep = step;
-      this.currentStepCount = 0;
-    
-      this.updateNamePlayerText();
-    });
+    heroSelectionSocketListeners(socket, this);
   }
 
   drawHeroOptions() {
@@ -297,9 +154,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
       const x = startX + index * spacingX;
       const y = centerY + ((index % 2) ? -offsetY : 0);
   
-      // Criação do gráfico (hexágono)
       const hex = this.add.graphics();
-      hex.fillStyle(0x4e5d6c, 0.6); // padrão
+      hex.fillStyle(0x4e5d6c, 0.6); 
       hex.lineStyle(2, 0xaaaaaa, 0.8);
   
       const points = [];
@@ -320,18 +176,16 @@ export default class HeroSelectionScene extends Phaser.Scene {
       hex.fillPath();
       hex.strokePath();
   
-      // Sprite do herói
-      const sprite = this.add.sprite(x, y, 'heroes', hero.frame)
+      const sprite = this.add.sprite(x, y - 5, 'heroes', hero.frame)
         .setInteractive()
-        .setScale(1)
+        .setScale(0.3)
         .setData('heroName', hero.name);
   
-      // Animação de hover
       sprite.on('pointerover', () => {
         if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
           this.tweens.add({
             targets: sprite,
-            scale: 1.2,
+            scale: 0.4,
             duration: 150
           });
         }
@@ -341,19 +195,17 @@ export default class HeroSelectionScene extends Phaser.Scene {
         if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
           this.tweens.add({
             targets: sprite,
-            scale: 1,
+            scale: 0.3,
             duration: 150
           });
         }
       });
   
-      // Highlight visível se selecionado
       const highlight = this.add.rectangle(x, y + 45, 20, 20, 0x00ff00)
         .setVisible(false);
   
       this.heroSprites.push({ highlight, name: hero.name, sprite, hex });
   
-      // Clique no herói
       sprite.on('pointerdown', () => this.previewHero(hero));
     });
   }  
@@ -363,7 +215,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     const centerY = this.scale.height / 2 - 100;
   
     this.previewSprite = this.add.sprite(centerX - 80, centerY, 'heroes', 0)
-      .setScale(2)
+      .setScale(0.6)
       .setOrigin(0.5)
       .setVisible(false);
   
@@ -424,21 +276,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.selectedHeroesP2.includes(hero.name)
     ) return;
   
-    if (this.previewedSprite) {
-      this.tweens.add({
-        duration: 150,
-        ease: 'Power1',
-        scale: 1,
-        targets: this.previewedSprite
-      });
-    }
-  
     this.previewedHero = hero;
   
     const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
     if (heroSpriteObj) {
       this.previewedSprite = heroSpriteObj.sprite;
-      this.tweens.add({ duration: 200, ease: 'Power2', scale: 1, targets: this.previewedSprite });
+      this.tweens.add({ duration: 200, ease: 'Power2', scale: 0.3, targets: this.previewedSprite });
     }
   
     const abilitiesFormatted = hero.abilities.map(a => `${a.description}`).join('\n');
@@ -567,7 +410,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     if (slot) {
       slot.destroy();
 
-      const sprite = this.add.sprite(slot.x, slot.y, 'heroes', hero.frame).setScale(1.2);
+      const sprite = this.add.sprite(slot.x, slot.y, 'heroes', hero.frame).setScale(0.2);
   
       if (player === 1) {
         this.heroDisplayP1.add(sprite);
