@@ -24,7 +24,7 @@ const matches = new Map();
 const goodLuckCache = new Map();
 const disconnectedPlayers = new Map();
 const playerIdToSocketId = new Map();
-const TURN_DURATION = 180;
+const TURN_DURATION = 60;
 const turnIntervals = new Map();
 
 function getMatch(roomId) {
@@ -149,7 +149,7 @@ io.on('connection', (socket) => {
     startTurnTimer(roomId, startedPlayerId);
 
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
-      heroes, players, roomId, startedPlayerId
+       roomId, startedPlayerId
     });
   });
 

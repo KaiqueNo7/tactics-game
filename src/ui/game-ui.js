@@ -250,12 +250,12 @@ export default class GameUI extends Phaser.GameObjects.Container {
         strokeThickness: 2
       }).setOrigin(0, 0.5);
   
-      player.heroes.forEach((character, index) => {
+      player.heroes.forEach((hero, index) => {
         const y = playerIndex === 0
           ? this.scene.scale.height / 2 + 120 + index * spacingY
           : this.scene.scale.height / 2 - 160 - index * spacingY;
   
-        const isAlive = character.state.isAlive;
+        const isAlive = hero.state.isAlive;
   
         const heroContainer = this.scene.add.container(startX, y);
   
@@ -267,9 +267,9 @@ export default class GameUI extends Phaser.GameObjects.Container {
           tile.setTint(0x808080);
         }
   
-        const sprite = this.scene.add.sprite(0, 0, 'heroes', character.frameIndex)
+        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frameIndex)
           .setOrigin(0.5)
-          .setScale(spriteScale);
+          .setScale(0.115);
   
         heroContainer.add([tile, sprite]);
       });

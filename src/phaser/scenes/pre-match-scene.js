@@ -10,16 +10,15 @@ export default class PreMatchScene extends Phaser.Scene {
     const player2 = gameState.players[1];
   
     player1.heroes.forEach((hero, i) => {
-      this.add.sprite(100 + i * 70, height / 2, 'heroes', hero.frame).setScale(2);
+      this.add.sprite(100 + i * 50, height / 2, 'heroes', hero.frame).setScale(0.5);
     });
   
     player2.heroes.forEach((hero, i) => {
-      this.add.sprite(width - 100 - i * 70, height / 2, 'heroes', hero.frame).setScale(2);
+      this.add.sprite(width - 100 - i * 50, height / 2, 'heroes', hero.frame).setScale(0.5);
     });
   
     const vsText = this.add.text(width / 2, height / 2, 'VS', {
-      fontSize: '80px',
-      fontFamily: 'Arial Black',
+      fontSize: '65px',
       color: '#ffcc00',
       stroke: '#000000',
       strokeThickness: 6

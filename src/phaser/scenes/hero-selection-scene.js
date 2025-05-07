@@ -47,8 +47,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
   preload() {
     this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
-      frameHeight: 64,
-      frameWidth: 59
+      frameWidth: 165,
+      frameHeight: 231    
     });
     this.load.image('hexagon_empty', 'assets/ui/hex_tile.png');
   }
@@ -133,7 +133,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.autoSelectHeroesForTesting();
 
-    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, players, startedPlayerId }) => {
+    this.socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, startedPlayerId }) => {
       const resolveHeroes = heroNames => heroNames.map(name => this.HERO_DATA.find(h => h.name === name));
       
       const player1 = this.player1;
@@ -145,6 +145,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
           heroes: resolveHeroes(this.selectedHeroesP1).map(h => ({
             id: h.id,
             name: h.name,
+            frame: h.frame,
             firstAttack: h.firstAttack,
             stats: {
               attack: h.stats.attack,
@@ -162,6 +163,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
           heroes: resolveHeroes(this.selectedHeroesP2).map(h => ({
             id: h.id,
             name: h.name,
+            frame: h.frame,
             firstAttack: h.firstAttack,
             stats: {
               attack: h.stats.attack,
@@ -176,8 +178,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
         }
       ];
 
-      setupInitialPositions(enrichedPlayers[0].heroes, ['B3', 'C3', 'D3']);
-      setupInitialPositions(enrichedPlayers[1].heroes, ['B4', 'C4', 'D4']);      
+      setupInitialPositions(enrichedPlayers[0].heroes, ['B1', 'C1', 'D1']);
+      setupInitialPositions(enrichedPlayers[1].heroes, ['B7', 'C6', 'D7']);      
 
       const currentTurn = createTurn(startedPlayerId);
     
@@ -226,7 +228,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.currentStepCount = 0;
     this.startGame();
   }
-     
 
   setupSocketEvents() {
     this.socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ heroName, player, step }) => {

@@ -11,8 +11,8 @@ class Hero extends Phaser.GameObjects.Container {
 
     this.playerId = playerId;
 
-    const sprite = scene.add.sprite(0, 0, 'heroes', frameIndex);
-    sprite.setScale(0.8);
+    const sprite = scene.add.sprite(0, -10, 'heroes', frameIndex);
+    sprite.setScale(0.250);
     this.add(sprite);
     this.sprite = sprite;
         
