@@ -35,6 +35,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       frameHeight: 231    
     });
     this.load.image('hexagon_empty', 'assets/ui/hex_tile.png');
+    this.load.image('queue_selection_bg', 'assets/background/queue_selection_bg.jpeg');
   }
 
   create(data) {
@@ -43,6 +44,10 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.scene.start('FindingMatchScene');
       return;
     }
+
+    const bg = this.add.image(0, 0, 'queue_selection_bg');
+    bg.setOrigin(0);
+    bg.setDisplaySize(this.scale.width, this.scale.height);
 
     const { roomId, players } = data;
 

@@ -19,5 +19,6 @@ export const SOCKET_EVENTS = {
   SYNC_GAME_STATE: 'sync_game_state',
   RECONNECTING_PLAYER: 'reconnecting_player',
   TURN_TIMER_TICK: 'turn_timer_tick',
-  TURN_TIMEOUT: 'turn_time_out'
+  TURN_TIMEOUT: 'turn_time_out',
+  RETURN_TO_MATCH_ONLINE: 'return_to_match_online'
 };

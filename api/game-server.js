@@ -3,6 +3,7 @@ import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
+import { match } from 'assert';
 
 const app = express();
 const server = http.createServer(app);
@@ -122,6 +123,7 @@ io.on('connection', (socket) => {
         player1: { ...p1, id: playerId1 },
         player2: { ...p2, id: playerId2 },
         selectedHeroes: [],
+        status: 'selecting_heroes',
       };
   
       matches.set(roomId, match);
@@ -204,6 +206,7 @@ io.on('connection', (socket) => {
     io.socketsLeave(roomId);
     matches.delete(roomId);
     goodLuckCache.delete(roomId);
+    clearTurnTimer(roomId);
   });
 
   socket.on('CHECK_GOOD_LUCK', ({ roomId }) => {
@@ -231,11 +234,15 @@ io.on('connection', (socket) => {
     playerIdToSocketId.delete(playerId);
   
     for (const [roomId, match] of matches.entries()) {
-      if (!match || !match.gameState) continue;
-      if (match.gameState.status === 'finished') return;
-
-      if (match.player1.id === playerId || match.player2.id === playerId) {
-        const opponentId = match.player1.id === playerId ? match.player2.id : match.player1.id;
+      if (!match) continue;
+  
+      const isPlayer1 = match.player1.id === playerId;
+      const isPlayer2 = match.player2.id === playerId;
+  
+      if (isPlayer1 || isPlayer2) {
+        const opponentId = isPlayer1 ? match.player2.id : match.player1.id;
+        const opponentSocketId = playerIdToSocketId.get(opponentId);
+        const opponentSocket = io.sockets.sockets.get(opponentSocketId);
   
         const opponentDisconnected = disconnectedPlayers.has(opponentId);
   
@@ -243,8 +250,15 @@ io.on('connection', (socket) => {
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId: null });
           io.socketsLeave(roomId);
           matches.delete(roomId);
+          clearTurnTimer(roomId);
           disconnectedPlayers.delete(playerId);
           disconnectedPlayers.delete(opponentId);
+          return;
+        }
+  
+        if (!match.gameState) continue;
+        if (match.gameState.status === 'finished') {
+          clearTurnTimer(roomId);
           return;
         }
   
@@ -253,19 +267,20 @@ io.on('connection', (socket) => {
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
           io.socketsLeave(roomId);
           matches.delete(roomId);
+          clearTurnTimer(roomId);
           disconnectedPlayers.delete(playerId);
         }, 20000);
   
         disconnectedPlayers.set(playerId, {
           socketId: socket.id,
           roomId,
-          timeout
+          timeout,
         });
   
         break;
       }
     }
-  });
+  });  
   
   socket.on(SOCKET_EVENTS.RECONNECTING_PLAYER, ({ playerId }) => {
     const data = disconnectedPlayers.get(playerId);

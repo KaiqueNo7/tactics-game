@@ -209,12 +209,14 @@ class Hero extends Phaser.GameObjects.Container {
         if (effect.duration !== Infinity) effect.duration--;
   
         if (effect.type === 'poison' && this.effectSprites.poison) {
-          let alpha = 1;
+          if (!this.effectSprites.poison) return;
 
-          if (effect.duration === 2) alpha = 0.85;
-          else if (effect.duration === 1) alpha = 0.7;
+          let frame = 0; 
         
-          this.effectSprites.poison.setAlpha(alpha);
+          if (effect.duration === 2) frame = 1;
+          else if (effect.duration === 1) frame = 2; 
+        
+          this.effectSprites.poison.setFrame(frame);
         }
       }
   
@@ -253,12 +255,16 @@ class Hero extends Phaser.GameObjects.Container {
   }
 
   addPoisonEffect() {
-    if (this.effectSprites.poison) return;
-
-    const poison = this.scene.add.image(20, -20, 'poison');
+    if (this.effectSprites.poison) {
+      this.effectSprites.poison.setFrame(0);
+      return;
+    }
+  
+    const poison = this.scene.add.sprite(20, -20, 'poison_effect', 0);
     poison.setScale(0.1);
     poison.setDepth(10);
     this.add(poison);
+  
     this.effectSprites.poison = poison;
   }
     

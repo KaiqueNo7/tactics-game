@@ -123,8 +123,9 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.gameState.winnerId = winnerId;
 
     const iWon = this.gameState.winnerId === sessionStorage.getItem('playerId');
+    const winner = this.getPlayerById(winnerId);
 
-    this.scene.uiManager.showVictoryUI(iWon);
+    this.scene.uiManager.showVictoryUI(iWon, winner);
     this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
     
     this.sendGameStateUpdate();

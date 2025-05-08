@@ -117,8 +117,9 @@ export const skills = {
         
       if(poisonEffect){
         const bonusDamage = hero.stats.attack + 2;
-
+  
         poisonEffect.duration = 3;
+        target.effectSprites.poison.setFrame(0);
 
         target.takeDamage(bonusDamage, hero);
         hero.damageApplied = true;

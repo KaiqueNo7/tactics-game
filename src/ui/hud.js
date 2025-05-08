@@ -83,7 +83,7 @@ export default class UIManager {
     this.characterPanel.setVisible(false);
   }
 
-  showVictoryUI(iWon) {
+  showVictoryUI(iWon, winner) {
       const text = iWon ? 'Vitória' : 'Derrota';
 
       const width = this.scene.scale.width;
@@ -120,6 +120,7 @@ export default class UIManager {
       });
       
       playAgainBtn.on('pointerdown', () => {
+        this.scene.scene.stop('GameScene');
         this.scene.scene.start('MatchOnlineScene');
       });
 

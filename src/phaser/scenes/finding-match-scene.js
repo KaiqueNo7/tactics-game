@@ -45,6 +45,7 @@ export default class FindingMatchScene extends Phaser.Scene {
   
     createButton(this, width / 2, 500, 'CANCELAR', () => {
       socket.emit(SOCKET_EVENTS.QUIT_QUEUE);
+      this.scene.stop('FindingMatchScene');
       this.scene.start('MatchOnlineScene');
     });
   
@@ -54,9 +55,11 @@ export default class FindingMatchScene extends Phaser.Scene {
 
       console.log('Estado do jogo recebido:', gameState);
       
-      this.scene.start('ReconnectionScene', {
+      this.scene.stop('FindingMatchScene');
+      this.scene.start('PreMatchScene', {
         gameState,
-       });
+        reconnect: true,
+      });
     });
   
     socket.once('RECONNECT_FAILED', () => {
@@ -75,6 +78,7 @@ export default class FindingMatchScene extends Phaser.Scene {
     });
   
     socket.on(SOCKET_EVENTS.MATCH_FOUND, ({ roomId, players }) => {  
+      this.scene.stop('FindingMatchScene');
       this.scene.start('HeroSelectionScene', {
         players,
         roomId

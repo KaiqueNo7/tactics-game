@@ -241,9 +241,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (hero.attackText) hero.attackText.destroy();
 
     if (hero.sprite) {
-      hero.sprite.setAngle(90);
       hero.sprite.setTint(0x808080);
-      hero.sprite.setScale(0.8);
     }
 
     if (hero.shieldSprite){
