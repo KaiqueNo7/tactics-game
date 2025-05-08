@@ -30,8 +30,8 @@ const config = {
     forceSetTimeOut: true
   },
   scene: [
-    // MainMenuScene,
-    // MatchOnlineScene,
+    MainMenuScene,
+    MatchOnlineScene,
     FindingMatchScene,
     PreMatchScene,
     HeroSelectionScene,
