@@ -13,7 +13,13 @@ export default class FindingMatchScene extends Phaser.Scene {
   }
 
   create() {
-    const { width } = this.scale;
+    const { width, height } = this.scale;
+
+    const bg = this.add.image(0, 0, 'background').setOrigin(0);
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale).setOrigin(0);
   
     let playerId = sessionStorage.getItem('playerId');
     if (!playerId) {

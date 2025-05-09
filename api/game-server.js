@@ -242,7 +242,6 @@ io.on('connection', (socket) => {
       if (isPlayer1 || isPlayer2) {
         const opponentId = isPlayer1 ? match.player2.id : match.player1.id;
         const opponentSocketId = playerIdToSocketId.get(opponentId);
-        const opponentSocket = io.sockets.sockets.get(opponentSocketId);
   
         const opponentDisconnected = disconnectedPlayers.has(opponentId);
   

@@ -24,9 +24,8 @@ export default class MainMenuScene extends Phaser.Scene {
     const maxHeight = height * 0.5;
     const scaleFactor = Math.min(maxWidth / text.width, maxHeight / text.height);
     text.setScale(scaleFactor).setOrigin(0.5);
-  
 
-    createButton(this, width / 2, height * 0.70, 'JOGAR ONLINE', () => {
+    createButton(this, width / 2, height * 0.70, 'BATALHA', () => {
       this.scene.start('MatchOnlineScene');
     });
   }

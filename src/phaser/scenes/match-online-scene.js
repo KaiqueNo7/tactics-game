@@ -12,10 +12,15 @@ export default class MatchOnlineScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
+    const bg = this.add.image(0, 0, 'background').setOrigin(0);
+    const scaleX = width / bg.width;
+    const scaleY = height / bg.height;
+    const scale = Math.max(scaleX, scaleY);
+    bg.setScale(scale).setOrigin(0);
+
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
       fontSize: '32px',
-      fontFamily: '"Press Start 2P"',
     }).setOrigin(0.5);
 
     this.nameInput = document.createElement('input');

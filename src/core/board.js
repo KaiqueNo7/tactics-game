@@ -151,7 +151,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
     const bounds = this.boardContainer.getBounds();
 
-    const centerX = (this.scene.scale.width - bounds.width) / 2 - bounds.x;
+    const centerX = (this.scene.scale.width - bounds.width - 100) / 2 - bounds.x;
     const centerY = (this.scene.scale.height - bounds.height) / 2 - bounds.y;
 
     this.boardContainer.setPosition(centerX, centerY);

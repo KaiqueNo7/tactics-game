@@ -47,6 +47,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     const bg = this.add.image(0, 0, 'queue_selection_bg');
     bg.setOrigin(0);
+    bg.setAlpha(0.5);
     bg.setDisplaySize(this.scale.width, this.scale.height);
 
     const { roomId, players } = data;
@@ -101,6 +102,14 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 275, '', {
       fontSize: '20px',
       color: '#ffffff',
+      fontStyle: 'bold',
+      backgroundColor: '#333',
+      padding: {
+          left: 10,
+          right: 10,
+          top: 10,
+          bottom: 10,
+      },
     }).setOrigin(0.5);    
 
     this.heroSlotsP1 = [];
