@@ -7,7 +7,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.socket = socket;
     this.roomId = roomId;
     this.gameManager = gameManager;
-    this.hexRadius = 45;
+    this.hexRadius = 35;
     this.hexWidth = this.hexRadius * 2;
     this.hexHeight = Math.sqrt(3) * this.hexRadius;
     this.board = [];
@@ -21,8 +21,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.boardContainer = this.scene.add.container(0, 0);
 
     this.board = [];
-    let xOffset = 100;
-    let yOffset = 100;
+    let xOffset = 0;
+    let yOffset = 0;
 
     for (let col = 0; col < 5; col++) {
       let currentYOffset = yOffset;
@@ -151,8 +151,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
     const bounds = this.boardContainer.getBounds();
 
-    const centerX = (this.scene.scale.width - bounds.width - 100) / 2 - bounds.x;
-    const centerY = (this.scene.scale.height - bounds.height) / 2 - bounds.y;
+    const centerX = (this.scene.scale.width - bounds.width) / 2 - bounds.x;
+    const centerY = (this.scene.scale.height - bounds.height) / 2 + 30 - bounds.y;
 
     this.boardContainer.setPosition(centerX, centerY);
 
@@ -488,7 +488,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.spriteSize || 92, this.spriteSize || 92)
+        .setDisplaySize(this.spriteSize || 72, this.spriteSize || 72)
         .setAlpha(0.4)
         .setAngle(30)
         .setInteractive();

@@ -92,7 +92,7 @@ export default function heroSelectionSocketListeners(socket, scene){
       heroSpriteObj.hex.fillStyle(color, 0.7);
       heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
     
-      const size = 50;
+      const size = 35;
       const x = heroSpriteObj.sprite.x;
       const y = heroSpriteObj.sprite.y;
     

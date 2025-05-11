@@ -17,11 +17,11 @@ export default class GameUI extends Phaser.GameObjects.Container {
         
     this.background = this.scene.add.image(0, 0, 'ui_box_brown')
       .setOrigin(0.5)
-      .setScale(2, 1);
+      .setScale(1, 1);
 
     this.text = this.scene.add.text(0, 0, '', {
       color: '#000',
-      fontSize: '16px',
+      fontSize: '12px',
       fontWeight: 'bold',
     }).setOrigin(0.5);
 
@@ -52,8 +52,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   createEndTurnButton() {
     this.endTurnButtonContainer = this.scene.add.container(
-      this.scene.scale.width - 100,
-      this.scene.scale.height / 2
+      this.scene.scale.width - 40,
+      this.scene.scale.height - 30
     );
   
     this.endTurnBackground = this.scene.add.image(0, 0, 'next_turn')
@@ -162,8 +162,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   updateTurnPanel(playerIndex, turnNumber) {
     this.turnPanelContainer = this.scene.add.container(
-      this.scene.scale.width - 100,
-      this.scene.scale.height / 2 - 60
+      this.scene.scale.width / 2,
+      60
     );
     
     const hexTile = playerIndex == 0 ? 'hex_tile_p1' : 'hex_tile_p2';
@@ -182,10 +182,10 @@ export default class GameUI extends Phaser.GameObjects.Container {
       strokeThickness: 1.4
     }).setOrigin(0.5);
     
-    this.turnLabelText = this.scene.add.text(0, -40, 'Turno Atual', {
+    this.turnLabelText = this.scene.add.text(0, - 40, 'Turno Atual', {
       align: 'center',
       color: '#FFFFFF',
-      fontSize: '14px',
+      fontSize: '12px',
       fontStyle: 'bold',
       stroke: '#000000',
       strokeThickness: 1.4
@@ -232,32 +232,30 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }    
 
   updateGamePanel(players) {
-    const tileSize = 100;
-    const spriteScale = 0.5;
-    const spacingY = 60;
-    const startX = this.scene.scale.width - 100;
+    const tileSize = 60;
+    const spacingY = 30;
+    const startY = 40;
   
     players.forEach((player, playerIndex) => {
-      const playerNameY = playerIndex === 0
-        ? 35
-        : this.scene.scale.height - 35;
+      const playerNameY = 20;
+      const playerNameX = playerIndex === 0 ? 10 : this.scene.scale.width - 90;
   
-     this.scene.add.text(this.scene.scale.width / 2 - 50, playerNameY, player.name, {
+     this.scene.add.text(playerNameX, playerNameY, player.name, {
         color: '#FFD700',
-        fontSize: '14px',
+        fontSize: '12px',
         fontStyle: 'bold',
         stroke: '#000000',
         strokeThickness: 2
       }).setOrigin(0, 0.5);
   
       player.heroes.forEach((hero, index) => {
-        const y = playerIndex === 0
-          ? this.scene.scale.height / 2 + 120 + index * spacingY
-          : this.scene.scale.height / 2 - 160 - index * spacingY;
+        const x = playerIndex === 0
+          ? this.scene.scale.width / 2 + 75 + index * spacingY
+          : this.scene.scale.width / 2 - 70 - index * spacingY;
   
         const isAlive = hero.state.isAlive;
   
-        const heroContainer = this.scene.add.container(startX, y);
+        const heroContainer = this.scene.add.container(x, startY + 10);
   
         const tile = this.scene.add.image(0, 0, 'hex_tile')
           .setOrigin(0.5)
@@ -269,7 +267,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
         const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frameIndex)
           .setOrigin(0.5)
-          .setScale(0.115);
+          .setScale(0.080);
   
         heroContainer.add([tile, sprite]);
       });

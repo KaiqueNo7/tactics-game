@@ -59,7 +59,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     console.log(`Você está na sala ${roomId}`);
 
-    const padding = 100;
+    const padding = 20;
     const { width } = this.scale;
 
     this.player1 = players[0];
@@ -78,19 +78,19 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.player1NameText = this.add.text(padding, 40, this.player1.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
-      fontSize: '20px'
+      fontSize: '16px'
     }).setOrigin(0, 0.5);
     
     this.player2NameText = this.add.text(width - padding, 40, this.player2.name, {
       color: '#ffffff',
       fontFamily: 'Arial',
-      fontSize: '20px'
+      fontSize: '16px'
     }).setOrigin(1, 0.5);
     
     this.add.text(width / 2, 40, 'VS', {
       color: '#ffffff',
       fontFamily: 'Arial',
-      fontSize: '24px',
+      fontSize: '16px',
       fontStyle: 'bold'
     }).setOrigin(0.5);
 
@@ -99,29 +99,22 @@ export default class HeroSelectionScene extends Phaser.Scene {
       fontSize: '12px'
     }).setOrigin(0.5);
 
-    this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 275, '', {
-      fontSize: '20px',
+    this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 260, '', {
+      fontSize: '12px',
       color: '#ffffff',
       fontStyle: 'bold',
-      backgroundColor: '#333',
-      padding: {
-          left: 10,
-          right: 10,
-          top: 10,
-          bottom: 10,
-      },
     }).setOrigin(0.5);    
 
     this.heroSlotsP1 = [];
     this.heroSlotsP2 = [];
 
-    const spacing = 60;
-    const baseY = 70;
+    const spacing = 45;
+    const baseY = 50;
     const offsetY = 50;
     const y = baseY + offsetY;
 
-    const baseX_P1 = 60;
-    const baseX_P2 = this.scale.width - 60;
+    const baseX_P1 = 35;
+    const baseX_P2 = this.scale.width - 35;
 
     for (let i = 0; i < 3; i++) {
       const slotP1 = this.add.image(baseX_P1 + i * spacing, y, 'hexagon_empty').setScale(1.2);
@@ -134,10 +127,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.drawHeroOptions();
     this.createHeroDetailUI();
     this.updateNamePlayerText();
+
     
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();   
-      
+    
+    this.autoSelectHeroesForTesting();
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
@@ -151,8 +146,38 @@ export default class HeroSelectionScene extends Phaser.Scene {
     heroSelectionSocketListeners(socket, this);
   }
 
+  autoSelectHeroesForTesting() {
+    const presetP1 = ['Mineiro', 'Ceos', 'Blade'];
+    const presetP2 = ['Ralph', 'Vic', 'Dante'];
+  
+    // Preenche como se fosse a seleção feita manualmente
+    this.selectedHeroesP1 = [];
+    this.selectedHeroesP2 = [];
+  
+    presetP1.forEach(name => {
+      const heroData = this.HERO_DATA.find(h => h.name === name);
+      if (heroData) {
+        this.selectedHeroesP1.push(name);
+        this.updateSelectedHeroDisplay(1, heroData);
+      }
+    });
+  
+    presetP2.forEach(name => {
+      const heroData = this.HERO_DATA.find(h => h.name === name);
+      if (heroData) {
+        this.selectedHeroesP2.push(name);
+        this.updateSelectedHeroDisplay(2, heroData);
+      }
+    });
+  
+    // Marca seleção como completa e inicia o jogo
+    this.currentStep = this.selectionOrder.length;
+    this.currentStepCount = 0;
+    this.startGame();
+  }
+
   drawHeroOptions() {
-    const size = 50;
+    const size = 35;
     const spacingX = size * 1;
     const spacingY = size * Math.sqrt(3);
     const offsetY = spacingY / 1;
@@ -192,14 +217,14 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
       const sprite = this.add.sprite(x, y - 5, 'heroes', hero.frame)
         .setInteractive()
-        .setScale(0.3)
+        .setScale(0.2)
         .setData('heroName', hero.name);
   
       sprite.on('pointerover', () => {
         if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
           this.tweens.add({
             targets: sprite,
-            scale: 0.4,
+            scale: 0.3,
             duration: 150
           });
         }
@@ -209,7 +234,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
         if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
           this.tweens.add({
             targets: sprite,
-            scale: 0.3,
+            scale: 0.2,
             duration: 150
           });
         }
@@ -226,15 +251,15 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
   createHeroDetailUI() {
     const centerX = this.scale.width / 2;
-    const centerY = this.scale.height / 2 - 100;
+    const centerY = this.scale.height / 2 - 50;
   
-    this.previewSprite = this.add.sprite(centerX - 80, centerY, 'heroes', 0)
-      .setScale(0.6)
+    this.previewSprite = this.add.sprite(40, centerY + 10, 'heroes', 0)
+      .setScale(0.4)
       .setOrigin(0.5)
       .setVisible(false);
   
-      this.heroNameText = this.add.text(centerX - 80, centerY - 60, '', {
-        fontSize: '32px',
+      this.heroNameText = this.add.text(centerX, centerY - 75, '', {
+        fontSize: '24px',
         color: '#ccc',
         stroke: '#6e4c1e',
         strokeThickness: 3,
@@ -249,22 +274,28 @@ export default class HeroSelectionScene extends Phaser.Scene {
       .setOrigin(0.5, 1) 
       .setVisible(false);  
 
-    this.heroStatsText = this.add.text(centerX - 20, centerY - 60, '', {
+    this.heroStatsText = this.add.text(centerX - 70, centerY - 60, '', {
       color: '#ffffff',
-      fontSize: '16px',
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
     }).setOrigin(0, 0).setVisible(false);
 
-    this.heroAbilitiesText = this.add.text(centerX - 20, centerY - 90, '', {
+    this.heroAbilitiesText = this.add.text(centerX - 70, centerY - 35, '', {
       color: '#ffffff',
-      fontSize: '16px',
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
     }).setOrigin(0, 0).setVisible(false);
   
-    this.heroSkillsText = this.add.text(centerX - 20, centerY - 25, '', {
-      fontSize: '16px',
-      wordWrap: { width: 260 }
+    this.heroSkillsText = this.add.text(centerX - 70, centerY - 10, '', {
+      fontSize: '14px',
+      fontFamily: 'Arial',
+      fontStyle: 'bold',
+      wordWrap: { width: 200 }
     }).setOrigin(0, 0).setVisible(false);
 
-    this.confirmButton = this.add.text(centerX - 20, centerY + 100, 'Selecionar', {
+    this.confirmButton = this.add.text(centerX - 50, centerY + 100, 'Selecionar', {
       backgroundColor: '#8b4513',
       color: '#fff8dc',
       fontSize: '18px',
@@ -306,7 +337,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     if(hero.stats.ability) {
       this.heroAbilitiesText.setText(`${hero.stats.ability}`).setVisible(true);
     } else {
-      this.heroAbilitiesText.setText(``).setVisible(true);
+      this.heroAbilitiesText.setText(`-`).setVisible(true);
     }
     this.heroSkillsText.setText(`${abilitiesFormatted}`).setVisible(true);
     this.confirmButton.setVisible(this.isCurrentPlayerTurn());
@@ -348,7 +379,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       heroSpriteObj.hex.fillStyle(color, 0.7);
       heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
     
-      const size = 50;
+      const size = 35;
       const x = heroSpriteObj.sprite.x;
       const y = heroSpriteObj.sprite.y;
     

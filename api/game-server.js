@@ -3,7 +3,6 @@ import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import { v4 as uuidv4 } from 'uuid';
-import { match } from 'assert';
 
 const app = express();
 const server = http.createServer(app);

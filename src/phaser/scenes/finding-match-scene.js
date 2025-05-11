@@ -9,7 +9,7 @@ export default class FindingMatchScene extends Phaser.Scene {
   }
 
   preload() {
-    //
+    this.load.image('background', 'assets/background/menu.png');
   }
 
   create() {
@@ -36,7 +36,7 @@ export default class FindingMatchScene extends Phaser.Scene {
   
     this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
       color: '#ffffff',
-      fontSize: '48px',
+      fontSize: '28px',
     }).setOrigin(0.5);
   
     this.dots = '';

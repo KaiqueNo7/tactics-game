@@ -25,12 +25,12 @@ export default class MatchOnlineScene extends Phaser.Scene {
 
     this.nameInput = document.createElement('input');
     this.nameInput.type = 'text';
-    this.nameInput.placeholder = 'Digite seu nome';
+    this.nameInput.placeholder = 'Digite um nome';
     this.nameInput.style.position = 'absolute';
     this.nameInput.style.top = '30%';
     this.nameInput.style.left = '50%';
     this.nameInput.style.transform = 'translate(-50%, -50%)';
-    this.nameInput.style.width = '300px';
+    this.nameInput.style.width = '280px';
     this.nameInput.style.fontSize = '18px';
     this.nameInput.style.padding = '10px';
     this.nameInput.style.zIndex = 1000;

@@ -12,7 +12,7 @@ class Hero extends Phaser.GameObjects.Container {
     this.playerId = playerId;
 
     const sprite = scene.add.sprite(0, -10, 'heroes', frameIndex);
-    sprite.setScale(0.250);
+    sprite.setScale(0.230);
     this.add(sprite);
     this.sprite = sprite;
         
@@ -225,7 +225,6 @@ class Hero extends Phaser.GameObjects.Container {
   
     this.updateHeroStats();
   }
-  
 
   startTurn() {
       this.triggerSkills('onTurnStart');

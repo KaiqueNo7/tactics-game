@@ -3,7 +3,7 @@ export default function createButton(scene, x, y, text, callback, disabled = fal
     align: 'center',
     backgroundColor: disabled ? '#333' : '#555',
     color: disabled ? '#777' : '#fff',
-    fontSize: '28px',
+    fontSize: '24px',
     padding: { x: 20, y: 10 }
   }).setOrigin(0.5).setInteractive();
 

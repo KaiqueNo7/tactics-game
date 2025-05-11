@@ -43,7 +43,7 @@ export const skills = {
         h.takeDamage(hero.stats.attack, hero);
       });
     },
-    description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas.',
+    description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas por inimigos.',
     name: 'Beyond Front',
     triggers: ['onAttack']
   },
