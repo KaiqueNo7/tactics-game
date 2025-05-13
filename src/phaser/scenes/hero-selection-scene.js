@@ -132,7 +132,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();   
     
-    this.autoSelectHeroesForTesting();
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
@@ -258,7 +257,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
       .setOrigin(0.5)
       .setVisible(false);
   
-      this.heroNameText = this.add.text(centerX, centerY - 75, '', {
+    this.heroNameText = this.add.text(centerX, centerY - 75, '', {
         fontSize: '24px',
         color: '#ccc',
         stroke: '#6e4c1e',
@@ -270,36 +269,29 @@ export default class HeroSelectionScene extends Phaser.Scene {
           blur: 4,
           fill: true
         }
-      })
+    })
       .setOrigin(0.5, 1) 
       .setVisible(false);  
 
     this.heroStatsText = this.add.text(centerX - 70, centerY - 60, '', {
       color: '#ffffff',
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
+      font: '16px Courier', 
     }).setOrigin(0, 0).setVisible(false);
 
     this.heroAbilitiesText = this.add.text(centerX - 70, centerY - 35, '', {
       color: '#ffffff',
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
+      font: '16px Courier', 
     }).setOrigin(0, 0).setVisible(false);
   
     this.heroSkillsText = this.add.text(centerX - 70, centerY - 10, '', {
-      fontSize: '14px',
-      fontFamily: 'Arial',
-      fontStyle: 'bold',
-      wordWrap: { width: 200 }
+      font: '14px Courier', 
+      wordWrap: { width: 220 }
     }).setOrigin(0, 0).setVisible(false);
 
     this.confirmButton = this.add.text(centerX - 50, centerY + 100, 'Selecionar', {
       backgroundColor: '#8b4513',
       color: '#fff8dc',
       fontSize: '18px',
-      fontFamily: 'Arial',
       padding: { x: 12, y: 6 },
       border: 1,
       align: 'center'

@@ -30,8 +30,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.gameUI = gameUI;
     this.roomId = state.roomId;
     this.startedPlayerId = state.startedPlayerId;
-
-    console.log(state);
   
     const players = state.players.map(playerData => {
       const player = new Player(playerData.name, [], playerData.id);
