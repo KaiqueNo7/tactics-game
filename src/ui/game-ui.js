@@ -16,13 +16,12 @@ export default class GameUI extends Phaser.GameObjects.Container {
     this.container = this.scene.add.container(this.scene.scale.width / 2, -50);
         
     this.background = this.scene.add.image(0, 0, 'ui_box_brown')
-      .setOrigin(0.5)
-      .setScale(1, 1);
+    .setOrigin(0.5)
+    .setScale(1.8, 1);
 
     this.text = this.scene.add.text(0, 0, '', {
       color: '#000',
-      fontSize: '12px',
-      fontWeight: 'bold',
+      fontSize: '14px',
     }).setOrigin(0.5);
 
     this.container.add([this.background, this.text]);
@@ -80,21 +79,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
       this.endTurnBackground.setAlpha(1);
     });
   
-    this.turnTimerText = this.scene.add.text(
-      0, 
-      55,
-      '',
-      {
-        align: 'right',
-        color: '#FFFFFF',
-        fontSize: '18px',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 1.4
-      }
-    ).setOrigin(0.5);
-  
-    this.endTurnButtonContainer.add([this.endTurnBackground, this.turnTimerText]);
+    this.endTurnButtonContainer.add(this.endTurnBackground);
   }  
 
   setEndTurnButtonEnabled(enabled) {
@@ -190,10 +175,27 @@ export default class GameUI extends Phaser.GameObjects.Container {
       stroke: '#000000',
       strokeThickness: 1.4
     }).setOrigin(0.5);
+
+    this.turnTimerText = this.scene.add.text(
+      0, 
+      40,
+      '',
+      {
+        align: 'center',
+        color: '#FFFFFF',
+        fontSize: '18px',
+        fontStyle: 'bold',
+        stroke: '#000000',
+        strokeThickness: 1.4
+      }
+    ).setOrigin(0.5);
     
-    this.turnPanelContainer.add(this.turnPanelBackground);
-    this.turnPanelContainer.add(this.turnLabelText);
-    this.turnPanelContainer.add(this.turnNumberText);
+    this.turnPanelContainer.add([
+      this.turnPanelBackground, 
+      this.turnLabelText, 
+      this.turnNumberText,
+      this.turnTimerText
+    ]);
   }    
 
   placeHeroOnBoard(hero, position, hexColor) {
@@ -213,9 +215,10 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
     if (!hero.hexBg) {
       hero.hexBg = this.scene.add.image(0, 0, hexColor)
-        .setDisplaySize(hero.spriteSize || 92, hero.spriteSize || 92)
+        .setDisplaySize(hero.spriteSize || 72, hero.spriteSize || 72)
         .setAngle(30)
-        .setOrigin(0.5);
+        .setOrigin(0.5)
+        .setDepth(0);
       hero.addAt(hero.hexBg, 0); 
     }
   
