@@ -11,6 +11,9 @@ const config = {
   height: window.innerHeight,
   backgroundColor: '#333333',
   parent: 'game-container',
+  audio: {
+    noAudio: true,
+  },
   physics: {
     default: 'arcade',
     arcade: {
@@ -30,8 +33,8 @@ const config = {
     forceSetTimeOut: true
   },
   scene: [
-    // MainMenuScene,
-    // MatchOnlineScene,
+    MainMenuScene,
+    MatchOnlineScene,
     FindingMatchScene,
     PreMatchScene,
     HeroSelectionScene,

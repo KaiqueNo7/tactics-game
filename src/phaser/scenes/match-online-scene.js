@@ -1,4 +1,6 @@
-import createButton from "../../utils/helpers";
+import { createButton, createBackground } from '../../utils/helpers';
+import socket from '../../services/game-api-service.js';
+import { SOCKET_EVENTS } from '../../../api/events.js';
 
 export default class MatchOnlineScene extends Phaser.Scene {
   constructor() {
@@ -12,11 +14,32 @@ export default class MatchOnlineScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    const bg = this.add.image(0, 0, 'background').setOrigin(0);
-    const scaleX = width / bg.width;
-    const scaleY = height / bg.height;
-    const scale = Math.max(scaleX, scaleY);
-    bg.setScale(scale).setOrigin(0);
+    createBackground(this, height, width);
+
+    let playerId = sessionStorage.getItem('playerId');
+    
+    if (!playerId) {
+      playerId = crypto.randomUUID();
+      sessionStorage.setItem('playerId', playerId);
+    }  
+
+    socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {      
+      this.scene.stop('MatchOnlineScene');
+      this.nameInput.remove();
+      this.scene.start('PreMatchScene', {
+        gameState,
+        reconnect: true,
+      });
+    });
+  
+    socket.once('RECONNECT_FAILED', () => {
+      console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
+    });
+    
+  
+    socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, {
+      playerId
+    });
 
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
@@ -36,8 +59,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
     this.nameInput.style.zIndex = 1000;
     document.body.appendChild(this.nameInput);    
 
-    // Criar botão
-    const startMatchButton = createButton(this, width / 2, 270, 'PARTIDA ALEATÓRIA', () => {
+    const startMatchButton = createButton(this, width / 2, 270, 'PROCURAR PARTIDA', () => {
       const playerName = this.nameInput.value.trim();
       let playerId = localStorage.getItem('playerId');
 
