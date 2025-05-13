@@ -176,19 +176,21 @@ export default class GameUI extends Phaser.GameObjects.Container {
       strokeThickness: 1.4
     }).setOrigin(0.5);
 
-    this.turnTimerText = this.scene.add.text(
-      0, 
-      40,
-      '',
-      {
-        align: 'center',
-        color: '#FFFFFF',
-        fontSize: '18px',
-        fontStyle: 'bold',
-        stroke: '#000000',
-        strokeThickness: 1.4
-      }
-    ).setOrigin(0.5);
+    if(!this.turnTimerText){
+      this.turnTimerText = this.scene.add.text(
+        0, 
+        40,
+        '',
+        {
+          align: 'center',
+          color: '#FFFFFF',
+          fontSize: '18px',
+          fontStyle: 'bold',
+          stroke: '#000000',
+          strokeThickness: 1.4
+        }
+      ).setOrigin(0.5);
+    }
     
     this.turnPanelContainer.add([
       this.turnPanelBackground, 
