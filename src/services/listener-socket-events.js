@@ -1,6 +1,6 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
-export function setupSocketListeners(socket, turnManager, gameManager) {
+export function setupSocketListeners(socket, gameManager) {
   socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winnerId }) => {
     gameManager.finishGame(winnerId);
     removeSocketListenersByRoom();

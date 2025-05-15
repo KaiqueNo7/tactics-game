@@ -8,38 +8,13 @@ export default class MatchOnlineScene extends Phaser.Scene {
   }
 
   preload() {
-    //
+    this.load.image('button_bg', 'assets/ui/button_bg.png');
   }
 
   create() {
     const { width, height } = this.scale;
 
     createBackground(this, height, width);
-
-    let playerId = sessionStorage.getItem('playerId');
-    
-    if (!playerId) {
-      playerId = crypto.randomUUID();
-      sessionStorage.setItem('playerId', playerId);
-    }  
-
-    socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {      
-      this.scene.stop('MatchOnlineScene');
-      this.nameInput.remove();
-      this.scene.start('PreMatchScene', {
-        gameState,
-        reconnect: true,
-      });
-    });
-  
-    socket.once('RECONNECT_FAILED', () => {
-      console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
-    });
-    
-  
-    socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, {
-      playerId
-    });
 
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
@@ -62,41 +37,40 @@ export default class MatchOnlineScene extends Phaser.Scene {
     const startMatchButton = createButton(this, width / 2, 270, 'PROCURAR PARTIDA', () => {
       const playerName = this.nameInput.value.trim();
       let playerId = localStorage.getItem('playerId');
-
+    
       playerId = crypto.randomUUID();
-
+    
       this.registry.set('playerName', playerName);
       this.registry.set('playerId', playerId);
-
-      if(playerName.length < 5){
+    
+      if (playerName.length < 3) {
         console.log('Nome deve ter 5 ou mais letras');
-        return; 
+        return;
       }
-
+    
       this.nameInput.remove();
-      startMatchButton.setInteractive(false);
-
-      this.nameInput.remove();
+      startMatchButton.background.disableInteractive();
       this.scene.start('FindingMatchScene');
     });
-
-    startMatchButton.setInteractive(false);
+    
+    startMatchButton.background.disableInteractive();
     startMatchButton.alpha = 0.5;
-
+    
     this.nameInput.addEventListener('input', () => {
       const value = this.nameInput.value.trim();
-      if (value.length >= 5) {
-        startMatchButton.setInteractive(true);
+      if (value.length >= 3) {
+        startMatchButton.background.setInteractive({ useHandCursor: true });
         startMatchButton.alpha = 1;
       } else {
-        startMatchButton.setInteractive(false);
+        startMatchButton.background.disableInteractive();
         startMatchButton.alpha = 0.5;
       }
     });
-
-    createButton(this, width / 2, 370, 'VOLTAR', () => {
+    
+    createButton(this, width / 2, 470, 'VOLTAR', () => {
       this.nameInput.remove();
       this.scene.start('MainMenuScene');
     });
+    
   }
 }

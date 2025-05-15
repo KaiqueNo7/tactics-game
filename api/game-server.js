@@ -99,8 +99,6 @@ io.on('connection', (socket) => {
       heroes: []
     });
 
-    console.log(waitingQueue);
-
     if (waitingQueue.size >= 2) {
       const iterator = waitingQueue.entries();
       const [playerId1, p1] = iterator.next().value;

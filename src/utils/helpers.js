@@ -1,22 +1,29 @@
 export function createButton(scene, x, y, text, callback, disabled = false) {
-  const btn = scene.add.text(x, y, text, {
-    align: 'center',
-    backgroundColor: disabled ? '#333' : '#555',
-    color: disabled ? '#777' : '#fff',
-    fontSize: '24px',
-    padding: { x: 20, y: 10 }
-  }).setOrigin(0.5).setInteractive();
+  const container = scene.add.container(x, y);
+
+  const background = scene.add.image(0, 0, 'button_bg').setScale(1.3, 0.8);
 
   if (disabled) {
-    btn.disableInteractive();
-  } else if (callback) {
-    btn.on('pointerdown', callback);
-    btn.on('pointerover', () => btn.setStyle({ backgroundColor: '#777' }));
-    btn.on('pointerout', () => btn.setStyle({ backgroundColor: '#555' }));
+    background.setTint(0x555555);
+  } else {
+    background.setInteractive({ useHandCursor: true });
+    background.on('pointerdown', callback);
+    background.on('pointerover', () => background.setTint(0xaaaaaa));
+    background.on('pointerout', () => background.clearTint());
   }
 
-  return btn;
+  const label = scene.add.text(0, 0, text, {
+    fontSize: '24px',
+    color: disabled ? '#888' : '#fff',
+  }).setOrigin(0.5);
+
+  container.add([background, label]);
+
+  container.background = background;
+
+  return container;
 }
+
 
 export function createBackground(scene, height, width) {
     const bg = scene.add.image(0, 0, 'background').setOrigin(0);

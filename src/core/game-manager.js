@@ -92,7 +92,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     this.currentTurn = this.turnManager.currentTurn;
 
-    setupSocketListeners(this.socket, this.turnManager, this);
+    setupSocketListeners(this.socket, this);
     boardSocketListeners(this.board, this.socket, this);
   }
   
