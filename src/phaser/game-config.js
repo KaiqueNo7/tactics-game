@@ -8,6 +8,9 @@ import MatchOnlineScene from './scenes/match-online-scene.js';
 import FindingMatchScene from './scenes/finding-match-scene.js';
 import PreMatchScene from './scenes/pre-match-scene.js';
 
+const MOBILE_BASE_WIDTH = 720;
+const MOBILE_BASE_HEIGHT = 1280;
+
 const config = {
   type: Phaser.AUTO,
   backgroundColor: '#333333',
@@ -22,10 +25,22 @@ const config = {
     }
   },
   scale: {
-    mode: Phaser.Scale.FIT,
+    mode: Phaser.Scale.FIT, // Mantém proporção e preenche a tela
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: window.innerWidth,
-    height: window.innerHeight,
+
+    width: MOBILE_BASE_WIDTH,
+    height: MOBILE_BASE_HEIGHT,
+
+    min: {
+      width: 360,
+      height: 640
+    },
+    max: {
+      width: 1080,
+      height: 1920
+    },
+
+    expandParent: true
   },
   render: {
     pixelArt: false,

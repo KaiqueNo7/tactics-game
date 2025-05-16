@@ -28,13 +28,13 @@ export default class MatchOnlineScene extends Phaser.Scene {
     this.nameInput.style.top = '30%';
     this.nameInput.style.left = '50%';
     this.nameInput.style.transform = 'translate(-50%, -50%)';
-    this.nameInput.style.width = '280px';
-    this.nameInput.style.fontSize = '18px';
+    this.nameInput.style.width = '260px';
+    this.nameInput.style.fontSize = '16px';
     this.nameInput.style.padding = '10px';
     this.nameInput.style.zIndex = 1000;
     document.body.appendChild(this.nameInput);    
 
-    const startMatchButton = createButton(this, width / 2, 270, 'PROCURAR PARTIDA', () => {
+    const startMatchButton = createButton(this, width / 2, height - 300, 'PROCURAR PARTIDA', () => {
       const playerName = this.nameInput.value.trim();
       let playerId = localStorage.getItem('playerId');
     
@@ -67,7 +67,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
       }
     });
     
-    createButton(this, width / 2, 470, 'VOLTAR', () => {
+    createButton(this, width / 2, height - 100, 'VOLTAR', () => {
       this.nameInput.remove();
       this.scene.start('MainMenuScene');
     });
