@@ -56,7 +56,7 @@ export default class PreMatchScene extends Phaser.Scene {
       ease: 'Back.Out',
       yoyo: false
     });
-  
+
     this.scene.start('GameScene', {
       gameState
     });

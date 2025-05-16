@@ -66,6 +66,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.player2 = players[1];
 
     const currentPlayerId = sessionStorage.getItem('playerId');
+
     if (currentPlayerId === this.player1.id) {
       this.playerNumber = 1;
     } else if (currentPlayerId === this.player2.id) {
@@ -132,6 +133,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();   
     
+    // this.autoSelectHeroesForTesting();
+
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
@@ -143,6 +146,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
     });    
 
     heroSelectionSocketListeners(socket, this);
+
+    this.events.once('shutdown', () => {
+      socket.off(SOCKET_EVENTS.START_GAME);
+      socket.off(SOCKET_EVENTS.HERO_SELECTED);
+      socket.off(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
+    });
   }
 
   autoSelectHeroesForTesting() {

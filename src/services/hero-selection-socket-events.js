@@ -63,14 +63,13 @@ export default function heroSelectionSocketListeners(socket, scene){
       });
     };
   
-    setupHeroPositions(enrichedPlayers[0].heroes, ['B1', 'C1', 'D1']);
-    setupHeroPositions(enrichedPlayers[1].heroes, ['B7', 'C6', 'D7']);
+    setupHeroPositions(enrichedPlayers[0].heroes, ['B3', 'C3', 'D3']);
+    setupHeroPositions(enrichedPlayers[1].heroes, ['B4', 'C4', 'D4']);
   
     const currentTurn = createTurn(startedPlayerId);
   
     const gameState = buildGameState(roomId, enrichedPlayers, currentTurn, startedPlayerId);
   
-    scene.scene.stop('HeroSelectionScene');
     scene.scene.start('PreMatchScene', { gameState });
   });
   
@@ -125,7 +124,7 @@ export default function heroSelectionSocketListeners(socket, scene){
 
   socket.on(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE, () => {
     console.log("Retornando à tela de busca de partida...");
-    scene.scene.stop('HeroSelectionScene');
+    scene.scene.stop('FindingMatchScene');
     scene.scene.start('MatchOnlineScene');
   });
 }

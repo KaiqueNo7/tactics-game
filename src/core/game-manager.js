@@ -20,7 +20,8 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     if (alivePlayers.length === 1) {
       const winner = alivePlayers[0];
-      this.finishGame(winner.id);
+      const roomId = this.gameState.roomId;
+      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED_REQUEST, { roomId, winner });
     }
   }
 
@@ -124,7 +125,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     const winner = this.getPlayerById(winnerId);
 
     this.scene.uiManager.showVictoryUI(iWon, winner);
-    this.socket.emit(SOCKET_EVENTS.GAME_FINISHED, { winnerId });
     
     this.sendGameStateUpdate();
   }

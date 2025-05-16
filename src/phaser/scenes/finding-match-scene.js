@@ -61,7 +61,12 @@ export default class FindingMatchScene extends Phaser.Scene {
       this.scene.start('HeroSelectionScene', {
         players,
         roomId
-      });
+      }, true);
+    });
+
+    this.events.once('shutdown', () => {
+      socket.off(SOCKET_EVENTS.QUIT_QUEUE);
+      socket.off(SOCKET_EVENTS.MATCH_FOUND);
     });
   }  
 }
