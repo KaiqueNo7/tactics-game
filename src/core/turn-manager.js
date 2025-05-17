@@ -38,6 +38,14 @@ export default class TurnManager {
       this.gameUI.showMessage('Sua vez!');
     }
 
+    if(this.currentTurn.numberTurn == 15){
+      this.gameUI.showMessage('Morte súbita em 5 turnos!');
+    }
+
+    if(this.currentTurn.numberTurn >= 20){
+      this.suddenDeath(this.gameManager.getPlayers());
+    }
+
     this.gameUI.setEndTurnButtonEnabled(isMyTurn);
     this.gameManager.updateCurrentTurn(this.currentTurn);
   }
@@ -58,6 +66,15 @@ export default class TurnManager {
            !this.currentTurn.attackedHeroes.includes(heroId);
   }  
 
+  suddenDeath(players) {
+    players.forEach(player => {
+      player.heroes.forEach(hero => {
+        if (hero.state.isAlive) {
+          hero.takeDamage(1);
+        }
+      });
+    });
+  }
 
   nextTurn(playerId) {
     this.gameManager.showGameState();

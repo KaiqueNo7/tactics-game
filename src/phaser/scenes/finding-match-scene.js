@@ -33,6 +33,7 @@ export default class FindingMatchScene extends Phaser.Scene {
     this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
       color: '#ffffff',
       fontSize: '28px',
+      fontFamily: 'Fredoka',
     }).setOrigin(0.5);
   
     this.dots = '';
