@@ -133,7 +133,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();   
     
-    // this.autoSelectHeroesForTesting();
+    this.autoSelectHeroesForTesting();
 
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
@@ -155,8 +155,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
   }
 
   autoSelectHeroesForTesting() {
-    const presetP1 = ['Mineiro', 'Ceos', 'Blade'];
-    const presetP2 = ['Ralph', 'Vic', 'Dante'];
+    const presetP1 = ['Ralph', 'Ceos', 'Blade'];
+    const presetP2 = ['Mineiro', 'Vic', 'Dante'];
   
     // Preenche como se fosse a seleção feita manualmente
     this.selectedHeroesP1 = [];

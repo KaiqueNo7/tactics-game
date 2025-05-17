@@ -16,7 +16,7 @@ export const skills = {
     triggers: ['']
   },
   beyondFront: {
-    apply: (hero, target) => {
+    apply: (hero, target = null) => {
       const board = hero.scene.board;
         
       const fromHex = board.getHexByLabel(hero.state.position);
@@ -48,15 +48,15 @@ export const skills = {
     triggers: ['onAttack']
   },
   brokenDefense: {
-    apply: (hero, target) => {
+    apply: (hero, target = null, isCounterAttack = null) => {
       if (target.ability === 'Taunt') {
         const bonusDamage = hero.stats.attack + 2;
         console.log(`${hero.name} causa dano extra a ${target.name} devido a "Broken Defense"!`);
-        target.takeDamage(bonusDamage, hero);
+        target.takeDamage(bonusDamage, hero, isCounterAttack);
         hero.damageApplied = true;
       } else {
         console.log(`${hero.name} ataca ${target.name} normalmente.`);
-        target.takeDamage(hero.stats.attack, hero);
+        target.takeDamage(hero.stats.attack, hero, isCounterAttack);
         hero.damageApplied = true;
       }
     },
@@ -65,7 +65,7 @@ export const skills = {
     triggers: ['onAttack', 'onCounterAttack']
   },  
   firstPunch: {
-    apply: (hero, target = null) => {
+    apply: (hero, target = null, isCounterAttack = null) => {
       if (!hero.firstAttack && target === null) {
         if (!hero.firstPunchApplied && hero.stats.attack === 3) {
           hero.increaseAttack(2);
@@ -77,7 +77,7 @@ export const skills = {
 
       if (target && !hero.firstAttack) {
         console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
-        target.takeDamage(hero.stats.attack, hero);
+        target.takeDamage(hero.stats.attack, hero, isCounterAttack);
         hero.damageApplied = true;
         hero.increaseAttack(-2);
         return;
@@ -108,7 +108,7 @@ export const skills = {
     triggers: ['onTurnEnd']
   },  
   poisonAttack: {
-    apply: (hero, target) => {
+    apply: (hero, target = null, isCounterAttack = null) => {
       console.log(`${hero.name} envenena ${target.name}!`);
 
       const poisonEffect = target.state.statusEffects?.find(
@@ -121,7 +121,7 @@ export const skills = {
         poisonEffect.duration = 3;
         target.effectSprites.poison.setFrame(0);
 
-        target.takeDamage(bonusDamage, hero);
+        target.takeDamage(bonusDamage, hero, isCounterAttack);
         hero.damageApplied = true;
       }
 

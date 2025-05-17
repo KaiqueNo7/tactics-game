@@ -112,13 +112,13 @@ class Hero extends Phaser.GameObjects.Container {
     this.statsText.setDepth(10);
   }
 
-  triggerSkills(triggerType, target = null) {
+  triggerSkills(triggerType, target = null, isCounterAttack = null) {
     if (!this.skills || this.skills.length === 0) return;
     if (!Array.isArray(this.skills)) return;
 
     this.skills.forEach(skill => {
       if (skill.triggers.includes(triggerType)) {
-        skill.apply(this, target);
+        skill.apply(this, target, isCounterAttack);
         this.updateHeroStats();
       }
     });
@@ -242,7 +242,7 @@ class Hero extends Phaser.GameObjects.Container {
       console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
       this.damageApplied = false;
 
-      this.triggerSkills('onCounterAttack', target);
+      this.triggerSkills('onCounterAttack', target, true);
 
       if(!this.damageApplied){
         target.takeDamage(this.stats.attack, this, true);
