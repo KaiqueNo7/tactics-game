@@ -322,7 +322,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
           tile.setTint(0x808080);
         }
   
-        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frame)
+        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frameIndex)
           .setOrigin(0.5)
           .setScale(0.080);
   
