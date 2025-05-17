@@ -1,15 +1,17 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
+import createHeroDetailUI from "./hero-detail-ui.js";
 
 export default class GameUI extends Phaser.GameObjects.Container {
   constructor(scene, socket, roomId) {
-    super(scene, socket, roomId)
+    super(scene)
 
     this.scene = scene;
+    this.socket = socket;
+    this.roomId = roomId;
+
     this.messageQueue = [];
     this.isShowingMessage = false;
-    this.socket = socket;
     this.heroes = {};
-    this.roomId = roomId;
 
     this.buttonEnabled = false;
 
@@ -17,16 +19,18 @@ export default class GameUI extends Phaser.GameObjects.Container {
         
     this.background = this.scene.add.image(0, 0, 'ui_box_brown')
     .setOrigin(0.5)
-    .setScale(1.8, 1);
+    .setScale(1.5, 1);
 
     this.text = this.scene.add.text(0, 0, '', {
       color: '#000',
-      fontSize: '14px',
+      fontSize: '16px',
+      fontFamily: 'Fredoka'
     }).setOrigin(0.5);
 
     this.container.add([this.background, this.text]);
 
     this.finalY = 150;
+    this.heroDetailUI = createHeroDetailUI(this.scene);
   }
 
   updateTurnTimer(seconds) {
@@ -117,11 +121,11 @@ export default class GameUI extends Phaser.GameObjects.Container {
     hero.attackText = this.scene.add.text(-18, offsetY, `${hero.stats.attack}`, {
       align: 'center',
       color: attackColor,
-      fontFamily: 'Arial',
+      fontFamily: 'Fredoka',
       fontSize: '18px',
       fontStyle: 'bold',
       stroke: '#000000', 
-      strokeThickness: 1.4
+      strokeThickness: 1.5
     }).setDepth(2).setOrigin(0.4, 0.5);
     hero.add(hero.attackText);
   
@@ -136,11 +140,11 @@ export default class GameUI extends Phaser.GameObjects.Container {
     hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
       align: 'center',
       color: healthColor,
-      fontFamily: 'Arial',
+      fontFamily: 'Fredoka',
       fontSize: '18px',
       fontStyle: 'bold',
       stroke: '#000000', 
-      strokeThickness: 1.4
+      strokeThickness: 1.5
     }).setDepth(2).setOrigin(0.6, 0.5);
     hero.add(hero.healthText);
   }     
@@ -164,7 +168,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
       fontSize: '18px',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 1.4
+      fontFamily: 'Fredoka',
+      strokeThickness: 1.5
     }).setOrigin(0.5);
     
     this.turnLabelText = this.scene.add.text(0, - 40, 'Turno Atual', {
@@ -173,7 +178,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
       fontSize: '12px',
       fontStyle: 'bold',
       stroke: '#000000',
-      strokeThickness: 1.4
+      fontFamily: 'Fredoka',
+      strokeThickness: 1.5
     }).setOrigin(0.5);
 
     if(!this.turnTimerText){
@@ -185,9 +191,9 @@ export default class GameUI extends Phaser.GameObjects.Container {
           align: 'center',
           color: '#FFFFFF',
           fontSize: '18px',
-          fontStyle: 'bold',
+          fontFamily: 'Fredoka',
           stroke: '#000000',
-          strokeThickness: 1.4
+          strokeThickness: 1.5
         }
       ).setOrigin(0.5);
     }
@@ -202,7 +208,9 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   placeHeroOnBoard(hero, position, hexColor) {
     const hex = this.scene.board.getHexByLabel(position);
-  
+    let holdTimer = null;
+    let heroDetailsShown = false;
+
     if (!hex || !this.scene) {
       console.error('Invalid hex or scene');
       return;
@@ -227,17 +235,61 @@ export default class GameUI extends Phaser.GameObjects.Container {
     this.createStatsUI(hero);
   
     hero.setInteractive();
-  
-    hero.on('pointerdown', () => {
+
+    hero.on('pointerdown', (pointer) => {
+      holdTimer = setTimeout(() => {
+        this.showHeroDetails(hero);
+        heroDetailsShown = true;
+      }, 800);
+
       this.scene.board.selectHero(hero);
+    });
+
+    hero.on('pointerup', (pointer) => {
+        clearTimeout(holdTimer);
+    
+        if (heroDetailsShown) {
+            this.hideHeroDetails();
+            heroDetailsShown = false;
+        }
+    });
+    
+    hero.on('pointerout', () => {
+        clearTimeout(holdTimer);
     });
   
     this.scene.board.boardContainer.add(hero);
     hero.setDepth(2);
   }    
 
+  showHeroDetails(hero) {
+    console.log('Mostrando detalhes do herói:', hero.name);
+    this.heroDetailOverlay = this.scene.add.rectangle(
+      this.scene.scale.width / 2,
+      this.scene.scale.height / 2,
+      this.scene.scale.width,
+      this.scene.scale.height,
+      0x000000,
+      0.6
+    );
+
+    
+    this.heroDetailOverlay.setDepth(98);
+    this.heroDetailUI.show(hero);
+    console.log('Mostrando heroDetailUI', this.heroDetailUI);
+  }
+
+  hideHeroDetails() {
+    if (this.heroDetailOverlay) {
+      this.heroDetailOverlay.destroy();
+      this.heroDetailOverlay = null;
+    }
+    this.heroDetailUI.hide();
+  }
+  
+
   updateGamePanel(players) {
-    const tileSize = 60;
+    const tileSize = 65;
     const spacingY = 30;
     const startY = 40;
   
@@ -248,9 +300,9 @@ export default class GameUI extends Phaser.GameObjects.Container {
      this.scene.add.text(playerNameX, playerNameY, player.name, {
         color: '#FFD700',
         fontSize: '12px',
-        fontStyle: 'bold',
+        fontFamily: 'Fredoka',
         stroke: '#000000',
-        strokeThickness: 2
+        strokeThickness: 1.5
       }).setOrigin(0, 0.5);
   
       player.heroes.forEach((hero, index) => {
@@ -270,7 +322,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
           tile.setTint(0x808080);
         }
   
-        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frameIndex)
+        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frame)
           .setOrigin(0.5)
           .setScale(0.080);
   

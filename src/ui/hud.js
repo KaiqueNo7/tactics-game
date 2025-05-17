@@ -10,6 +10,34 @@ export default class UIManager {
     this.buttonEnabled = false;
   }
 
+  heroTalk(hero, talk) {
+    if (!hero || !talk) return;
+  
+    const matrix = hero.getWorldTransformMatrix();
+    const worldX = matrix.tx;
+    const worldY = matrix.ty;
+  
+    const talkText = this.scene.add.text(worldX, worldY - 30, talk, {
+      align: 'center',
+      fill: '#ffbe0b',
+      fontSize: '12px',
+      fontFamily: 'Fredoka',
+      stroke: '#000',
+      strokeThickness: 1
+    }).setOrigin(0.5).setDepth(1000);
+  
+    this.scene.tweens.add({
+      duration: 2000,
+      ease: 'Power1',
+      targets: talkText,
+      y: talkText.y,
+      onComplete: () => {
+        talkText.destroy();
+      }
+    });
+  }
+  
+
   showFloatingAmount(hero, amount, x = 0, color = '#FF6666') {
     if (!hero || !hero.add) return;
     
@@ -17,9 +45,9 @@ export default class UIManager {
       align: 'center',
       fill: color,
       fontSize: '40px',
-      fontStyle: 'bold',
+      fontFamily: 'Fredoka',
       stroke: '#000000',
-      strokeThickness: 1.4
+      strokeThickness: 1.5
     }).setOrigin(0.5).setDepth(10);
     
     hero.add(amountText);
@@ -49,12 +77,13 @@ export default class UIManager {
       targets: sprite,
       yoyo: true
     });
-    
-    // Efeito de cor vermelha
-    // sprite.setTint(0xff0000);
-    // this.scene.time.delayedCall(300, () => {
-    //     sprite.clearTint();
-    // });
+
+    if(target.state.isAlive){
+      sprite.setTint(0xff0000);
+      this.scene.time.delayedCall(300, () => {
+          sprite.clearTint();
+      });
+    }
   }
 
   setTextWithBackground(textObject, content) {
@@ -95,7 +124,7 @@ export default class UIManager {
       const victoryText = this.scene.add.text(width / 2, height * 0.3, text, {
         fill: '#ffffff',
         fontSize: Math.round(width * 0.05) + 'px',
-        fontStyle: 'bold',
+        fontFamily: 'Fredoka',
         stroke: '#000',
         strokeThickness: 4,
       }).setOrigin(0.5);

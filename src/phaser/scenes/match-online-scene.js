@@ -18,6 +18,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
 
     this.add.text(width / 2, 100, 'PARTIDA ONLINE', {
       color: '#ffffff',
+      fontFamily: 'Fredoka',
       fontSize: '32px',
     }).setOrigin(0.5);
 
@@ -50,6 +51,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
     
       this.nameInput.remove();
       startMatchButton.background.disableInteractive();
+      this.scene.stop('MatchOnlineScene');
       this.scene.start('FindingMatchScene');
     });
     
@@ -69,6 +71,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
     
     createButton(this, width / 2, height - 100, 'VOLTAR', () => {
       this.nameInput.remove();
+      this.scene.stop('MatchOnlineScene');
       this.scene.start('MainMenuScene');
     });
     

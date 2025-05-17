@@ -1,7 +1,7 @@
 export function createButton(scene, x, y, text, callback, disabled = false) {
   const container = scene.add.container(x, y);
 
-  const background = scene.add.image(0, 0, 'button_bg').setScale(1.3, 0.8);
+  const background = scene.add.image(0, 0, 'button_bg').setScale(1, 0.5);
 
   if (disabled) {
     background.setTint(0x555555);
@@ -13,7 +13,8 @@ export function createButton(scene, x, y, text, callback, disabled = false) {
   }
 
   const label = scene.add.text(0, 0, text, {
-    fontSize: '24px',
+    fontSize: '16px',
+    fontFamily: 'Fredoka',
     color: disabled ? '#888' : '#fff',
   }).setOrigin(0.5);
 

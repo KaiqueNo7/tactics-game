@@ -191,9 +191,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
     const tauntEnemies = enemyHexes
       .map(hex => this.gameManager.getHeroByPosition(hex.label))
       .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
-      
+
     if (tauntEnemies.length > 0 && target.ability !== 'Taunt') {
-      this.scene.gameUI.showMessage("Você deve atacar o inimigo com TAUNT");
+      const tauntHero = tauntEnemies[0];
+      this.scene.uiManager.heroTalk(tauntHero, "Bloqueado (TAUNT)");
       this.clearSelectedHero();
       this.clearHighlights();
       return;

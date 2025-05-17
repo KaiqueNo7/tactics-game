@@ -118,7 +118,12 @@ class Hero extends Phaser.GameObjects.Container {
 
     this.skills.forEach(skill => {
       if (skill.triggers.includes(triggerType)) {
-        skill.apply(this, target, isCounterAttack);
+        skill.apply({
+          hero: this, 
+          target: target, 
+          isCounterAttack: isCounterAttack, 
+          scene: this.scene
+        });
         this.updateHeroStats();
       }
     });
@@ -135,11 +140,12 @@ class Hero extends Phaser.GameObjects.Container {
     
     console.log(`${this.name} recebeu ${totalDamage} de dano. Vida restante: ${this.stats.currentHealth}`);
         
-    this.scene.uiManager.playDamageAnimation(this);
-        
+    
     if (this.stats.currentHealth <= 0) {
       this.die();
     }
+    
+    this.scene.uiManager.playDamageAnimation(this);
         
     this.triggerSkills('onDamage', attacker);
     
@@ -248,6 +254,7 @@ class Hero extends Phaser.GameObjects.Container {
         target.takeDamage(this.stats.attack, this, true);
       }
 
+      this.scene.uiManager.heroTalk(this, 'contra-ataque!');
       this.firstAttack = true;
       this.updateHeroStats();
     });

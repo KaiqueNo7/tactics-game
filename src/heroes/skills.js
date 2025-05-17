@@ -1,6 +1,6 @@
 export const skills = {
   absorbRoots: {
-    apply: (hero) => {
+    apply: ({hero}) => {
         hero.heal(hero.stats.attack);
     },
     description: 'Recupera vida equivalente ao dano causado.',
@@ -16,7 +16,7 @@ export const skills = {
     triggers: ['']
   },
   beyondFront: {
-    apply: (hero, target = null) => {
+    apply: ({hero, target, scene}) => {
       const board = hero.scene.board;
         
       const fromHex = board.getHexByLabel(hero.state.position);
@@ -42,16 +42,21 @@ export const skills = {
       hits.slice(1).forEach((h) => {
         h.takeDamage(hero.stats.attack, hero);
       });
+
+      if(hits.length > 1) {
+        scene.uiManager.heroTalk(hero, 'Hiay!');
+      }
     },
     description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas por inimigos.',
     name: 'Beyond Front',
     triggers: ['onAttack']
   },
   brokenDefense: {
-    apply: (hero, target = null, isCounterAttack = null) => {
+    apply: ({hero, target, isCounterAttack, scene}) => {
       if (target.ability === 'Taunt') {
         const bonusDamage = hero.stats.attack + 2;
         console.log(`${hero.name} causa dano extra a ${target.name} devido a "Broken Defense"!`);
+        scene.uiManager.heroTalk(hero, 'Dano extra!');
         target.takeDamage(bonusDamage, hero, isCounterAttack);
         hero.damageApplied = true;
       } else {
@@ -65,18 +70,20 @@ export const skills = {
     triggers: ['onAttack', 'onCounterAttack']
   },  
   firstPunch: {
-    apply: (hero, target = null, isCounterAttack = null) => {
+    apply: ({hero, target, isCounterAttack, scene}) => {
       if (!hero.firstAttack && target === null) {
         if (!hero.firstPunchApplied && hero.stats.attack === 3) {
           hero.increaseAttack(2);
           hero.firstPunchApplied = true;
           console.log(`${hero.name} prepara um soco poderoso! (+2 ataque)`);
+          scene.uiManager.heroTalk(hero, 'Ta na hora do fight!');
         }
         return;
       }
 
       if (target && !hero.firstAttack) {
         console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
+        scene.uiManager.heroTalk(hero, 'Soco carregado!');
         target.takeDamage(hero.stats.attack, hero, isCounterAttack);
         hero.damageApplied = true;
         hero.increaseAttack(-2);
@@ -88,7 +95,7 @@ export const skills = {
     triggers: ['onTurnStart', 'onAttack', 'onCounterAttack']
   },
   goodLuck: {
-    apply: async (hero) => {
+    apply: async ({hero, scene}) => {
       const roomId = hero.scene.gameManager.roomId;
 
       const gotLucky = await new Promise(resolve => {
@@ -98,8 +105,10 @@ export const skills = {
 
       if (gotLucky) {
         console.log(`${hero.name} teve sorte! (+1 ataque)`);
+        scene.uiManager.heroTalk(hero, 'Ouro!');
         hero.increaseAttack(1);
       } else {
+        scene.uiManager.heroTalk(hero, 'Nada...');
         console.log(`${hero.name} não teve sorte!`);
       }
     },
@@ -108,7 +117,7 @@ export const skills = {
     triggers: ['onTurnEnd']
   },  
   poisonAttack: {
-    apply: (hero, target = null, isCounterAttack = null) => {
+    apply: ({hero, target, isCounterAttack, scene}) => {
       console.log(`${hero.name} envenena ${target.name}!`);
 
       const poisonEffect = target.state.statusEffects?.find(
@@ -121,11 +130,13 @@ export const skills = {
         poisonEffect.duration = 3;
         target.effectSprites.poison.setFrame(0);
 
+        scene.uiManager.heroTalk(hero, 'Dano extra!');
         target.takeDamage(bonusDamage, hero, isCounterAttack);
         hero.damageApplied = true;
       }
 
       if (!poisonEffect) {
+        scene.uiManager.heroTalk(hero, 'Veneno!');
         target.applyStatusEffect({
           duration: 3,
           effect: (target) => {
@@ -141,7 +152,7 @@ export const skills = {
     triggers: ['onAttack', 'onCounterAttack']        
   },
   trustInTeam: {
-    apply: (hero) => {
+    apply: ({hero, scene}) => {
       const board = hero.scene.board;
       const allies = board.getAlliesInRange(hero, 1);
 
@@ -150,9 +161,11 @@ export const skills = {
 
       if (allies.length > 0 && !buffed) {
         console.log(`${hero.name} está com aliados próximos! (+1 ataque)`);
+        scene.uiManager.heroTalk(hero, 'Aliado próximo!');
         hero.increaseAttack(1);
       } else if (allies.length === 0 && buffed) {
         console.log(`${hero.name} não tem aliados próximos! (-1 ataque)`);
+        scene.uiManager.heroTalk(hero, 'Estou sozinho...');
         hero.increaseAttack(-1);
       }
     },

@@ -2,6 +2,7 @@ import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
+import { createBackground } from '../../utils/helpers.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
@@ -45,10 +46,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
       return;
     }
 
-    const bg = this.add.image(0, 0, 'queue_selection_bg');
-    bg.setOrigin(0);
-    bg.setAlpha(0.5);
-    bg.setDisplaySize(this.scale.width, this.scale.height);
+    const { width, height } = this.scale;
+
+    createBackground(this, height, width);
 
     const { roomId, players } = data;
 
@@ -60,7 +60,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     console.log(`Você está na sala ${roomId}`);
 
     const padding = 20;
-    const { width } = this.scale;
 
     this.player1 = players[0];
     this.player2 = players[1];
@@ -78,32 +77,32 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.player1NameText = this.add.text(padding, 40, this.player1.name, {
       color: '#ffffff',
-      fontFamily: 'Arial',
+      fontFamily: 'Fredoka',
       fontSize: '16px'
     }).setOrigin(0, 0.5);
     
     this.player2NameText = this.add.text(width - padding, 40, this.player2.name, {
       color: '#ffffff',
-      fontFamily: 'Arial',
+      fontFamily: 'Fredoka',
       fontSize: '16px'
     }).setOrigin(1, 0.5);
     
     this.add.text(width / 2, 40, 'VS', {
       color: '#ffffff',
-      fontFamily: 'Arial',
+      fontFamily: 'Fredoka',
       fontSize: '16px',
-      fontStyle: 'bold'
     }).setOrigin(0.5);
 
     this.namePlayerText = this.add.text(width / 2, 80, '', {
       color: '#dddddd',
-      fontSize: '12px'
+      fontFamily: 'Fredoka',
+      fontSize: '16px'
     }).setOrigin(0.5);
 
     this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 260, '', {
-      fontSize: '12px',
+      fontSize: '16px',
       color: '#ffffff',
-      fontStyle: 'bold',
+      fontFamily: 'Fredoka',
     }).setOrigin(0.5);    
 
     this.heroSlotsP1 = [];
@@ -129,11 +128,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.createHeroDetailUI();
     this.updateNamePlayerText();
 
-    
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();   
-    
-    this.autoSelectHeroesForTesting();
 
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
@@ -267,10 +263,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
       .setVisible(false);
   
     this.heroNameText = this.add.text(centerX, centerY - 75, '', {
-        fontSize: '24px',
-        color: '#ccc',
-        stroke: '#6e4c1e',
-        strokeThickness: 3,
+        fontSize: '32px',
+        color: '#FFF',
+        fontFamily: 'Fredoka',
         shadow: {
           offsetX: 2,
           offsetY: 2,
@@ -283,26 +278,31 @@ export default class HeroSelectionScene extends Phaser.Scene {
       .setVisible(false);  
 
     this.heroStatsText = this.add.text(centerX - 70, centerY - 60, '', {
-      color: '#ffffff',
-      font: '16px Courier', 
+      color: '#FFF',
+      fontSize: '16px', 
+      fontFamily: 'Fredoka',
     }).setOrigin(0, 0).setVisible(false);
 
     this.heroAbilitiesText = this.add.text(centerX - 70, centerY - 35, '', {
-      color: '#ffffff',
-      font: '16px Courier', 
+      color: '#FFF',
+      fontSize: '16px', 
+      fontFamily: 'Fredoka',
     }).setOrigin(0, 0).setVisible(false);
   
     this.heroSkillsText = this.add.text(centerX - 70, centerY - 10, '', {
-      font: '14px Courier', 
+      fontSize: '16px', 
+      fontFamily: 'Fredoka',
       wordWrap: { width: 220 }
     }).setOrigin(0, 0).setVisible(false);
 
     this.confirmButton = this.add.text(centerX - 50, centerY + 100, 'Selecionar', {
-      backgroundColor: '#8b4513',
+      backgroundColor: '#1E3888',
       color: '#fff8dc',
       fontSize: '18px',
       padding: { x: 12, y: 6 },
       border: 1,
+      fontSize: '16px', 
+      fontFamily: 'Fredoka',
       align: 'center'
     }).setOrigin(0)
       .setInteractive()
