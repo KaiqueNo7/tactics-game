@@ -119,8 +119,16 @@ export default function heroSelectionSocketListeners(socket, scene){
     scene.currentStep = step;
     scene.currentStepCount = 0;
   
-    scene.updateNamePlayerText();
+    scene.updateCurrentPlayerSelect();
   });
+
+  socket.on(SOCKET_EVENTS.HERO_SELECTION_TICK, ({ timeLeft }) => {
+    scene.updateSelectionTimer(timeLeft);
+  });
+  
+  socket.on(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT, ({ playerId, step }) => {
+    scene.onHeroSelectionTimeout(playerId, step);
+  });  
 
   socket.on(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE, () => {
     console.log("Retornando à tela de busca de partida...");

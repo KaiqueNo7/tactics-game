@@ -37,8 +37,8 @@ const config = {
     forceSetTimeOut: true
   },
   scene: [
-    MainMenuScene,
-    MatchOnlineScene,
+    // MainMenuScene,
+    // MatchOnlineScene,
     FindingMatchScene,
     PreMatchScene,
     HeroSelectionScene,
@@ -47,13 +47,6 @@ const config = {
 };
 
 const game = new Phaser.Game(config);
-
-let playerId = sessionStorage.getItem('playerId');
-    
-if (!playerId) {
-  playerId = crypto.randomUUID();
-  sessionStorage.setItem('playerId', playerId);
-}  
 
 if (!socket.hasSyncGameStateListener) {
   socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {

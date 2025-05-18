@@ -1,4 +1,4 @@
-export default function createHeroDetailUI(scene, withConfirmButton = false, onConfirm = null) {
+export default function createHeroDetailUI(scene, withConfirmButton = false) {
   const centerX = scene.scale.width / 2;
   const centerY = scene.scale.height / 2 - 50;
 
@@ -55,22 +55,29 @@ export default function createHeroDetailUI(scene, withConfirmButton = false, onC
     }).setOrigin(0).setInteractive();
 
     elements.confirmButton.on('pointerdown', () => {
-      if (onConfirm) onConfirm();
+      if (scene.previewedHero) {
+        scene.confirmSelection(scene.previewedHero);
+        scene.hideHeroDetail();
+      }
     });
 
     elements.container.add(elements.confirmButton);
   }
 
   elements.show = (hero) => {
-    const abilities = hero.skills || [];
+    const abilities = hero.skills || hero.abilities || [];
+    const hp = hero.stats.maxHealth || hero.stats.hp;
+    const frame = hero.frameIndex || hero.frame;
+    const ability = hero.ability || hero.stats.ability || '-';
+
     const abilitiesFormatted = abilities.length
       ? abilities.map(a => a.description).join('\n')
       : 'Sem habilidades.';
 
-    elements.previewSprite.setTexture('heroes', hero.frameIndex);
+    elements.previewSprite.setTexture('heroes', frame);
     elements.heroNameText.setText(hero.name);
-    elements.heroStatsText.setText(`attack: ${hero.stats.attack} hp: ${hero.stats.maxHealth}`);
-    elements.heroAbilitiesText.setText(hero.ability || '-');
+    elements.heroStatsText.setText(`attack: ${hero.stats.attack} hp: ${hp}`);
+    elements.heroAbilitiesText.setText(ability);
     elements.heroSkillsText.setText(abilitiesFormatted);
 
     elements.container.setVisible(true);

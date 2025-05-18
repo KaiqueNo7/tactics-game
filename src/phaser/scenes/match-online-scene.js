@@ -75,5 +75,11 @@ export default class MatchOnlineScene extends Phaser.Scene {
       this.scene.start('MainMenuScene');
     });
     
+    this.events.once('shutdown', () => {
+      if (this.nameInput) {
+        this.nameInput.remove();
+        this.nameInput = null;
+      }
+    });    
   }
 }

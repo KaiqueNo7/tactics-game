@@ -263,7 +263,6 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }    
 
   showHeroDetails(hero) {
-    console.log('Mostrando detalhes do herói:', hero.name);
     this.heroDetailOverlay = this.scene.add.rectangle(
       this.scene.scale.width / 2,
       this.scene.scale.height / 2,
@@ -272,11 +271,9 @@ export default class GameUI extends Phaser.GameObjects.Container {
       0x000000,
       0.6
     );
-
     
     this.heroDetailOverlay.setDepth(98);
     this.heroDetailUI.show(hero);
-    console.log('Mostrando heroDetailUI', this.heroDetailUI);
   }
 
   hideHeroDetails() {
@@ -287,7 +284,6 @@ export default class GameUI extends Phaser.GameObjects.Container {
     this.heroDetailUI.hide();
   }
   
-
   updateGamePanel(players) {
     const tileSize = 65;
     const spacingY = 30;
