@@ -19,12 +19,19 @@ export default class FindingMatchScene extends Phaser.Scene {
   
     let playerId = sessionStorage.getItem('playerId');
   
+    if (!playerId) {
+      playerId = crypto.randomUUID();
+      sessionStorage.setItem('playerId', playerId);
+    }  
+
     const player = new Player(
       this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
       [],
       playerId,
       null
     );
+
+    console.log(player.toJSON);
 
     socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
       player: player.toJSON()
