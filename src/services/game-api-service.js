@@ -6,6 +6,12 @@ const socket = io('https://hero-tatics-game-backend-production.up.railway.app');
 
 socket.on('connect', () => {
   const playerId = sessionStorage.getItem('playerId');
+
+  if (!playerId) {
+    playerId = crypto.randomUUID();
+    sessionStorage.setItem('playerId', playerId);
+  }  
+
   if (playerId) {
     socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, { playerId });
   }
