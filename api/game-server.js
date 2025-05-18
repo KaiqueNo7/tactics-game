@@ -2,13 +2,12 @@ import express from 'express';
 import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
-import { v4 as uuidv4 } from 'uuid';
 
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: '*',
+    origin: ['https://kaiquenocetti.com', 'http://localhost:5173/hero-tatics-game/'],
     methods: ['GET', 'POST']
   },
   perMessageDeflate: {
@@ -154,7 +153,7 @@ io.on('connection', (socket) => {
   
       if (!sock1 || !sock2) return;
   
-      const roomId = uuidv4();
+      const roomId = `room_${playerId1}_${playerId2}`;
       sock1.join(roomId);
       sock2.join(roomId);
   
@@ -197,6 +196,7 @@ io.on('connection', (socket) => {
     const startedPlayerId = startedPlayerIndex === 1 ? match.player1.id : match.player2.id;
 
     startTurnTimer(roomId, startedPlayerId);
+    clearHeroSelectionTimer(roomId);
 
     io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
        roomId, startedPlayerId
@@ -371,7 +371,6 @@ io.on('connection', (socket) => {
     if (match.gameState) {
       socket.emit(SOCKET_EVENTS.SYNC_GAME_STATE, {
         gameState: match.gameState,
-        playerId: playerId
       });
     }
   

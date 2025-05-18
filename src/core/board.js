@@ -489,7 +489,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.spriteSize || 72, this.spriteSize || 72)
+        .setDisplaySize(this.spriteSize || 70, this.spriteSize || 70)
         .setAlpha(0.4)
         .setAngle(30)
         .setInteractive();

@@ -69,6 +69,9 @@ export default function heroSelectionSocketListeners(socket, scene){
     const currentTurn = createTurn(startedPlayerId);
   
     const gameState = buildGameState(roomId, enrichedPlayers, currentTurn, startedPlayerId);
+
+    socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
+    socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);
   
     scene.scene.start('PreMatchScene', { gameState });
   });
