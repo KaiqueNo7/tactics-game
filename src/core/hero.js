@@ -15,16 +15,6 @@ class Hero extends Phaser.GameObjects.Container {
     sprite.setScale(0.230);
     this.add(sprite);
     this.sprite = sprite;
-
-    this.idleTween = this.scene.tweens.add({
-      targets: this.sprite,
-      scaleY: 0.24,
-      y: this.sprite.y - 1,
-      duration: 600,
-      yoyo: true,
-      repeat: -1,
-      ease: 'Sine.easeInOut'
-    });    
         
     this.isSelected = false;
     this.frameIndex = frameIndex;

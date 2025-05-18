@@ -266,8 +266,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.previewedHero = hero;
 
     hero = this.HERO_DATA.find(h => h.name === hero.name);
-
-    console.log(hero);
   
     this.heroDetailUI.show(hero);
   }  

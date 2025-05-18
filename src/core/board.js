@@ -244,11 +244,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (hero.sprite) {
       hero.sprite.setScale(0.23);
       hero.sprite.setTint(0x808080);
-    }
-    
-    if (hero.idleTween) {
-      hero.idleTween.stop();
-    }    
+    } 
 
     if (hero.shieldSprite){
       hero.shieldSprite.destroy();

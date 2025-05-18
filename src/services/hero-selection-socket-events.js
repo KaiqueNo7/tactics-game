@@ -61,8 +61,8 @@ export default function heroSelectionSocketListeners(socket, scene){
       });
     };
   
-    setupHeroPositions(enrichedPlayers[0].heroes, ['B3', 'C3', 'D3']);
-    setupHeroPositions(enrichedPlayers[1].heroes, ['B4', 'C4', 'D4']);
+    setupHeroPositions(enrichedPlayers[0].heroes, ['B1', 'C1', 'D1']);
+    setupHeroPositions(enrichedPlayers[1].heroes, ['B7', 'C6', 'D7']);
   
     const currentTurn = createTurn(startedPlayerId);
   
