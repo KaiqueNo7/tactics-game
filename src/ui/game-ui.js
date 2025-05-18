@@ -208,8 +208,6 @@ export default class GameUI extends Phaser.GameObjects.Container {
 
   placeHeroOnBoard(hero, position, hexColor) {
     const hex = this.scene.board.getHexByLabel(position);
-    let holdTimer = null;
-    let heroDetailsShown = false;
 
     if (!hex || !this.scene) {
       console.error('Invalid hex or scene');
@@ -236,26 +234,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
     hero.setInteractive();
 
-    hero.on('pointerdown', (pointer) => {
-      holdTimer = setTimeout(() => {
-        this.showHeroDetails(hero);
-        heroDetailsShown = true;
-      }, 800);
-
+    hero.on('pointerdown', () => {
       this.scene.board.selectHero(hero);
-    });
-
-    hero.on('pointerup', (pointer) => {
-        clearTimeout(holdTimer);
-    
-        if (heroDetailsShown) {
-            this.hideHeroDetails();
-            heroDetailsShown = false;
-        }
-    });
-    
-    hero.on('pointerout', () => {
-        clearTimeout(holdTimer);
     });
   
     this.scene.board.boardContainer.add(hero);
@@ -270,10 +250,15 @@ export default class GameUI extends Phaser.GameObjects.Container {
       this.scene.scale.height,
       0x000000,
       0.6
-    );
+    ).setDepth(100).setInteractive();
     
     this.heroDetailOverlay.setDepth(98);
+    this.heroDetailOverlay.setInteractive();
     this.heroDetailUI.show(hero);
+
+    this.heroDetailOverlay.on('pointerdown', () => {
+      this.hideHeroDetails();
+    });
   }
 
   hideHeroDetails() {
@@ -281,7 +266,10 @@ export default class GameUI extends Phaser.GameObjects.Container {
       this.heroDetailOverlay.destroy();
       this.heroDetailOverlay = null;
     }
-    this.heroDetailUI.hide();
+  
+    if (this.heroDetailUI) {
+      this.heroDetailUI.hide();
+    }
   }
   
   updateGamePanel(players) {
@@ -291,17 +279,20 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
     players.forEach((player, playerIndex) => {
       const playerNameY = 20;
-      const playerNameX = playerIndex === 0 ? 10 : this.scene.scale.width - 90;
-  
-     this.scene.add.text(playerNameX, playerNameY, player.name, {
+      const isLeft = playerIndex === 0;
+      const playerNameX = isLeft ? 10 : this.scene.scale.width - 10;
+      
+      this.scene.add.text(playerNameX, playerNameY, player.name, {
         color: '#FFD700',
         fontSize: '12px',
         fontFamily: 'Fredoka',
         stroke: '#000000',
         strokeThickness: 1.5
-      }).setOrigin(0, 0.5);
+      }).setOrigin(isLeft ? 0 : 1, 0.5);
+      
   
       player.heroes.forEach((hero, index) => {
+        let frame = hero.frameIndex || hero.frame; 
         const x = playerIndex === 0
           ? this.scene.scale.width / 2 + 75 + index * spacingY
           : this.scene.scale.width / 2 - 70 - index * spacingY;
@@ -318,11 +309,16 @@ export default class GameUI extends Phaser.GameObjects.Container {
           tile.setTint(0x808080);
         }
   
-        const sprite = this.scene.add.sprite(0, 0, 'heroes', hero.frameIndex)
+        const sprite = this.scene.add.sprite(0, 0, 'heroes', frame)
           .setOrigin(0.5)
           .setScale(0.080);
   
         heroContainer.add([tile, sprite]);
+        heroContainer.setSize(tileSize, tileSize).setInteractive();
+
+        heroContainer.on('pointerdown', () => {
+          this.showHeroDetails(hero);
+        });
       });
     });
   }       

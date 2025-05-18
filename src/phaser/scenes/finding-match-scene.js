@@ -31,8 +31,6 @@ export default class FindingMatchScene extends Phaser.Scene {
       null
     );
 
-    console.log(player.toJSON);
-
     socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
       player: player.toJSON()
     });

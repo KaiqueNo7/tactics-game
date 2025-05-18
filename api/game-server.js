@@ -7,7 +7,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: ['https://kaiquenocetti.com', 'http://localhost:5173/hero-tatics-game/'],
+    origin: '*',
     methods: ['GET', 'POST']
   },
   perMessageDeflate: {
@@ -275,8 +275,9 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (!socket.playerId) return;
-  
+    
     const playerId = socket.playerId;
+    console.log(`Jogador ${playerId} desconectado`);
   
     waitingQueue.delete(playerId);
     playerIdToSocketId.delete(playerId);
@@ -288,6 +289,7 @@ io.on('connection', (socket) => {
       const isPlayer2 = match.player2.id === playerId;
 
       if(match.gameState.status == 'selecting_heroes'){
+        console.log(`Partida ${roomId} cancelada por desconexão do jogador ${playerId}`)
         io.to(roomId).emit(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
         io.socketsLeave(roomId);
         matches.delete(roomId);
@@ -301,7 +303,7 @@ io.on('connection', (socket) => {
   
         if (opponentDisconnected) {
           const winner = isPlayer1 ? match.gameState.players[1] : match.gameState.players[0];
-
+          console.log(`Jogador ${playerId} desconectado. Vencedor: ${winner.name}`)
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winner: winner });
           io.socketsLeave(roomId);
           matches.delete(roomId);
@@ -318,7 +320,7 @@ io.on('connection', (socket) => {
   
         const timeout = setTimeout(() => {
           const winner = isPlayer1 ? match.gameState.players[1] : match.gameState.players[0];
-
+          console.log(`Jogador ${playerId} desconectado. Vencedor: ${winner.name}`)
           io.to(roomId).emit(SOCKET_EVENTS.GAME_FINISHED, { winner: winner });
           io.socketsLeave(roomId);
           matches.delete(roomId);
@@ -341,6 +343,7 @@ io.on('connection', (socket) => {
     const data = disconnectedPlayers.get(playerId);
   
     if (!data) {
+      console.log(`Jogador ${playerId} não encontrado na fila de desconexões`);
       socket.emit('RECONNECT_FAILED');
       return;
     }
@@ -349,6 +352,7 @@ io.on('connection', (socket) => {
     const match = matches.get(roomId);
   
     if (!match) {
+      console.log(`Partida ${roomId} não encontrada`);
       socket.emit('RECONNECT_FAILED');
       disconnectedPlayers.delete(playerId);
       return;
@@ -358,6 +362,7 @@ io.on('connection', (socket) => {
     const opponentDisconnected = disconnectedPlayers.has(opponentId);
   
     if (opponentDisconnected) {
+      console.log(`Oponente ${opponentId} ainda desconectado`);
       socket.emit('RECONNECT_FAILED');
       return;
     }

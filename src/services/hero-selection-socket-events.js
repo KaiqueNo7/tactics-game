@@ -23,8 +23,6 @@ function buildGameState(roomId, players, currentTurn, startedPlayerId) {
 
 export default function heroSelectionSocketListeners(socket, scene){
   socket.on(SOCKET_EVENTS.START_GAME, ({ roomId, startedPlayerId }) => {
-    console.log('Recebi START_GAME');
-  
     const resolveHeroes = (heroNames) => {
       return heroNames.map((name) => scene.HERO_DATA.find((h) => h.name === name));
     };
@@ -63,8 +61,8 @@ export default function heroSelectionSocketListeners(socket, scene){
       });
     };
   
-    setupHeroPositions(enrichedPlayers[0].heroes, ['B1', 'C1', 'D1']);
-    setupHeroPositions(enrichedPlayers[1].heroes, ['B7', 'C6', 'D7']);
+    setupHeroPositions(enrichedPlayers[0].heroes, ['B3', 'C3', 'D3']);
+    setupHeroPositions(enrichedPlayers[1].heroes, ['B4', 'C4', 'D4']);
   
     const currentTurn = createTurn(startedPlayerId);
   
