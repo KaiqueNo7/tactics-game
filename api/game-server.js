@@ -70,7 +70,7 @@ io.on('connection', (socket) => {
   });
   
   socket.on(SOCKET_EVENTS.FINDING_MATCH, ({ player }) => {
-    if (!player || typeof player.id !== 'string' || typeof player.name !== 'string') {
+    if (!player) {
       console.warn(`Conexão inválida de ${socket.id}: dados de player ausentes ou inválidos`);
       return;
     }
