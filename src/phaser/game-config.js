@@ -7,6 +7,8 @@ import HeroSelectionScene from './scenes/hero-selection-scene.js';
 import MatchOnlineScene from './scenes/match-online-scene.js';
 import FindingMatchScene from './scenes/finding-match-scene.js';
 import PreMatchScene from './scenes/pre-match-scene.js';
+import LoginScene from './scenes/login-scene.js';
+import RegisterScene from './scenes/register-scene.js';
 
 const config = {
   type: Phaser.AUTO,
@@ -35,6 +37,9 @@ const config = {
       height: 1200
     }
   },
+  dom: {
+    createContainer: true
+  },
   render: {
     pixelArt: false,
     antialias: true,
@@ -45,6 +50,8 @@ const config = {
     forceSetTimeOut: true
   },
   scene: [
+    LoginScene,
+    RegisterScene,
     MainMenuScene,
     MatchOnlineScene,
     FindingMatchScene,
@@ -53,12 +60,6 @@ const config = {
     GameScene
   ]
 };
-
-const token = localStorage.getItem('token');
-
-if (!token) {
-  window.location.href = '/hero-tactics-game/login.html';
-}
 
 const game = new Phaser.Game(config);
 
