@@ -20,14 +20,14 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           port: ${{ vars.REMOTE_PORT }}
           script: |
-            cd domains/kaiquenocetti.com/public_html/hero-tatics-game/
+            cd domains/kaiquenocetti.com/public_html/hero-tactics/
 
             # Apagar apenas arquivos de frontend antigos
-            rm -rf assets favicon.ico index.html tatics-game
+            rm -rf assets favicon.ico index.html tactics-game
 
-            git clone --depth=1 https://github.com/KaiqueNo7/tatics-game.git
+            git clone --depth=1 https://github.com/KaiqueNo7/tactics-game.git
 
-            cd tatics-game
+            cd tactics-game
             npm install
             npm run build
 
@@ -35,7 +35,7 @@ jobs:
             cd ..
 
             # Copiar novos arquivos da build
-            cp -R tatics-game/dist/* .
+            cp -R tactics-game/dist/* .
 
             # (Opcional) Apagar node_modules para não ocupar espaço
-            rm -rf tatics-game
+            rm -rf tactics-game

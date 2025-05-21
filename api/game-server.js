@@ -1,108 +1,66 @@
 import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import routes from './routes/routes.js';
+import {
+  configureUtils,
+  getMatch,
+  startTurnTimer,
+  clearTurnTimer,
+  startHeroSelectionTimer,
+  clearHeroSelectionTimer
+} from './utils.js';
 import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
+import jwt from 'jsonwebtoken';
+
+dotenv.config();
+
+const matches = new Map();
+
+const PORT = process.env.PORT || 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'segredo_forte';
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
   cors: {
     origin: '*',
-    methods: ['GET', 'POST']
+    methods: ['GET', 'POST'],
   },
   perMessageDeflate: {
-    threshold: 1024
+    threshold: 1024,
+  },
+});
+
+configureUtils({
+  socketServer: io,
+  matchStore: matches,
+  events: SOCKET_EVENTS
+});
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth.token;
+
+  if (!token) {
+    return next(new Error('Token não fornecido'));
+  }
+
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    socket.user = decoded;
+    next();
+  } catch (err) {
+    return next(new Error('Token inválido'));
   }
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
-
 const waitingQueue = new Map();
-const matches = new Map();
 const goodLuckCache = new Map();
 const disconnectedPlayers = new Map();
 const playerIdToSocketId = new Map();
-const TURN_DURATION = 90;
-const turnIntervals = new Map();
-const SELECTION_STEP_DURATION = 20;
-const heroSelectionIntervals = new Map();
-
-
-function getMatch(roomId) {
-  return matches.get(roomId);
-}
-
-function startTurnTimer(roomId, playerId) {
-  if (turnIntervals.has(roomId)) {
-    clearInterval(turnIntervals.get(roomId));
-    turnIntervals.delete(roomId);
-  }
-
-  let timeLeft = TURN_DURATION;
-
-  const interval = setInterval(() => {
-    timeLeft--;
-
-    io.to(roomId).emit(SOCKET_EVENTS.TURN_TIMER_TICK, { timeLeft });
-
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      turnIntervals.delete(roomId);
-
-      console.log(`Tempo esgotado para ${roomId}`);
-
-      io.to(roomId).emit(SOCKET_EVENTS.TURN_TIMEOUT, { playerId });
-    }
-  }, 1000);
-
-  turnIntervals.set(roomId, interval);
-}
-
-function clearTurnTimer(roomId) {
-  const interval = turnIntervals.get(roomId);
-  if (interval) {
-    clearInterval(interval);
-    turnIntervals.delete(roomId);
-  }
-}
-
-function startHeroSelectionTimer(roomId, currentPlayerId, currentStep) {
-  if (heroSelectionIntervals.has(roomId)) {
-    clearInterval(heroSelectionIntervals.get(roomId));
-    heroSelectionIntervals.delete(roomId);
-  }
-
-  let timeLeft = SELECTION_STEP_DURATION;
-
-  const interval = setInterval(() => {
-    timeLeft--;
-
-    io.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTION_TICK, { timeLeft });
-
-    if (timeLeft <= 0) {
-      clearInterval(interval);
-      clearHeroSelectionTimer(roomId);
-      heroSelectionIntervals.delete(roomId);
-
-      io.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT, {
-        playerId: currentPlayerId,
-        step: currentStep,
-        roomId
-      });
-    }
-  }, 1000);
-
-  heroSelectionIntervals.set(roomId, interval);
-}
-
-function clearHeroSelectionTimer(roomId) {
-  const interval = heroSelectionIntervals.get(roomId);
-  if (interval) {
-    clearInterval(interval);
-    heroSelectionIntervals.delete(roomId);
-  }
-}
 
 io.on('connection', (socket) => {
   socket.on(SOCKET_EVENTS.QUIT_QUEUE, () => {
@@ -178,7 +136,11 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
-    const match = getMatch(roomId);
+    if (!roomId || !heroName) return;
+
+    const match = matches.get(roomId);
+    if (!match || match.status !== 'selecting') return;
+    
     if (!match) return;
     socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
 
@@ -386,3 +348,9 @@ io.on('connection', (socket) => {
     console.log(`Jogador ${playerId} reconectado na sala ${roomId}`);
   });  
 });
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api', [routes]);
+server.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));

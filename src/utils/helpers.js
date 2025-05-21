@@ -25,11 +25,18 @@ export function createButton(scene, x, y, text, callback, disabled = false) {
   return container;
 }
 
-
 export function createBackground(scene, height, width) {
     const bg = scene.add.image(0, 0, 'background').setOrigin(0);
     const scaleX = width / bg.width;
     const scaleY = height / bg.height;
     const scale = Math.max(scaleX, scaleY);
     bg.setScale(scale).setOrigin(0);
+}
+
+export function createText(scene, x, y, text, fontSize = '16px', color = '#fff') {
+  return scene.add.text(x, y, text, {
+    fontSize: fontSize,
+    fontFamily: 'Fredoka',
+    color: color,
+  }).setOrigin(0.5);
 }

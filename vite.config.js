@@ -3,7 +3,7 @@ import { NodeGlobalsPolyfillPlugin } from '@esbuild-plugins/node-globals-polyfil
 import rollupNodePolyFill from 'rollup-plugin-node-polyfills';
 
 export default defineConfig({
-  base: '/hero-tatics-game/',
+  base: '/hero-tactics-game/',
   resolve: {
     alias: {
       buffer: 'buffer',

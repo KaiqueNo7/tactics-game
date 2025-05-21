@@ -1,4 +1,4 @@
-import { createButton, createBackground } from '../../utils/helpers.js';
+import { createButton, createBackground, createText } from '../../utils/helpers.js';
 import Player from '../../core/player.js';
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
@@ -17,17 +17,10 @@ export default class FindingMatchScene extends Phaser.Scene {
 
     createBackground(this, height, width);
   
-    let playerId = sessionStorage.getItem('playerId');
-  
-    if (!playerId) {
-      playerId = crypto.randomUUID();
-      sessionStorage.setItem('playerId', playerId);
-    }  
-
     const player = new Player(
-      this.registry.get('playerName')?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
+      this.registry.get('user').username?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
       [],
-      playerId,
+      this.registry.get('user').id,
       null
     );
 
@@ -35,17 +28,13 @@ export default class FindingMatchScene extends Phaser.Scene {
       player: player.toJSON()
     });
   
-    this.procurandoText = this.add.text(width / 2, 100, 'PROCURANDO', {
-      color: '#ffffff',
-      fontSize: '28px',
-      fontFamily: 'Fredoka',
-    }).setOrigin(0.5);
+    this.procurandoText = createText(this, width / 2, 100, 'Procurando', 28);
   
     this.dots = '';
     this.time.addEvent({
       callback: () => {
         this.dots = this.dots.length < 3 ? this.dots + '.' : '';
-        this.procurandoText.setText('PROCURANDO' + this.dots);
+        this.procurandoText.setText('Procurando' + this.dots);
       },
       delay: 500,
       loop: true

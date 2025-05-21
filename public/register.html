@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Hero Tactics - Cadastro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="styles/main.css">
+  <style>
+    body {
+      background-color: #1e1e1e;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #register-box {
+      background: #2c2c2c;
+      padding: 2rem;
+      border-radius: 8px;
+      box-shadow: 0 0 10px #000;
+      width: 300px;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border: none;
+      border-radius: 4px;
+    }
+    input {
+      background: #444;
+      color: white;
+    }
+    button {
+      background: #00bcd4;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0193a6;
+    }
+    .error {
+      color: #ff6b6b;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+    .link {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      text-align: center;
+    }
+    .link a {
+      color: #00bcd4;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="register-box">
+    <h2>Criar Conta</h2>
+    <input type="text" id="username" placeholder="Nome de usuário" required />
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Senha" required />
+
+    <button id="register-btn">Registrar</button>
+    <div class="error" id="error-msg"></div>
+    <div class="link">
+      Já tem conta? <a href="login.html">Entrar</a>
+    </div>
+  </div>
+
+  <script type="module">
+    const registerBtn = document.getElementById('register-btn');
+    const errorMsg = document.getElementById('error-msg');
+    const API_BASE = 'http://localhost:3000/api';
+
+    registerBtn.addEventListener('click', async () => {
+      const username = document.getElementById('username').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const password = document.getElementById('password').value.trim();
+
+      if (!username || !email || !password) {
+        errorMsg.textContent = 'Preencha todos os campos obrigatórios.';
+        return;
+      }
+
+      try {
+        const res = await fetch(`${API_BASE}/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          errorMsg.textContent = errorData.error || 'Erro ao registrar.';
+          return;
+        }
+
+        const loginRes = await fetch(`${API_BASE}/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+
+        if (!loginRes.ok) {
+          errorMsg.textContent = 'Erro ao fazer login após registro.';
+          return;
+        }
+
+        const data = await loginRes.json();
+
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('username', data.user.username);
+        localStorage.setItem('playerId', data.user.id);
+
+        window.location.href = 'http://localhost:5173/';
+      } catch (err) {
+        console.error(err);
+        errorMsg.textContent = 'Erro de conexão com o servidor.';
+      }
+    });
+  </script>
+</body>
+</html>

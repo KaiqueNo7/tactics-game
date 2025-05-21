@@ -26,6 +26,14 @@ const config = {
     autoCenter: Phaser.Scale.CENTER_BOTH,
     width: window.innerWidth,
     height: window.innerHeight,
+    min: {
+      width: 320,
+      height: 480
+    },
+    max: {
+      width: 1600,
+      height: 1200
+    }
   },
   render: {
     pixelArt: false,
@@ -46,14 +54,13 @@ const config = {
   ]
 };
 
+const token = localStorage.getItem('token');
+
+if (!token) {
+  window.location.href = '/hero-tactics-game/login.html';
+}
+
 const game = new Phaser.Game(config);
-
-const playerId = sessionStorage.getItem('playerId');
-
-if (!playerId) {
-  playerId = crypto.randomUUID();
-  sessionStorage.setItem('playerId', playerId);
-}  
 
 if (!socket.hasSyncGameStateListener) {
   socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
