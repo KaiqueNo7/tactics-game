@@ -61,3 +61,37 @@ export function login(scene, username, password) {
       return data;
     });
 }
+
+export async function setUserData() {
+  const token = localStorage.getItem('token');
+
+  try {
+    const response = await fetch('http://localhost:3000/api/me', {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error('Sessão expirada. Faça login novamente.');
+      } else {
+        throw new Error('Erro ao buscar dados do usuário.');
+      }
+    }
+
+    const userData = await response.json();
+
+    localStorage.setItem('user', JSON.stringify(userData));
+
+    return userData;
+  } catch (err) {
+    console.error('Erro ao buscar dados do usuário:', err.message);
+    return null;
+  }
+}
+
+export function getUserData() {
+  const userData = localStorage.getItem('user');
+  return userData ? JSON.parse(userData) : null;
+}

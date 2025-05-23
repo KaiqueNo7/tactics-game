@@ -72,7 +72,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.player1 = players[0];
     this.player2 = players[1];
 
-    const currentPlayerId = this.registry.get('user').id;
+    const currentPlayerId = this.user.id;
 
     if (currentPlayerId === this.player1.id) {
       this.playerNumber = 1;

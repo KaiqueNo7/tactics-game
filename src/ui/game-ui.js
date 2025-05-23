@@ -2,12 +2,13 @@ import { SOCKET_EVENTS } from "../../api/events.js";
 import createHeroDetailUI from "./hero-detail-ui.js";
 
 export default class GameUI extends Phaser.GameObjects.Container {
-  constructor(scene, socket, roomId) {
+  constructor(scene, socket, roomId, user) {
     super(scene)
 
     this.scene = scene;
     this.socket = socket;
     this.roomId = roomId;
+    this.user = user;
 
     this.messageQueue = [];
     this.isShowingMessage = false;
@@ -68,7 +69,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
       if (!this.buttonEnabled) return;
       this.socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { 
         roomId: this.roomId, 
-        playerId: sessionStorage.getItem('playerId')
+        playerId: this.user.id
       });
     });
   

@@ -11,20 +11,21 @@ export default class MatchOnlineScene extends Phaser.Scene {
     this.load.image('button_bg', 'assets/ui/button_bg.png');
   }
 
-  create() {
+  create(user) {
     const { width, height } = this.scale;
+    this.user = user;
 
     createBackground(this, height, width);
 
     createText(this, width / 2, 100, 'PARTIDA ONLINE', 32);
 
    createButton(this, width / 2, height - 300, 'PROCURAR PARTIDA', () => {
-      this.scene.stop('MatchOnlineScene');
-      this.scene.start('FindingMatchScene');
+      this.scene.start('FindingMatchScene', {
+        user: this.user
+      });
     });
   
     createButton(this, width / 2, height - 100, 'VOLTAR', () => {
-      this.scene.stop('MatchOnlineScene');
       this.scene.start('MainMenuScene');
     }); 
   }

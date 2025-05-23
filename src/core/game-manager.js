@@ -7,10 +7,11 @@ import { boardSocketListeners } from '../services/board-socket-events.js';
 import { createHeroByName } from '../heroes/heroFactory.js';
 
 export default class GameManager extends Phaser.Events.EventEmitter {
-  constructor(scene) {
+  constructor(scene, socket, user) {
     super();
     this.scene = scene;
     this.socket = socket;
+    this.user = user;
   }
 
   checkGameState() {
@@ -121,7 +122,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.gameState.status = 'finished';
     this.gameState.winnerId = winnerId;
 
-    const iWon = this.gameState.winnerId === sessionStorage.getItem('playerId');
+    const iWon = this.gameState.winnerId === this.user.id;
     const winner = this.getPlayerById(winnerId);
 
     this.scene.uiManager.showVictoryUI(iWon, winner);

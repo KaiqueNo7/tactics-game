@@ -1,7 +1,7 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 
 export default class Board extends Phaser.GameObjects.GameObject {
-  constructor(scene, socket, roomId, gameManager) {
+  constructor(scene, socket, roomId, gameManager, user) {
     super(scene, 'Board');
     this.scene = scene;
     this.socket = socket;
@@ -15,6 +15,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightedHexes = [];
     this.selectedHero = null;
     this.hexagons = [];
+    this.user = user;
   }
 
   initializeBoard() {
@@ -54,7 +55,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
   selectHero(hero) {
     if(!hero.state.isAlive) return;
 
-    if (hero.playerId !== sessionStorage.getItem('playerId')) return;   
+    if (hero.playerId !== this.user.id) return;   
 
     const turnManager = this.gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();

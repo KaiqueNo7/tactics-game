@@ -1,10 +1,11 @@
 import turnManagerSocketEvents from "../services/turn-manager-socket-events";
 
 export default class TurnManager {
-  constructor(board, gameUI, playerId, gameManager) {
+  constructor(board, gameUI, playerId, gameManager, user) {
     this.board = board;
     this.gameUI = gameUI;
     this.startedPlayerId = playerId;
+    this.user = user;
 
     this.gameManager = gameManager;
     this.gameState = gameManager.gameState;
@@ -32,7 +33,7 @@ export default class TurnManager {
 
     this.triggerStartOfTurnSkills(this.gameManager.getPlayers());
 
-    const isMyTurn = this.currentTurn.playerId === sessionStorage.getItem('playerId');
+    const isMyTurn = this.currentTurn.playerId === this.user.id;
 
     if(isMyTurn){
       this.gameUI.showMessage('Sua vez!');

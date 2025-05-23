@@ -11,7 +11,7 @@ export default function turnManagerSocketEvents(turnManager){
   });
   
   socket.on(SOCKET_EVENTS.TURN_TIMEOUT, ({ playerId }) => {
-    const myPlayerId = sessionStorage.getItem('playerId');
+    const myPlayerId = this.user.id;
   
     console.log('turn timeout', playerId, myPlayerId);
   

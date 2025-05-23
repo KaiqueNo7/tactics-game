@@ -12,15 +12,16 @@ export default class FindingMatchScene extends Phaser.Scene {
     this.load.image('background', 'assets/background/menu.png');
   }
 
-  create() {
+  create(user) {
     const { width, height } = this.scale;
+    this.user = user;
 
     createBackground(this, height, width);
   
     const player = new Player(
-      this.registry.get('user').username?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
+      this.user.username?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
       [],
-      this.registry.get('user').id,
+      this.user.id,
       null
     );
 
