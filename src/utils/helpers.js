@@ -40,3 +40,24 @@ export function createText(scene, x, y, text, fontSize = '16px', color = '#fff')
     color: color,
   }).setOrigin(0.5);
 }
+
+
+export function login(scene, username, password) {
+  const API_BASE = 'http://localhost:3000/api';
+
+  fetch(`${API_BASE}/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  }).then((res) => {
+      if (!res.ok) {
+        throw new Error('Login failed');
+      }
+      return res.json();
+    })
+    .then((data) => {
+      localStorage.setItem('token', data.token);
+      scene.scene.start('MainMenuScene');
+      return data;
+    });
+}

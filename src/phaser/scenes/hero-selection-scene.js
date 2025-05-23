@@ -2,7 +2,7 @@ import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
-import { createBackground } from '../../utils/helpers.js';
+import { createBackground, createText } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
@@ -66,7 +66,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.player1 = players[0];
     this.player2 = players[1];
 
-    const currentPlayerId = sessionStorage.getItem('playerId');
+    const currentPlayerId = this.registry.get('user').id;
 
     if (currentPlayerId === this.player1.id) {
       this.playerNumber = 1;
@@ -74,38 +74,23 @@ export default class HeroSelectionScene extends Phaser.Scene {
       this.playerNumber = 2;
     } else {
       console.warn('ID do jogador atual não corresponde a nenhum jogador da sala!');
-      this.scene.start('FindingMatchScene');
+      this.scene.start('MainMenuScene');
     }
 
-    this.player1NameText = this.add.text(padding, 40, this.player1.name, {
-      color: '#ffffff',
-      fontFamily: 'Fredoka',
-      fontSize: '16px'
-    }).setOrigin(0, 0.5);
-    
-    this.player2NameText = this.add.text(width - padding, 40, this.player2.name, {
-      color: '#ffffff',
-      fontFamily: 'Fredoka',
-      fontSize: '16px'
-    }).setOrigin(1, 0.5);
-    
-    this.add.text(width / 2, 40, 'VS', {
-      color: '#ffffff',
-      fontFamily: 'Fredoka',
-      fontSize: '16px',
-    }).setOrigin(0.5);
-
-    this.namePlayerText = this.add.text(width / 2, 80, '', {
-      color: '#dddddd',
-      fontFamily: 'Fredoka',
-      fontSize: '16px'
-    }).setOrigin(0.5);
+    this.player1NameText = createText(this, padding, 40, this.player1.name, 16, '#ffffff')
+      .setOrigin(0, 0.5);
+    createText(this, width / 2, 40, 'VS', 16, '#ffffff');
+    this.player2NameText = createText(this, width - padding, 40, this.player2.name, 16, '#ffffff')
+    .setOrigin(1, 0.5);
+    this.namePlayerText = createText(this, width / 2, 80, '', 16, '#ffffff');
 
     this.turnInfoText = this.add.text(this.scale.width / 2,  this.scale.height / 2 + 260, '', {
       fontSize: '16px',
       color: '#ffffff',
       fontFamily: 'Fredoka',
     }).setOrigin(0.5);    
+
+    this.turnInfoText = createText(this, width / 2, height / 2 + 260, '.', 16, '#ffffff');
 
     this.heroSlotsP1 = [];
     this.heroSlotsP2 = [];
@@ -273,68 +258,47 @@ export default class HeroSelectionScene extends Phaser.Scene {
   hideHeroDetail() {
     this.heroDetailUI.hide();
   }  
+
+  drawHeroSelectionHex(heroSpriteObj, color = 0x3344ff) {
+    const hex = heroSpriteObj.hex;
+    hex.clear();
+    hex.fillStyle(color, 0.7);
+    hex.lineStyle(2, 0xffffff, 1);
+  
+    const size = 35;
+    const x = heroSpriteObj.sprite.x;
+    const y = heroSpriteObj.sprite.y;
+  
+    const points = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = Phaser.Math.DegToRad(60 * i - 30);
+      points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
+    }
+  
+    hex.beginPath();
+    hex.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      hex.lineTo(points[i].x, points[i].y);
+    }
+    hex.closePath();
+    hex.fillPath();
+    hex.strokePath();
+  }  
   
   confirmSelection(hero) {
     const currentPlayer = this.selectionOrder[this.currentStep].player;
-    const currentSelection = currentPlayer === 1 ? this.selectedHeroesP1 : this.selectedHeroesP2;
-    
-    if (currentPlayer !== this.playerNumber) return;
-    if (currentSelection.includes(hero.name)) return;
 
-    console.log(`Jogador ${currentPlayer} selecionou: ${hero.name}`); 
-
-    currentSelection.push(hero.name);
-
-    this.updateSelectedHeroDisplay(currentPlayer, hero);
-
-    const heroSpriteObj = this.heroSprites.find(h => h.name === hero.name);
-
-    if (heroSpriteObj && heroSpriteObj.hex) {
-      const color = currentPlayer === 1 ? 0x3344ff : 0xff3333;
-      heroSpriteObj.hex.clear();
-      heroSpriteObj.hex.fillStyle(color, 0.7);
-      heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
-    
-      const size = 35;
-      const x = heroSpriteObj.sprite.x;
-      const y = heroSpriteObj.sprite.y;
-    
-      const points = [];
-      for (let i = 0; i < 6; i++) {
-        const angle = Phaser.Math.DegToRad(60 * i - 30);
-        points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
-      }
-    
-      heroSpriteObj.hex.beginPath();
-      heroSpriteObj.hex.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        heroSpriteObj.hex.lineTo(points[i].x, points[i].y);
-      }
-      heroSpriteObj.hex.closePath();
-      heroSpriteObj.hex.fillPath();
-      heroSpriteObj.hex.strokePath();
+    if (currentPlayer !== this.playerNumber) {
+      console.warn('Não é sua vez de selecionar!');
+      return;
     }
 
-    this.currentStepCount++;
-    const expectedCount = this.selectionOrder[this.currentStep].count;
-
-    if (this.currentStepCount >= expectedCount) {
-      this.currentStep++;
-      this.currentStepCount = 0;
-    }
-
-    this.socket.emit(SOCKET_EVENTS.HERO_SELECTED, {
+    this.socket.emit(SOCKET_EVENTS.HERO_SELECTED_REQUEST, {
       heroName: hero.name,
       player: currentPlayer,
       roomId: this.roomId,
       step: this.currentStep
     }); 
-
-    if (this.currentStep >= this.selectionOrder.length) {
-      this.startGame();
-    } else {
-      this.updateCurrentPlayerSelect();
-    }  
   }
 
   updateCurrentPlayerSelect() {

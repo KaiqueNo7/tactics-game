@@ -135,14 +135,23 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ roomId, heroName, player, step }) => {
+  socket.on(SOCKET_EVENTS.HERO_SELECTED_REQUEST, ({ roomId, heroName, player, step }) => {
+    console.log(`Jogador ${player} selecionou o herói ${heroName} na sala ${roomId} e passo ${step}`);
+
     if (!roomId || !heroName) return;
 
     const match = matches.get(roomId);
-    if (!match || match.status !== 'selecting') return;
-    
-    if (!match) return;
-    socket.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
+
+    if (!match || match.gameState.status !== 'selecting_heroes') return;
+
+    if (match.selectedHeroes.includes(heroName)) {
+      console.warn(`Herói ${heroName} já foi selecionado na sala ${roomId}`);
+      return;
+    }
+
+    match.selectedHeroes.push(heroName);
+
+    io.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
 
     const nextPlayer = player === 1 ? 2 : 1;
 

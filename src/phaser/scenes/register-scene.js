@@ -1,3 +1,5 @@
+import { login } from "../../utils/helpers";
+
 export default class RegisterScene extends Phaser.Scene {
   constructor() {
     super('RegisterScene');
@@ -24,18 +26,6 @@ export default class RegisterScene extends Phaser.Scene {
     // Username Input
     const usernameInput = this.add.dom(width / 2, height / 2 - 50, 'input', {
       type: 'text',
-      style: 'width: 200px; padding: 10px;'
-    });
-
-    // Email Label
-    this.add.text(width / 2, height / 2 - 30, 'Email', {
-      fontSize: '14px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
-
-    // Email Input
-    const emailInput = this.add.dom(width / 2, height / 2 - 10, 'input', {
-      type: 'email',
       style: 'width: 200px; padding: 10px;'
     });
 
@@ -67,10 +57,9 @@ export default class RegisterScene extends Phaser.Scene {
     registerBtn.addListener('click');
     registerBtn.on('click', async () => {
       const username = usernameInput.node.value.trim();
-      const email = emailInput.node.value.trim();
       const password = passwordInput.node.value.trim();
 
-      if (!username || !email || !password) {
+      if (!username || !password) {
         errorMsg.setText('Preencha todos os campos obrigatórios.');
         return;
       }
@@ -79,7 +68,7 @@ export default class RegisterScene extends Phaser.Scene {
         const res = await fetch(`${API_BASE}/register`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ username, email, password })
+          body: JSON.stringify({ username, password })
         });
 
         if (!res.ok) {
@@ -88,25 +77,7 @@ export default class RegisterScene extends Phaser.Scene {
           return;
         }
 
-        // Login automático após registro
-        const loginRes = await fetch(`${API_BASE}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        if (!loginRes.ok) {
-          errorMsg.setText('Erro ao fazer login após registro.');
-          return;
-        }
-
-        const data = await loginRes.json();
-
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('username', data.user.username);
-        localStorage.setItem('playerId', data.user.id);
-
-        this.scene.start('MainMenuScene');
+        login(this, username, password);
       } catch (err) {
         console.error(err);
         errorMsg.setText('Erro de conexão com o servidor.');

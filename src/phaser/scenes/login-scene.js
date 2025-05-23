@@ -1,4 +1,4 @@
-import { createButton } from "../../utils/helpers";
+import { createButton, login } from "../../utils/helpers";
 
 export default class LoginScene extends Phaser.Scene {
   constructor() {
@@ -55,15 +55,15 @@ export default class LoginScene extends Phaser.Scene {
       this.scene.start('RegisterScene');
     });
 
-    // Email Label
-    this.add.text(width / 2 - 75, height / 2 - 50, 'Email', {
+    // username Label
+    this.add.text(width / 2 - 75, height / 2 - 50, 'Username', {
       fontSize: '14px',
       color: '#ffffff'
     }).setOrigin(0, 0.5);
 
-    // Email Input
-    const emailInput = this.add.dom(width / 2, height / 2 - 30, 'input', {
-      type: 'email',
+    // username Input
+    const usernameInput = this.add.dom(width / 2, height / 2 - 30, 'input', {
+      type: 'username',
       style: 'width: 200px; padding: 10px;'
     });
 
@@ -94,38 +94,15 @@ export default class LoginScene extends Phaser.Scene {
 
     loginBtn.addListener('click');
     loginBtn.on('click', async () => {
-      const email = emailInput.node.value.trim();
+      const username = usernameInput.node.value.trim();
       const password = passwordInput.node.value.trim();
 
-      if (!email || !password) {
+      if (!username || !password) {
         errorMsg.setText('Preencha todos os campos.');
         return;
       }
 
-      try {
-        const res = await fetch(`${API_BASE}/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-
-        if (!res.ok) {
-          const errorData = await res.json();
-          errorMsg.setText(errorData.error || 'Erro ao fazer login.');
-          return;
-        }
-
-        const data = await res.json();
-
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('playerId', data.user.id);
-
-        // ✅ Após login, vai para MainMenuScene
-        this.scene.start('MainMenuScene');
-      } catch (err) {
-        console.error(err);
-        errorMsg.setText('Erro de conexão com o servidor.');
-      }
+      login(this, username, password);
     });
   }
 }

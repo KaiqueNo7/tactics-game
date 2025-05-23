@@ -77,50 +77,39 @@ export default function heroSelectionSocketListeners(socket, scene){
   socket.on(SOCKET_EVENTS.HERO_SELECTED, ({ heroName, player, step }) => {
     console.log(`Recebi seleção do jogador ${player}: ${heroName} (step ${step})`);
 
-    if (player === scene.playerNumber) return;
-
     const heroData = scene.HERO_DATA.find(h => h.name === heroName);
     if (!heroData) {
       console.warn(`Herói não encontrado: ${heroName}`);
       return;
     }
-
-    const heroSpriteObj = scene.heroSprites.find(h => h.name === heroName);
-    if (heroSpriteObj && heroSpriteObj.hex) {
-      const color = player === 1 ? 0x3344ff : 0xff3333;
-      heroSpriteObj.hex.clear();
-      heroSpriteObj.hex.fillStyle(color, 0.7);
-      heroSpriteObj.hex.lineStyle(2, 0xffffff, 1);
     
-      const size = 35;
-      const x = heroSpriteObj.sprite.x;
-      const y = heroSpriteObj.sprite.y;
+    const playerSelection = player === 1 ? scene.selectedHeroesP1 : scene.selectedHeroesP2;
     
-      const points = [];
-      for (let i = 0; i < 6; i++) {
-        const angle = Phaser.Math.DegToRad(60 * i - 30);
-        points.push({ x: x + size * Math.cos(angle), y: y + size * Math.sin(angle) });
-      }
+    if (playerSelection.includes(heroName)) return;
     
-      heroSpriteObj.hex.beginPath();
-      heroSpriteObj.hex.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; i++) {
-        heroSpriteObj.hex.lineTo(points[i].x, points[i].y);
-      }
-      heroSpriteObj.hex.closePath();
-      heroSpriteObj.hex.fillPath();
-      heroSpriteObj.hex.strokePath();
-    }
-
-    const opponentSelection = player === 1 ? scene.selectedHeroesP1 : scene.selectedHeroesP2;
-    opponentSelection.push(heroName);
-
+    console.log(`Jogador ${player} selecionou: ${heroName}`); 
+    
+    playerSelection.push(heroName);
+    
     scene.updateSelectedHeroDisplay(player, heroData);
 
-    scene.currentStep = step;
-    scene.currentStepCount = 0;
-  
-    scene.updateCurrentPlayerSelect();
+    const heroSpriteObj = scene.heroSprites.find(h => h.name === heroName);
+
+    scene.drawHeroSelectionHex(heroSpriteObj, player === 1 ? 0x3344ff : 0xff3333);
+
+    scene.currentStepCount++;
+    const expectedCount = scene.selectionOrder[scene.currentStep].count;
+
+    if (scene.currentStepCount >= expectedCount) {
+      scene.currentStep++;
+      scene.currentStepCount = 0;
+    }
+
+    if (scene.currentStep >= scene.selectionOrder.length) {
+      scene.startGame();
+    } else {
+      scene.updateCurrentPlayerSelect();
+    }  
   });
 
   socket.on(SOCKET_EVENTS.HERO_SELECTION_TICK, ({ timeLeft }) => {

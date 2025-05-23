@@ -19,8 +19,6 @@ export default class MainMenuScene extends Phaser.Scene {
       await this.setUserData();
     }
 
-    console.log(this.registry.get('user'));
-
     const userName = this.registry.get('user').username;
 
     createText(this, width / 2, height * 0.90, `Bem-vindo, ${userName}`);

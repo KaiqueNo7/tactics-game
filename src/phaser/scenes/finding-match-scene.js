@@ -30,13 +30,13 @@ export default class FindingMatchScene extends Phaser.Scene {
       player: player.toJSON()
     });
   
-    this.procurandoText = createText(this, width / 2, 100, 'Procurando', 28);
+    this.procurandoText = createText(this, width / 2, 100, 'PROCURANDO', 28);
   
     this.dots = '';
     this.time.addEvent({
       callback: () => {
         this.dots = this.dots.length < 3 ? this.dots + '.' : '';
-        this.procurandoText.setText('Procurando' + this.dots);
+        this.procurandoText.setText('PROCURANDO' + this.dots);
       },
       delay: 500,
       loop: true
