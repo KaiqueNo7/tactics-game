@@ -15,6 +15,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
       frameWidth: 165,
       frameHeight: 231    
     });
+
+    this.load.spritesheet('faces_heroes', 'assets/sprites/faces_heroes.png', {
+      frameWidth: 165,
+      frameHeight: 165    
+    });
+
     this.load.image('hexagon_empty', 'assets/ui/hex_tile.png');
     this.load.image('queue_selection_bg', 'assets/background/queue_selection_bg.jpeg');
   }
@@ -203,9 +209,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
       hex.fillPath();
       hex.strokePath();
   
-      const sprite = this.add.sprite(x, y - 5, 'heroes', hero.frame)
+      const sprite = this.add.sprite(x, y, 'faces_heroes', hero.frame)
         .setInteractive()
-        .setScale(0.2)
+        .setScale(0.250)
         .setData('heroName', hero.name);
   
       sprite.on('pointerover', () => {
@@ -222,7 +228,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
         if (!this.selectedHeroesP1.includes(hero.name) && !this.selectedHeroesP2.includes(hero.name)) {
           this.tweens.add({
             targets: sprite,
-            scale: 0.2,
+            scale: 0.250,
             duration: 150
           });
         }
