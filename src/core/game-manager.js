@@ -90,6 +90,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       this.gameUI,
       this.startedPlayerId,
       this,
+      this.user
     );
 
     this.currentTurn = this.turnManager.currentTurn;

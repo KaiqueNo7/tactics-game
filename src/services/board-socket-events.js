@@ -4,9 +4,10 @@ export function boardSocketListeners (board, socket, gameManager) {
   socket.on(SOCKET_EVENTS.HERO_MOVED, ({ heroId, targetLabel }) => {
     const realHero = gameManager.getHeroById(heroId);
     const targetHex = board.getHexByLabel(targetLabel);
+    console.log('HERO_MOVED', realHero, targetLabel);
 
     if (realHero && targetHex) {
-      board.moveHero(realHero, targetHex, true);
+      board.moveHero(realHero, targetHex);
     }
   });
 
@@ -15,7 +16,7 @@ export function boardSocketListeners (board, socket, gameManager) {
     const target = gameManager.getHeroById(heroTargetId);
   
     if (attacker && target) {
-      board.attackHero(attacker, target, true);
+      board.attackHero(attacker, target);
     }
   });
 

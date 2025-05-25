@@ -1,4 +1,5 @@
 import { SOCKET_EVENTS } from "../../api/events";
+import { getUserData } from "../utils/helpers";
 import socket from "./game-api-service";
 
 export default function turnManagerSocketEvents(turnManager){
@@ -11,7 +12,7 @@ export default function turnManagerSocketEvents(turnManager){
   });
   
   socket.on(SOCKET_EVENTS.TURN_TIMEOUT, ({ playerId }) => {
-    const myPlayerId = this.user.id;
+    const myPlayerId = getUserData().id;
   
     console.log('turn timeout', playerId, myPlayerId);
   

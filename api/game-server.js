@@ -199,16 +199,19 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroId, targetLabel }) => {
+    console.log(`Jogador ${socket.playerId} moveu o herói ${heroId} para ${targetLabel} na sala ${roomId}`);
     const match = getMatch(roomId);
+
     if (!match) return;
-    socket.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, targetLabel });
+    io.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, targetLabel });
   });
 
   socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, heroAttackerId, heroTargetId }) => {
     const match = getMatch(roomId);
     if (!match) return;
-    socket.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
-      heroAttackerId, heroTargetId
+    io.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
+      heroAttackerId, 
+      heroTargetId
     });
   });
 

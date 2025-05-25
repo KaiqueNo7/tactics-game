@@ -159,7 +159,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
   }   
 
-  attackHero(attacker, target, fromSocket = false) {
+  attackHero(attacker, target) {
     if (!attacker || !target || attacker === target) return;
   
     const gameManager = this.scene.gameManager;
@@ -209,27 +209,18 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (!turnManager.currentTurn.counterAttack && target.state.isAlive) {
       const distanceTarget = this.calculateDistance(targetHex, attackerHex);
       if (distanceTarget <= target.attackRange) {
-        if (!fromSocket && this.socket && this.roomId) {
-          this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
+        this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
             roomId: this.roomId,
             heroAttackerId: attacker.id,
             heroTargetId: target.id
-          });
-        }
+        });
+        
         turnManager.currentTurn.counterAttack = true;
       }
     }
 
     this.clearSelectedHero();
     this.clearHighlights();
-
-    if (!fromSocket && this.socket && this.roomId) {
-      this.socket.emit(SOCKET_EVENTS.HERO_ATTACK_REQUEST, {
-        roomId: this.roomId,
-        heroAttackerId: attacker.id,
-        heroTargetId: target.id
-      });
-    }
   }
       
   handleHeroDeath(hero, hex) {
@@ -503,13 +494,20 @@ export default class Board extends Phaser.GameObjects.GameObject {
         if (!selectedHero) return;
   
         if (type === 'move') {
-          this.moveHero(selectedHero, hex);
+          this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
+            roomId: this.roomId,
+            heroId: selectedHero.id,
+            targetLabel: hex.label
+          });
         } else if (type === 'enemy') {
-          console.log('Atacando inimigo:', hex.label);
           const target = this.gameManager.getHeroByPosition(hex.label);
           if (target) {
             console.log('Atacando inimigo:', target.name);
-            this.attackHero(selectedHero, target);
+            this.socket.emit(SOCKET_EVENTS.HERO_ATTACK_REQUEST, {
+              roomId: this.roomId,
+              heroAttackerId: selectedHero.id,
+              heroTargetId: target.id
+            });
           }
         }
       });
@@ -528,7 +526,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     this.highlightedHexes = [];
   }     
 
-  moveHero(hero, targetHex, fromSocket = false) {
+  moveHero(hero, targetHex) {
       const gameManager = this.scene.gameManager;
       const turnManager = gameManager.getTurnManager();
       const heroId = hero.id;
@@ -573,14 +571,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
       this.selectedHero = null;
 
       gameManager.updateHeroPosition(heroId, targetHex.label);
-    
-      if (!fromSocket && this.socket && this.roomId) {
-        this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
-          roomId: this.roomId,
-          heroId: hero.id,
-          targetLabel: targetHex.label
-        });
-      }
   }      
         
   getHexByLabel(label) {

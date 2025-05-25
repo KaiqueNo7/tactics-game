@@ -20,17 +20,13 @@ export default class MainMenuScene extends Phaser.Scene {
     if (!user) {
       user = await setUserData();
     }
-  
-    console.log('user', user);
 
     const userName = user.username;
 
     createText(this, width / 2, height * 0.90, `Bem-vindo, ${userName}`);
 
     createButton(this, width / 2, height * 0.70, 'BATALHA', () => {
-      this.scene.start('MatchOnlineScene', {
-        user: user
-      });
+      this.scene.start('MatchOnlineScene');
     });
   }
 }

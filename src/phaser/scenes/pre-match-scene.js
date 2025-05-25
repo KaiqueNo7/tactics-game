@@ -8,6 +8,10 @@ export default class PreMatchScene extends Phaser.Scene {
       frameWidth: 165,
       frameHeight: 231    
     });
+    this.load.spritesheet('faces_heroes', 'assets/sprites/faces_heroes.png', {
+      frameWidth: 165,
+      frameHeight: 165    
+    });
     this.load.image('background_game', 'assets/background/01.png');
     this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
     this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');

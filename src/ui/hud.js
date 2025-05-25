@@ -24,7 +24,7 @@ export default class UIManager {
       fontFamily: 'Fredoka',
       stroke: '#000',
       strokeThickness: 1
-    }).setOrigin(0.5).setDepth(1000);
+    }).setOrigin(0.5).setDepth(10);
   
     this.scene.tweens.add({
       duration: 2000,

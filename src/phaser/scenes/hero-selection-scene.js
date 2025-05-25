@@ -2,7 +2,7 @@ import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
-import { createBackground, createText } from '../../utils/helpers.js';
+import { createBackground, createText, getUserData } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
@@ -32,6 +32,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
       return;
     }
 
+    this.user = getUserData();
+
     this.HERO_DATA = [
       Mineiro.data,
       Vic.data,
@@ -50,16 +52,17 @@ export default class HeroSelectionScene extends Phaser.Scene {
       { count: 2, player: 1 },
       { count: 1, player: 2 }
     ];
-
+    
     this.currentStep = 0;
     this.currentStepCount = 0;
-
+    
     const { width, height } = this.scale;
-
+    
     createBackground(this, height, width);
-
+    
     const { roomId, players } = data;
-
+    
+    this.user = getUserData();
     this.roomId = roomId;
     this.players = players;
 
