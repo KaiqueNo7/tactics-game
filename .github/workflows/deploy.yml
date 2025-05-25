@@ -28,6 +28,11 @@ jobs:
             git clone --depth=1 https://github.com/KaiqueNo7/tactics-game.git
 
             cd tactics-game
+
+            echo "NODE_ENV=production" > .env
+            echo "VITE_API_BASE=${{ secrets.API_BASE }}" >> .env
+            echo "VITE_APLICATION_URL=${{ secrets.APLICATION_URL }}" >> .env
+
             npm install
             npm run build
 
