@@ -8,12 +8,15 @@ import {
   startTurnTimer,
   clearTurnTimer,
   startHeroSelectionTimer,
-  clearHeroSelectionTimer
+  clearHeroSelectionTimer,
+  enrichPlayer,
+  enqueue
 } from './utils.js';
 import { SOCKET_EVENTS } from './events.js';
 import http from 'http';
 import { Server } from 'socket.io';
 import jwt from 'jsonwebtoken';
+import { HERO_DATA } from './models/heroes.js';
 
 dotenv.config();
 
@@ -135,44 +138,70 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on(SOCKET_EVENTS.HERO_SELECTED_REQUEST, ({ roomId, heroName, player, step }) => {
-    console.log(`Jogador ${player} selecionou o herói ${heroName} na sala ${roomId} e passo ${step}`);
+  socket.on(SOCKET_EVENTS.HERO_SELECTED_REQUEST, (data) => {
+    enqueue(data.roomId, async () => {
+      const { roomId, heroName, player, step } = data;
+      console.log(`Jogador ${player} selecionou o herói ${heroName} na sala ${roomId} e passo ${step}`);
+  
+      if (!roomId || !heroName) return;
+  
+      const match = matches.get(roomId);
+      if (!match || match.gameState.status !== 'selecting_heroes') return;
+  
+      if (match.selectedHeroes.includes(heroName)) {
+        console.warn(`Herói ${heroName} já foi selecionado na sala ${roomId}`);
+        return;
+      }
+  
+      match.selectedHeroes.push(heroName);
+  
+      io.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
+  
+      const nextPlayer = player === 1 ? 2 : 1;
+  
+      clearHeroSelectionTimer(roomId);
+      startHeroSelectionTimer(roomId, nextPlayer, step);
+    });
+  });  
 
-    if (!roomId || !heroName) return;
-
-    const match = matches.get(roomId);
-
-    if (!match || match.gameState.status !== 'selecting_heroes') return;
-
-    if (match.selectedHeroes.includes(heroName)) {
-      console.warn(`Herói ${heroName} já foi selecionado na sala ${roomId}`);
-      return;
-    }
-
-    match.selectedHeroes.push(heroName);
-
-    io.to(roomId).emit(SOCKET_EVENTS.HERO_SELECTED, { heroName, player, step });
-
-    const nextPlayer = player === 1 ? 2 : 1;
-
-    clearHeroSelectionTimer(roomId);
-    startHeroSelectionTimer(roomId, nextPlayer, step);
-  });
-
-  socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, players, heroes }) => {
+  socket.on(SOCKET_EVENTS.SELECTION_COMPLETE, ({ roomId, selectedHeroes }) => {
     const match = getMatch(roomId);
     if (!match) return;
-
+  
+    match.player1.heroes = selectedHeroes[match.player1.id];
+    match.player2.heroes = selectedHeroes[match.player2.id];
+  
     const startedPlayerIndex = Math.floor(Math.random() * 2) + 1;
     const startedPlayerId = startedPlayerIndex === 1 ? match.player1.id : match.player2.id;
-
-    startTurnTimer(roomId, startedPlayerId);
+  
     clearHeroSelectionTimer(roomId);
-
-    io.to(roomId).emit(SOCKET_EVENTS.START_GAME, {
-       roomId, startedPlayerId
-    });
+    startTurnTimer(roomId, startedPlayerId);
+  
+    const enrichedPlayer1 = enrichPlayer(match.player1, ['B1', 'C1', 'D1'], HERO_DATA);
+    const enrichedPlayer2 = enrichPlayer(match.player2, ['B7', 'C6', 'D7'], HERO_DATA);
+  
+    const currentTurn = {
+      attackedHeroes: [],
+      counterAttack: false,
+      movedHeroes: [],
+      playerId: startedPlayerId,
+      numberTurn: 1,
+    };
+  
+    const gameState = {
+      roomId,
+      players: [enrichedPlayer1, enrichedPlayer2],
+      currentTurn,
+      startedPlayerId,
+      lastActionTimestamp: Date.now(),
+      status: 'in_progress'
+    };
+  
+    match.gameState = gameState;
+  
+    io.to(roomId).emit(SOCKET_EVENTS.START_GAME, gameState);
   });
+  
 
   socket.on(SOCKET_EVENTS.NEXT_TURN_REQUEST, ({ roomId, playerId }) => {
     const match = getMatch(roomId);
@@ -199,26 +228,31 @@ io.on('connection', (socket) => {
   });
 
   socket.on(SOCKET_EVENTS.HERO_MOVE_REQUEST, ({ roomId, heroId, targetLabel }) => {
-    console.log(`Jogador ${socket.playerId} moveu o herói ${heroId} para ${targetLabel} na sala ${roomId}`);
-    const match = getMatch(roomId);
-
-    if (!match) return;
-    io.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, targetLabel });
-  });
+    enqueue(roomId, async () => {
+      console.log(`Jogador ${socket.playerId} moveu o herói ${heroId} para ${targetLabel} na sala ${roomId}`);
+      const match = getMatch(roomId);
+      if (!match) return;
+  
+      io.to(roomId).emit(SOCKET_EVENTS.HERO_MOVED, { heroId, targetLabel });
+    });
+  });  
 
   socket.on(SOCKET_EVENTS.HERO_ATTACK_REQUEST, ({ roomId, heroAttackerId, heroTargetId }) => {
-    const match = getMatch(roomId);
-    if (!match) return;
-    io.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
-      heroAttackerId, 
-      heroTargetId
+    enqueue(roomId, async () => {
+      const match = getMatch(roomId);
+      if (!match) return;
+  
+      io.to(roomId).emit(SOCKET_EVENTS.HERO_ATTACKED, {
+        heroAttackerId,
+        heroTargetId
+      });
     });
-  });
+  });  
 
   socket.on(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, ({ roomId, heroAttackerId, heroTargetId }) => {
     const match = getMatch(roomId);
     if (!match) return;
-    io.to(roomId).emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK, {
+    socket.broadcast.to(roomId).emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK, {
       heroAttackerId, heroTargetId
     });
   });

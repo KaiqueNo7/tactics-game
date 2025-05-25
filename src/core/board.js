@@ -214,7 +214,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             heroAttackerId: attacker.id,
             heroTargetId: target.id
         });
-        
+
         turnManager.currentTurn.counterAttack = true;
       }
     }
@@ -482,7 +482,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.spriteSize || 70, this.spriteSize || 70)
+        .setDisplaySize(this.spriteSize || 80, this.spriteSize || 80)
         .setAlpha(0.4)
         .setAngle(30)
         .setInteractive();

@@ -274,8 +274,8 @@ export default class GameUI extends Phaser.GameObjects.Container {
   }
   
   updateGamePanel(players) {
-    const tileSize = 70;
-    const spacingY = 35;
+    const tileSize = 75;
+    const spacingY = 40;
     const startY = 40;
   
     players.forEach((player, playerIndex) => {
@@ -312,7 +312,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
         const sprite = this.scene.add.sprite(0, 0, 'faces_heroes', frame)
           .setOrigin(0.5)
-          .setScale(0.080);
+          .setScale(0.100);
   
         heroContainer.add([tile, sprite]);
         heroContainer.setSize(tileSize, tileSize).setInteractive();

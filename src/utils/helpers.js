@@ -95,3 +95,11 @@ export function getUserData() {
   const userData = localStorage.getItem('user');
   return userData ? JSON.parse(userData) : null;
 }
+
+export async function getHeroData() {
+  const response = await fetch('http://localhost:3000/api/heroes');
+  if (!response.ok) throw new Error('Erro ao buscar dados dos heróis');
+
+  const heroData = await response.json();
+  return heroData;
+}

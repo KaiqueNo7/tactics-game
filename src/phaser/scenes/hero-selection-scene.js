@@ -1,9 +1,9 @@
-import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../../heroes/heroes.js'; 
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
-import { createBackground, createText, getUserData } from '../../utils/helpers.js';
+import { createBackground, createText, getHeroData, getUserData } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
+import { clearHeroSelectionTimer } from '../../../api/utils.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
@@ -25,7 +25,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.load.image('queue_selection_bg', 'assets/background/queue_selection_bg.jpeg');
   }
 
-  create(data) {
+  async create(data) {
     if (!data || !data.roomId || !data.players) {
       console.warn('Acesso inválido à HeroSelectionScene. Redirecionando...');
       this.scene.start('FindingMatchScene');
@@ -34,14 +34,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.user = getUserData();
 
-    this.HERO_DATA = [
-      Mineiro.data,
-      Vic.data,
-      Ralph.data,
-      Ceos.data,
-      Blade.data,
-      Dante.data
-    ];
+    this.HERO_DATA = await getHeroData();
+
+    console.log(this.HERO_DATA);
 
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];
@@ -125,6 +120,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
+
+    this.autoSelectHeroesForTesting();
 
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
@@ -382,20 +379,28 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
   startGame() {
     if (this.timerText) this.timerText.setVisible(false);
+    clearHeroSelectionTimer(this.roomId);
+
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
+    this.socket.off(SOCKET_EVENTS.START_GAME);
+    this.socket.off(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTED_REQUEST);
+    this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
   
     const player1 = this.player1;
-    const player2 = this.player1;
+    const player2 = this.player2;
   
     player1.heroes = this.selectedHeroesP1;
     player2.heroes = this.selectedHeroesP2;
   
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
-      heroes: {
-        player1: this.selectedHeroesP1,
-        player2: this.selectedHeroesP2
-      },
-      players: [player1, player2],
-      roomId: this.roomId
+      roomId: this.roomId,
+      selectedHeroes: {
+        [this.player1.id]: this.selectedHeroesP1,
+        [this.player2.id]: this.selectedHeroesP2
+      }
     });
   }  
 }
