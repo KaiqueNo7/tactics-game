@@ -113,53 +113,82 @@ export default class UIManager {
   }
 
   showVictoryUI(iWon, winner) {
-      const text = iWon ? 'Vitória' : 'Derrota';
+    const resultText = iWon ? 'Vitória' : 'Derrota';
+    const width = this.scene.scale.width;
+    const height = this.scene.scale.height;
+  
+    const overlay = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6);
+    overlay.setDepth(99);
+  
+    const victoryText = this.scene.add.text(width / 2, height * 0.20, resultText, {
+      fill: '#ffffff',
+      fontSize: Math.round(width * 0.05) + 'px',
+      fontFamily: 'Fredoka',
+      stroke: '#000',
+      strokeThickness: 4,
+    }).setOrigin(0.5).setDepth(100);
+  
+    const winnerNameText = this.scene.add.text(width / 2, height * 0.30, `Vencedor: ${winner.name}`, {
+      fill: '#ffffff',
+      fontSize: Math.round(width * 0.035) + 'px',
+      fontFamily: 'Fredoka',
+      stroke: '#000',
+      strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(100);
+  
+    // Texto "Heróis:"
+    const heroesLabel = this.scene.add.text(width / 2, height * 0.38, `Heróis:`, {
+      fill: '#ffffff',
+      fontSize: Math.round(width * 0.03) + 'px',
+      fontFamily: 'Fredoka',
+      stroke: '#000',
+      strokeThickness: 2,
+    }).setOrigin(0.5).setDepth(100);
 
-      const width = this.scene.scale.width;
-      const height = this.scene.scale.height;
-
-      const overlay = this.scene.add.rectangle(width / 2, height / 2, width, height, 0x000000, 0.6);
-      overlay.setDepth(99);
-      
-      const victoryText = this.scene.add.text(width / 2, height * 0.3, text, {
-        fill: '#ffffff',
-        fontSize: Math.round(width * 0.05) + 'px',
-        fontFamily: 'Fredoka',
-        stroke: '#000',
-        strokeThickness: 4,
-      }).setOrigin(0.5);
-      victoryText.setDepth(100);
-      
-      const playAgainBtn = this.scene.add.text(width / 2, height * 0.5, 'Jogar novamente', {
-        backgroundColor: '#222',
-        fill: '#00ff00',
-        fontSize: Math.round(width * 0.035) + 'px', 
-        padding: { x: 15, y: 10 },
-      })
-        .setOrigin(0.5)
-        .setInteractive({ useHandCursor: true });
-      playAgainBtn.setDepth(100);
-      
-      playAgainBtn.on('pointerover', () => {
-        playAgainBtn.setStyle({ backgroundColor: '#00aa00', fill: '#ffffff' });
-      });
-      
-      playAgainBtn.on('pointerout', () => {
-        playAgainBtn.setStyle({ backgroundColor: '#222', fill: '#00ff00' });
-      });
-      
-      playAgainBtn.on('pointerdown', () => {
-        this.scene.scene.stop('GameScene');
-        this.scene.scene.start('MatchOnlineScene');
-      });
-
-      this.scene.tweens.add({
-        alpha: { from: 0, to: 1 },
-        delay: 100,
-        duration: 500,
-        ease: 'Power1',
-        targets: [victoryText, playAgainBtn],
-        y: '+=20',
-      });
-  }
+    const heroSprites = [];
+  
+    const heroCount = winner.heroes.length;
+    const spacing = 70;
+    const totalWidth = (heroCount - 1) * spacing;
+    const startX = width / 2 - totalWidth / 2;
+    const spriteY = height * 0.45;
+  
+    winner.heroes.forEach((hero, index) => {
+      const x = startX + index * spacing;
+      const sprite = this.scene.add.sprite(x, spriteY, 'heroes', hero.frameIndex);
+      sprite.setOrigin(0.5).setScale(0.5).setDepth(100);
+      heroSprites.push(sprite);
+    });
+  
+    const playAgainBtn = this.scene.add.text(width / 2, height * 0.75, 'Jogar novamente', {
+      backgroundColor: '#222',
+      fill: '#00ff00',
+      fontSize: Math.round(width * 0.035) + 'px',
+      padding: { x: 15, y: 10 },
+      fontFamily: 'Fredoka'
+    }).setOrigin(0.5).setInteractive({ useHandCursor: true }).setDepth(100);
+  
+    playAgainBtn.on('pointerover', () => {
+      playAgainBtn.setStyle({ backgroundColor: '#00aa00', fill: '#ffffff' });
+    });
+  
+    playAgainBtn.on('pointerout', () => {
+      playAgainBtn.setStyle({ backgroundColor: '#222', fill: '#00ff00' });
+    });
+  
+    playAgainBtn.on('pointerdown', () => {
+      this.scene.scene.stop('GameScene');
+      this.scene.scene.start('MatchOnlineScene');
+    });
+  
+    // Animação de entrada
+    this.scene.tweens.add({
+      alpha: { from: 0, to: 1 },
+      delay: 100,
+      duration: 500,
+      ease: 'Power1',
+      targets: [victoryText, winnerNameText, heroesLabel, ...heroSprites, playAgainBtn],
+      y: '+=20',
+    });
+  }  
 }

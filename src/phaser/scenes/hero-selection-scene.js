@@ -384,7 +384,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
     this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
-    this.socket.off(SOCKET_EVENTS.START_GAME);
     this.socket.off(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED_REQUEST);
     this.socket.off(SOCKET_EVENTS.HERO_SELECTED);

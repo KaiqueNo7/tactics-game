@@ -122,13 +122,32 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   finishGame(winnerId) {
     this.gameState.status = 'finished';
     this.gameState.winnerId = winnerId;
-
-    const iWon = this.gameState.winnerId === this.user.id;
+  
+    const iWon = winnerId === this.user.id;
     const winner = this.getPlayerById(winnerId);
-
+  
     this.scene.uiManager.showVictoryUI(iWon, winner);
-    
+  
     this.sendGameStateUpdate();
+  
+    const result = iWon ? 'win' : 'loss';
+    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
+  
+    fetch(`${API_BASE}/update-stats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ result })
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log('Estatísticas atualizadas:', data);
+    })
+    .catch(err => {
+      console.error('Erro ao atualizar estatísticas:', err);
+    });
   }
 
   getTurnManager() {
