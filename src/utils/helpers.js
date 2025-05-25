@@ -1,3 +1,5 @@
+const API_BASE = import.meta.env.VITE_API_BASE;
+
 export function createButton(scene, x, y, text, callback, disabled = false) {
   const container = scene.add.container(x, y);
 
@@ -43,8 +45,6 @@ export function createText(scene, x, y, text, fontSize = '16px', color = '#fff')
 
 
 export function login(scene, username, password) {
-  const API_BASE = 'http://localhost:3000/api';
-
   fetch(`${API_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -66,7 +66,7 @@ export async function setUserData() {
   const token = localStorage.getItem('token');
 
   try {
-    const response = await fetch('http://localhost:3000/api/me', {
+    const response = await fetch(`${API_BASE}/me`, {
       headers: {
         'Authorization': `Bearer ${token}`
       }
@@ -97,7 +97,7 @@ export function getUserData() {
 }
 
 export async function getHeroData() {
-  const response = await fetch('http://localhost:3000/api/heroes');
+  const response = await fetch(`${API_BASE}/heroes`);
   if (!response.ok) throw new Error('Erro ao buscar dados dos heróis');
 
   const heroData = await response.json();
