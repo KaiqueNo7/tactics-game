@@ -1,4 +1,4 @@
-import { login } from "../../utils/helpers";
+import { createBackground, login, createText } from "../../utils/helpers";
 
 export default class RegisterScene extends Phaser.Scene {
   constructor() {
@@ -6,51 +6,27 @@ export default class RegisterScene extends Phaser.Scene {
   }
 
   preload() {
-    // Pode carregar assets se quiser, como imagens de fundo ou logo
+    this.load.image('background', 'assets/background/menu.png');
   }
 
   create() {
     const { width, height } = this.scale;
 
-    this.add.text(width / 2, height / 2 - 120, 'Criar conta', {
-      fontSize: '24px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
+    createBackground(this, height, width);
 
-    // Username Label
-    this.add.text(width / 2, height / 2 - 70, 'Nome de usuário', {
-      fontSize: '14px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
+    const baseY = height / 2 - 50;
 
-    // Username Input
-    const usernameInput = this.add.dom(width / 2, height / 2 - 50, 'input', {
-      type: 'text',
-      style: 'width: 200px; padding: 10px;'
-    });
+    createText(this, width / 2, baseY - 80, 'Criar conta', '24px', '#ffffff', 'bold');
 
-    // Password Label
-    this.add.text(width / 2, height / 2 + 10, 'Senha', {
-      fontSize: '14px',
-      color: '#ffffff'
-    }).setOrigin(0.5);
+    this.createLabel('Username', width / 2 - 40, baseY - 20);
+    const usernameInput = this.createInput(width / 2, baseY, 'text', 'Digite seu nome de usuário');
 
-    // Password Input
-    const passwordInput = this.add.dom(width / 2, height / 2 + 30, 'input', {
-      type: 'password',
-      style: 'width: 200px; padding: 10px;'
-    });
+    this.createLabel('Senha', width / 2 - 55, baseY + 50);
+    const passwordInput = this.createInput(width / 2, baseY + 70, 'password', 'Digite sua senha');
 
-    passwordInput.node.type = 'password';
+    const errorMsg = createText(this, width / 2, baseY + 200, '', '16px', '#ffffff');
 
-    const registerBtn = this.add.dom(width / 2, height / 2 + 80, 'button', {
-      style: 'width: 200px; padding: 10px; background: #00bcd4; color: white; border: none; cursor: pointer;'
-    }, 'Registrar');
-
-    const errorMsg = this.add.text(width / 2, height / 2 + 120, '', {
-      color: '#ff6b6b',
-      fontSize: '14px'
-    }).setOrigin(0.5);
+    const registerBtn = this.createButton(width / 2 - 60, baseY + 130, 'Registrar');
 
     const API_BASE = 'http://localhost:3000/api';
 
@@ -84,14 +60,80 @@ export default class RegisterScene extends Phaser.Scene {
       }
     });
 
-    // Link para ir para LoginScene
-    const linkText = this.add.text(width / 2, height / 2 + 160, 'Já tem conta? Entrar', {
-      fontSize: '12px',
-      color: '#00bcd4'
+    const linkText = this.add.text(width / 2, baseY + 190, 'Já tem conta? Entrar', {
+      fontSize: '16px',
+      color: '#00bcd4',
+      fontFamily: 'Fredoka',
     }).setOrigin(0.5).setInteractive({ useHandCursor: true });
 
     linkText.on('pointerdown', () => {
       this.scene.start('LoginScene');
     });
+  }
+
+  createLabel(text, x, y) {
+    createText(this, x, y, text, '16px', '#ffffff', 'bold');
+  }
+
+  createInput(x, y, type = 'text', placeholder = '') {
+    const input = this.add.dom(x, y, 'input');
+
+    Object.assign(input.node, {
+      type,
+      placeholder
+    });
+
+    Object.assign(input.node.style, {
+      width: '200px',
+      padding: '10px',
+      border: '1px solid #ccc',
+      borderRadius: '4px',
+      fontSize: '14px',
+      color: '#333',
+      backgroundColor: '#fff',
+      boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+      transition: 'border-color 0.3s, box-shadow 0.3s'
+    });
+
+    input.node.addEventListener('focus', () => {
+      input.node.style.borderColor = '#00bcd4';
+      input.node.style.boxShadow = '0 0 5px rgba(0, 188, 212, 0.5)';
+    });
+
+    input.node.addEventListener('blur', () => {
+      input.node.style.borderColor = '#ccc';
+      input.node.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+    });
+
+    return input;
+  }
+
+  createButton(x, y, text) {
+    const button = this.add.dom(x, y, 'button', null, text);
+
+    Object.assign(button.node.style, {
+      width: '200px',
+      padding: '10px',
+      background: '#00bcd4',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      display: 'block',
+      fontSize: '16px',
+      transition: 'background 0.3s, box-shadow 0.3s'
+    });
+
+    button.node.addEventListener('mouseenter', () => {
+      button.node.style.background = '#0097a7';
+      button.node.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
+    });
+
+    button.node.addEventListener('mouseleave', () => {
+      button.node.style.background = '#00bcd4';
+      button.node.style.boxShadow = 'none';
+    });
+
+    return button;
   }
 }
