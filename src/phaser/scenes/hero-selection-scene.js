@@ -1,9 +1,13 @@
 import socket from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
-import { createBackground, createText, getHeroData, getUserData } from '../../utils/helpers.js';
+import { 
+  createBackground, 
+  createText, 
+  getHeroData, 
+  getUserData, 
+  clearHeroSelectionTimer } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
-import { clearHeroSelectionTimer } from '../../../api/utils.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {

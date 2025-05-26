@@ -103,3 +103,11 @@ export async function getHeroData() {
   const heroData = await response.json();
   return heroData;
 }
+
+export function clearHeroSelectionTimer(roomId) {
+  const timer = heroSelectionIntervals.get(roomId);
+  if (timer) {
+    clearInterval(timer);
+    heroSelectionIntervals.delete(roomId);
+  }
+}
