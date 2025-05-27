@@ -28,7 +28,7 @@ export default class RegisterScene extends Phaser.Scene {
 
     const registerBtn = this.createButton(width / 2 - 60, baseY + 130, 'Registrar');
 
-    const API_BASE = process.env.API_BASE;
+    const API_BASE = import.meta.env.VITE_API_BASE;
 
     registerBtn.addListener('click');
     registerBtn.on('click', async () => {
