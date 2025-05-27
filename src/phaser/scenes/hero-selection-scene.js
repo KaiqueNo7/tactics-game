@@ -5,8 +5,7 @@ import {
   createBackground, 
   createText, 
   getHeroData, 
-  getUserData, 
-  clearHeroSelectionTimer } from '../../utils/helpers.js';
+  getUserData } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
@@ -383,7 +382,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
   startGame() {
     if (this.timerText) this.timerText.setVisible(false);
-    clearHeroSelectionTimer(this.roomId);
 
     this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
     this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);

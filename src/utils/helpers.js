@@ -1,4 +1,5 @@
 const API_BASE = import.meta.env.VITE_API_BASE;
+const heroSelectionIntervals = new Map();
 
 export function createButton(scene, x, y, text, callback, disabled = false) {
   const container = scene.add.container(x, y);
@@ -42,7 +43,6 @@ export function createText(scene, x, y, text, fontSize = '16px', color = '#fff')
     color: color,
   }).setOrigin(0.5);
 }
-
 
 export function login(scene, username, password) {
   fetch(`${API_BASE}/login`, {
@@ -102,12 +102,4 @@ export async function getHeroData() {
 
   const heroData = await response.json();
   return heroData;
-}
-
-export function clearHeroSelectionTimer(roomId) {
-  const timer = heroSelectionIntervals.get(roomId);
-  if (timer) {
-    clearInterval(timer);
-    heroSelectionIntervals.delete(roomId);
-  }
 }
