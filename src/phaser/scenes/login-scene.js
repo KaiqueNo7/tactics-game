@@ -171,7 +171,7 @@ export default class LoginScene extends Phaser.Scene {
     const token = localStorage.getItem('token');
     if (token) {
       const socket = await connectSocket();
-      registerSyncGameStateListener(socket);
+      registerSyncGameStateListener(socket, this);
       this.scene.start('MainMenuScene');
     }
   }

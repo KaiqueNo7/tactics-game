@@ -112,20 +112,10 @@ export async function getHeroData() {
   return heroData;
 }
 
-export function registerSyncGameStateListener(socket) {
-  if (!socket) {
+export function registerSyncGameStateListener(socket, scene) {
+  if (socket) {
     socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
-      const currentScene = game.scene.getScenes(true)[0];
-
-      if (currentScene && currentScene.scene.key !== 'PreMatchScene') {
-        currentScene.scene.stop();
-      }
-
-      if (currentScene && currentScene.nameInput) {
-        currentScene.nameInput.remove();
-      }
-
-      game.scene.start('PreMatchScene', {
+      scene.scene.start('PreMatchScene', {
         gameState,
         reconnect: true,
       });

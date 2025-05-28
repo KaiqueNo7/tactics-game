@@ -39,8 +39,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.HERO_DATA = await getHeroData();
 
-    console.log(this.HERO_DATA);
-
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];
 
@@ -121,6 +119,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
 
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
+
+    this.autoSelectHeroesForTesting();
 
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
