@@ -1,6 +1,4 @@
 import { createButton, createBackground, createText } from '../../utils/helpers';
-import socket from '../../services/game-api-service.js';
-import { SOCKET_EVENTS } from '../../../api/events.js';
 
 export default class MatchOnlineScene extends Phaser.Scene {
   constructor() {

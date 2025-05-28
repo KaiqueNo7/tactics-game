@@ -1,10 +1,10 @@
-import socket from "../services/game-api-service.js";
+import { getSocket } from "../services/game-api-service.js";
 
 export default class UIManager {
   constructor(scene, roomId) {
     this.scene = scene;
     this.roomId = roomId;
-    this.socket = socket;
+    this.socket = getSocket();
 
     this.victory;
     this.buttonEnabled = false;
@@ -135,15 +135,6 @@ export default class UIManager {
       stroke: '#000',
       strokeThickness: 2,
     }).setOrigin(0.5).setDepth(100);
-  
-    // Texto "Heróis:"
-    const heroesLabel = this.scene.add.text(width / 2, height * 0.38, `Heróis:`, {
-      fill: '#ffffff',
-      fontSize: Math.round(width * 0.03) + 'px',
-      fontFamily: 'Fredoka',
-      stroke: '#000',
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(100);
 
     const heroSprites = [];
   
@@ -187,7 +178,7 @@ export default class UIManager {
       delay: 100,
       duration: 500,
       ease: 'Power1',
-      targets: [victoryText, winnerNameText, heroesLabel, ...heroSprites, playAgainBtn],
+      targets: [victoryText, winnerNameText, ...heroSprites, playAgainBtn],
       y: '+=20',
     });
   }  

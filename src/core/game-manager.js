@@ -1,6 +1,6 @@
 import TurnManager from './turn-manager.js';
 import Player from './player.js';
-import socket from '../services/game-api-service.js';
+import { getSocket } from '../services/game-api-service.js';
 import { setupSocketListeners } from '../services/listener-socket-events.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
 import { boardSocketListeners } from '../services/board-socket-events.js';
@@ -10,7 +10,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   constructor(scene, socket, user) {
     super();
     this.scene = scene;
-    this.socket = socket;
+    this.socket = getSocket() || socket;
     this.user = user;
   }
 
@@ -112,7 +112,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   sendGameStateUpdate() {
     if (this.gameState && this.roomId) {
-      socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
+      this.socket.emit(SOCKET_EVENTS.UPDATE_GAME_STATE, {
         roomId: this.roomId,
         gameState: this.gameState
       });

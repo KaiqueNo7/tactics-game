@@ -1,4 +1,5 @@
-import { createBackground, createText, login } from "../../utils/helpers";
+import { connectSocket } from "../../services/game-api-service";
+import { createBackground, login, registerSyncGameStateListener } from "../../utils/helpers";
 
 export default class LoginScene extends Phaser.Scene {
   constructor() {
@@ -12,88 +13,138 @@ export default class LoginScene extends Phaser.Scene {
     this.load.image('background', 'assets/background/menu.png');
   }
 
-  async create() {
+  create() {
     const { width, height } = this.scale;
 
     createBackground(this, height, width);
-    await this.validateToken();
 
-    // Ponto base central para alinhar tudo
-    const baseY = height / 2 - 50;
+    // Criando container principal
+    const container = document.createElement('div');
 
-    createText(this, width / 2, baseY - 80, 'Login', '24px', '#ffffff', 'bold');
+    // Aplicando estilos de centralização
+    Object.assign(container.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '20px',
+      width: '300px',
+      padding: '20px',
+      background: 'rgba(0,0,0,0.5)',
+      borderRadius: '10px'
+    });
 
-    this.createLabel('Username', width / 2 - 40, baseY - 20);
-    const usernameInput = this.createInput(width / 2, baseY, 'text', 'Digite seu nome de usuário');
+    // Título
+    const title = document.createElement('h2');
+    title.textContent = 'Login';
+    title.style.color = '#fff';
+    title.style.marginBottom = '10px';
+    container.appendChild(title);
 
-    this.createLabel('Senha', width / 2 - 55, baseY + 50);
-    const passwordInput = this.createInput(width / 2, baseY + 70, 'password', 'Digite sua senha');
+    // Username label + input
+    const usernameLabel = document.createElement('label');
+    usernameLabel.textContent = 'Username';
+    usernameLabel.style.color = '#fff';
+    usernameLabel.style.alignSelf = 'flex-start';
 
-    const errorMsg = createText(this, width / 2, baseY + 220, '', '16px');
+    container.appendChild(usernameLabel);
 
-    const loginBtn = this.createButton(width / 2 - 65, baseY + 130, 'Entrar');
-;
-    loginBtn.addListener('click');
-    loginBtn.on('click', async () => {
-      const username = usernameInput.node.value.trim();
-      const password = passwordInput.node.value.trim();
+    const usernameInput = document.createElement('input');
+    Object.assign(usernameInput, {
+      type: 'text',
+      placeholder: 'Digite seu nome de usuário'
+    });
+    this.styleInput(usernameInput);
+    container.appendChild(usernameInput);
+
+    // Password label + input
+    const passwordLabel = document.createElement('label');
+    passwordLabel.textContent = 'Senha';
+    passwordLabel.style.color = '#fff';
+    passwordLabel.style.alignSelf = 'flex-start';
+
+    container.appendChild(passwordLabel);
+
+    const passwordInput = document.createElement('input');
+    Object.assign(passwordInput, {
+      type: 'password',
+      placeholder: 'Digite sua senha'
+    });
+    this.styleInput(passwordInput);
+    container.appendChild(passwordInput);
+
+    // Mensagem de erro
+    const errorMsg = document.createElement('div');
+    errorMsg.style.color = '#ff0000';
+    errorMsg.style.fontFamily = 'Fredoka';
+    errorMsg.style.fontSize = '14px';
+    errorMsg.textContent = '';
+    container.appendChild(errorMsg);
+
+    // Botão de login
+    const loginBtn = document.createElement('button');
+    loginBtn.textContent = 'Entrar';
+    Object.assign(loginBtn.style, {
+      width: '100%',
+      padding: '10px',
+      marginTop: '10px',
+      marginBottom: '10px',
+      background: '#00bcd4',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '16px',
+      transition: 'background 0.3s'
+    });
+    loginBtn.addEventListener('mouseenter', () => {
+      loginBtn.style.background = '#0097a7';
+    });
+    loginBtn.addEventListener('mouseleave', () => {
+      loginBtn.style.background = '#00bcd4';
+    });
+
+    loginBtn.addEventListener('click', () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
 
       if (!username || !password) {
-        errorMsg.setText('Preencha todos os campos.');
+        errorMsg.textContent = 'Preencha todos os campos.';
         return;
       }
-      errorMsg.setText('');
+
+      errorMsg.textContent = '';
       login(this, username, password);
     });
 
-    const linkText = this.add.text(width / 2, baseY + 190, 'Não tem conta ainda? Cadastrar', {
-      fontSize: '16px',
+    container.appendChild(loginBtn);
+
+    const registerLink = document.createElement('a');
+    registerLink.textContent = 'Não tem conta ainda? Cadastrar';
+    Object.assign(registerLink.style, {
       color: '#00bcd4',
       fontFamily: 'Fredoka',
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
-
-    linkText.on('pointerdown', () => {
+      fontSize: '14px',
+      cursor: 'pointer',
+      textDecoration: 'underline'
+    });
+    registerLink.addEventListener('click', () => {
       this.scene.start('RegisterScene');
     });
+
+    container.appendChild(registerLink);
+
+    this.add.dom(width / 2, height / 2, container);
   }
 
-  async validateToken() {
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const res = await fetch('http://localhost:3000/api/validate-token', {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Token inválido');
-        const data = await res.json();
-        console.log('Token válido:', data);
-        this.scene.start('MainMenuScene');
-      } catch (err) {
-        console.warn('Token inválido ou expirado:', err);
-        localStorage.removeItem('token');
-        localStorage.removeItem('playerId');
-      }
-    }
-  }
-
-  createLabel(text, x, y) {
-    createText(this, x, y, text, '16px', '#ffffff', 'bold');
-  }
-
-  createInput(x, y, type = 'text', placeholder = '') {
-    const input = this.add.dom(x, y, 'input');
-
-    Object.assign(input.node, {
-      type,
-      placeholder
-    });
-
-    Object.assign(input.node.style, {
-      width: '200px',
+  styleInput(input) {
+    Object.assign(input.style, {
+      width: '100%',
       padding: '10px',
       border: '1px solid #ccc',
-      borderRadius: '4px',
+      borderRadius: '8px',
+      marginTop: '5px',
+      marginBottom: '10px',
       fontSize: '14px',
       color: '#333',
       backgroundColor: '#fff',
@@ -101,46 +152,27 @@ export default class LoginScene extends Phaser.Scene {
       transition: 'border-color 0.3s, box-shadow 0.3s'
     });
 
-    input.node.addEventListener('focus', () => {
-      input.node.style.borderColor = '#00bcd4';
-      input.node.style.boxShadow = '0 0 5px rgba(0, 188, 212, 0.5)';
+    input.addEventListener('focus', () => {
+      input.style.borderColor = '#00bcd4';
+      input.style.boxShadow = '0 0 5px rgba(0, 188, 212, 0.5)';
     });
 
-    input.node.addEventListener('blur', () => {
-      input.node.style.borderColor = '#ccc';
-      input.node.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+    input.addEventListener('blur', () => {
+      input.style.borderColor = '#ccc';
+      input.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
     });
-
-    return input;
   }
 
-  createButton(x, y, text) {
-    const button = this.add.dom(x, y, 'button', null, text);
+  init(){
+    this.validateToken();
+  }
 
-    Object.assign(button.node.style, {
-      width: '200px',
-      padding: '10px',
-      background: '#00bcd4',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      display: 'block',             
-      boxSizing: 'border-box', 
-      cursor: 'pointer',
-      fontSize: '16px',
-      transition: 'background 0.3s, box-shadow 0.3s'
-    });
-
-    button.node.addEventListener('mouseenter', () => {
-      button.node.style.background = '#0097a7';
-      button.node.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-    });
-
-    button.node.addEventListener('mouseleave', () => {
-      button.node.style.background = '#00bcd4';
-      button.node.style.boxShadow = 'none';
-    });
-
-    return button;
+  async validateToken() {
+    const token = localStorage.getItem('token');
+    if (token) {
+      const socket = await connectSocket();
+      registerSyncGameStateListener(socket);
+      this.scene.start('MainMenuScene');
+    }
   }
 }

@@ -2,7 +2,7 @@ import Board from '../../core/board.js';
 import GameManager from '../../core/game-manager.js';
 import UIManager from '../../ui/hud.js';
 import GameUI from '../../ui/game-ui.js';
-import socket from '../../services/game-api-service.js';
+import { getSocket } from '../../services/game-api-service.js';
 import BoardInputManager from '../../ui/board-input-manager.js';
 import { getUserData } from '../../utils/helpers.js';
 
@@ -16,7 +16,8 @@ export default class GameScene extends Phaser.Scene {
   }
 
   async create(state) {
-    const { roomId } = state.gameState
+    const { roomId } = state.gameState;
+    const socket = getSocket();
 
     this.roomId = roomId;
     this.user = getUserData();

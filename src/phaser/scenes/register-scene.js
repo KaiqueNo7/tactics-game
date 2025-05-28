@@ -1,4 +1,4 @@
-import { createBackground, login, createText } from "../../utils/helpers";
+import { createBackground, login } from "../../utils/helpers";
 
 export default class RegisterScene extends Phaser.Scene {
   constructor() {
@@ -14,29 +14,99 @@ export default class RegisterScene extends Phaser.Scene {
 
     createBackground(this, height, width);
 
-    const baseY = height / 2 - 50;
-
-    createText(this, width / 2, baseY - 80, 'Criar conta', '24px', '#ffffff', 'bold');
-
-    this.createLabel('Username', width / 2 - 40, baseY - 20);
-    const usernameInput = this.createInput(width / 2, baseY, 'text', 'Digite seu nome de usuário');
-
-    this.createLabel('Senha', width / 2 - 55, baseY + 50);
-    const passwordInput = this.createInput(width / 2, baseY + 70, 'password', 'Digite sua senha');
-
-    const errorMsg = createText(this, width / 2, baseY + 200, '', '16px', '#ffffff');
-
-    const registerBtn = this.createButton(width / 2 - 60, baseY + 130, 'Registrar');
-
     const API_BASE = import.meta.env.VITE_API_BASE;
 
-    registerBtn.addListener('click');
-    registerBtn.on('click', async () => {
-      const username = usernameInput.node.value.trim();
-      const password = passwordInput.node.value.trim();
+    // Criando container principal
+    const container = document.createElement('div');
+
+    // Aplicando estilos de centralização
+    Object.assign(container.style, {
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '20px',
+      width: '300px',
+      padding: '20px',
+      background: 'rgba(0,0,0,0.5)',
+      borderRadius: '10px'
+    });
+
+    // Título
+    const title = document.createElement('h2');
+    title.textContent = 'Criar conta';
+    title.style.color = '#fff';
+    title.style.marginBottom = '10px';
+    container.appendChild(title);
+
+    // Username label + input
+    const usernameLabel = document.createElement('label');
+    usernameLabel.textContent = 'Username';
+    usernameLabel.style.color = '#fff';
+    usernameLabel.style.alignSelf = 'flex-start';
+    container.appendChild(usernameLabel);
+
+    const usernameInput = document.createElement('input');
+    Object.assign(usernameInput, {
+      type: 'text',
+      placeholder: 'Digite seu nome de usuário'
+    });
+    this.styleInput(usernameInput);
+    container.appendChild(usernameInput);
+
+    // Password label + input
+    const passwordLabel = document.createElement('label');
+    passwordLabel.textContent = 'Senha';
+    passwordLabel.style.color = '#fff';
+    passwordLabel.style.alignSelf = 'flex-start';
+    container.appendChild(passwordLabel);
+
+    const passwordInput = document.createElement('input');
+    Object.assign(passwordInput, {
+      type: 'password',
+      placeholder: 'Digite sua senha'
+    });
+    this.styleInput(passwordInput);
+    container.appendChild(passwordInput);
+
+    // Mensagem de erro
+    const errorMsg = document.createElement('div');
+    errorMsg.style.color = '#ff0000';
+    errorMsg.style.fontFamily = 'Fredoka';
+    errorMsg.style.fontSize = '14px';
+    errorMsg.textContent = '';
+    container.appendChild(errorMsg);
+
+    // Botão de registro
+    const registerBtn = document.createElement('button');
+    registerBtn.textContent = 'Registrar';
+    Object.assign(registerBtn.style, {
+      width: '100%',
+      padding: '10px',
+      marginTop: '10px',
+      marginBottom: '10px',
+      background: '#00bcd4',
+      color: 'white',
+      border: 'none',
+      borderRadius: '8px',
+      cursor: 'pointer',
+      fontSize: '16px',
+      transition: 'background 0.3s'
+    });
+
+    registerBtn.addEventListener('mouseenter', () => {
+      registerBtn.style.background = '#0097a7';
+    });
+    registerBtn.addEventListener('mouseleave', () => {
+      registerBtn.style.background = '#00bcd4';
+    });
+
+    registerBtn.addEventListener('click', async () => {
+      const username = usernameInput.value.trim();
+      const password = passwordInput.value.trim();
 
       if (!username || !password) {
-        errorMsg.setText('Preencha todos os campos obrigatórios.');
+        errorMsg.textContent = 'Preencha todos os campos obrigatórios.';
         return;
       }
 
@@ -49,45 +119,47 @@ export default class RegisterScene extends Phaser.Scene {
 
         if (!res.ok) {
           const errorData = await res.json();
-          errorMsg.setText(errorData.error || 'Erro ao registrar.');
+          errorMsg.textContent = errorData.error || 'Erro ao registrar.';
           return;
         }
 
         login(this, username, password);
       } catch (err) {
         console.error(err);
-        errorMsg.setText('Erro de conexão com o servidor.');
+        errorMsg.textContent = 'Erro de conexão com o servidor.';
       }
     });
 
-    const linkText = this.add.text(width / 2, baseY + 190, 'Já tem conta? Entrar', {
-      fontSize: '16px',
+    container.appendChild(registerBtn);
+
+    // Link para Login
+    const loginLink = document.createElement('a');
+    loginLink.textContent = 'Já tem conta? Entrar';
+    Object.assign(loginLink.style, {
       color: '#00bcd4',
       fontFamily: 'Fredoka',
-    }).setOrigin(0.5).setInteractive({ useHandCursor: true });
+      fontSize: '14px',
+      cursor: 'pointer',
+      textDecoration: 'underline'
+    });
 
-    linkText.on('pointerdown', () => {
+    loginLink.addEventListener('click', () => {
       this.scene.start('LoginScene');
     });
+
+    container.appendChild(loginLink);
+
+    this.add.dom(width / 2, height / 2, container);
   }
 
-  createLabel(text, x, y) {
-    createText(this, x, y, text, '16px', '#ffffff', 'bold');
-  }
-
-  createInput(x, y, type = 'text', placeholder = '') {
-    const input = this.add.dom(x, y, 'input');
-
-    Object.assign(input.node, {
-      type,
-      placeholder
-    });
-
-    Object.assign(input.node.style, {
-      width: '200px',
+  styleInput(input) {
+    Object.assign(input.style, {
+      width: '100%',
       padding: '10px',
       border: '1px solid #ccc',
-      borderRadius: '4px',
+      borderRadius: '8px',
+      marginTop: '5px',
+      marginBottom: '10px',
       fontSize: '14px',
       color: '#333',
       backgroundColor: '#fff',
@@ -95,45 +167,14 @@ export default class RegisterScene extends Phaser.Scene {
       transition: 'border-color 0.3s, box-shadow 0.3s'
     });
 
-    input.node.addEventListener('focus', () => {
-      input.node.style.borderColor = '#00bcd4';
-      input.node.style.boxShadow = '0 0 5px rgba(0, 188, 212, 0.5)';
+    input.addEventListener('focus', () => {
+      input.style.borderColor = '#00bcd4';
+      input.style.boxShadow = '0 0 5px rgba(0, 188, 212, 0.5)';
     });
 
-    input.node.addEventListener('blur', () => {
-      input.node.style.borderColor = '#ccc';
-      input.node.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
+    input.addEventListener('blur', () => {
+      input.style.borderColor = '#ccc';
+      input.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.1)';
     });
-
-    return input;
-  }
-
-  createButton(x, y, text) {
-    const button = this.add.dom(x, y, 'button', null, text);
-
-    Object.assign(button.node.style, {
-      width: '200px',
-      padding: '10px',
-      background: '#00bcd4',
-      color: 'white',
-      border: 'none',
-      borderRadius: '8px',
-      cursor: 'pointer',
-      display: 'block',
-      fontSize: '16px',
-      transition: 'background 0.3s, box-shadow 0.3s'
-    });
-
-    button.node.addEventListener('mouseenter', () => {
-      button.node.style.background = '#0097a7';
-      button.node.style.boxShadow = '0 4px 8px rgba(0,0,0,0.2)';
-    });
-
-    button.node.addEventListener('mouseleave', () => {
-      button.node.style.background = '#00bcd4';
-      button.node.style.boxShadow = 'none';
-    });
-
-    return button;
   }
 }

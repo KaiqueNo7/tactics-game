@@ -1,4 +1,4 @@
-import socket from '../../services/game-api-service.js';
+import { getSocket } from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 import heroSelectionSocketListeners from '../../services/hero-selection-socket-events.js';
 import { 
@@ -64,9 +64,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.roomId = roomId;
     this.players = players;
 
-    this.socket = socket;
-
-    console.log(`Você está na sala ${roomId}`);
+    this.socket = getSocket();
 
     const padding = 20;
 
@@ -124,8 +122,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
 
-    this.autoSelectHeroesForTesting();
-
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
@@ -136,12 +132,12 @@ export default class HeroSelectionScene extends Phaser.Scene {
       }
     });    
 
-    heroSelectionSocketListeners(socket, this);
+    heroSelectionSocketListeners(this.socket, this);
     this.heroDetailUI = createHeroDetailUI(this, true);    
 
     this.events.once('shutdown', () => {
-      socket.off(SOCKET_EVENTS.START_GAME);
-      socket.off(SOCKET_EVENTS.HERO_SELECTED);
+      this.socket.off(SOCKET_EVENTS.START_GAME);
+      this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
     });
   }
 

@@ -1,5 +1,7 @@
+import { SOCKET_EVENTS } from "../../api/events";
+import { connectSocket } from "../services/game-api-service";
+
 const API_BASE = import.meta.env.VITE_API_BASE;
-const heroSelectionIntervals = new Map();
 
 export function createButton(scene, x, y, text, callback, disabled = false) {
   const container = scene.add.container(x, y);
@@ -44,23 +46,29 @@ export function createText(scene, x, y, text, fontSize = '16px', color = '#fff')
   }).setOrigin(0.5);
 }
 
-export function login(scene, username, password) {
-  fetch(`${API_BASE}/login`, {
+export async function login(scene, username, password) {
+  const res = await fetch(`${API_BASE}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ username, password }),
-  }).then((res) => {
-      if (!res.ok) {
-        throw new Error('Login failed');
-      }
-      return res.json();
-    })
-    .then((data) => {
-      localStorage.setItem('token', data.token);
-      scene.scene.start('MainMenuScene');
-      return data;
-    });
+  });
+
+  if (!res.ok) {
+    throw new Error('Login failed');
+  }
+
+  const data = await res.json();
+
+  localStorage.setItem('token', data.token);
+
+  const socket = connectSocket();
+  registerSyncGameStateListener(socket);
+
+  scene.scene.start('MainMenuScene');
+
+  return data;
 }
+
 
 export async function setUserData() {
   const token = localStorage.getItem('token');
@@ -102,4 +110,31 @@ export async function getHeroData() {
 
   const heroData = await response.json();
   return heroData;
+}
+
+export function registerSyncGameStateListener(socket) {
+  if (!socket.hasSyncGameStateListener) {
+    socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
+      const currentScene = game.scene.getScenes(true)[0];
+
+      if (currentScene && currentScene.scene.key !== 'PreMatchScene') {
+        currentScene.scene.stop();
+      }
+
+      if (currentScene && currentScene.nameInput) {
+        currentScene.nameInput.remove();
+      }
+
+      game.scene.start('PreMatchScene', {
+        gameState,
+        reconnect: true,
+      });
+    });
+
+    socket.once('RECONNECT_FAILED', () => {
+      console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
+    });
+
+    socket.hasSyncGameStateListener = true;
+  }
 }

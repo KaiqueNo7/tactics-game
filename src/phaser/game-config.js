@@ -1,4 +1,3 @@
-import socket from '../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
 
 import GameScene from './scenes/game-scene.js';
@@ -10,7 +9,7 @@ import PreMatchScene from './scenes/pre-match-scene.js';
 import LoginScene from './scenes/login-scene.js';
 import RegisterScene from './scenes/register-scene.js';
 
-const config = {
+export const config = {
   type: Phaser.AUTO,
   backgroundColor: '#333333',
   parent: 'game-container',
@@ -61,29 +60,4 @@ const config = {
   ]
 };
 
-const game = new Phaser.Game(config);
-
-if (!socket.hasSyncGameStateListener) {
-  socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
-    const currentScene = game.scene.getScenes(true)[0];
-
-    if (currentScene && currentScene.scene.key !== 'PreMatchScene') {
-      currentScene.scene.stop();
-    }
-
-    if (currentScene && currentScene.nameInput) {
-      currentScene.nameInput.remove();
-    }
-
-    game.scene.start('PreMatchScene', {
-      gameState,
-      reconnect: true,
-    });
-  });
-
-  socket.hasSyncGameStateListener = true;
-}
-
-socket.once('RECONNECT_FAILED', () => {
-  console.warn('Reconexão falhou: a partida não existe mais ou o outro jogador saiu.');
-});
+export const game = new Phaser.Game(config);

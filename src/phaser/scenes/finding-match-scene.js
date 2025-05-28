@@ -1,6 +1,6 @@
 import { createButton, createBackground, createText, getUserData } from '../../utils/helpers.js';
 import Player from '../../core/player.js';
-import socket from '../../services/game-api-service.js';
+import { getSocket } from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
 
 export default class FindingMatchScene extends Phaser.Scene {
@@ -14,6 +14,7 @@ export default class FindingMatchScene extends Phaser.Scene {
 
   create() {
     const { width, height } = this.scale;
+    const socket = getSocket();
     this.user = getUserData();
 
     createBackground(this, height, width);
@@ -24,8 +25,6 @@ export default class FindingMatchScene extends Phaser.Scene {
       this.user.id,
       null
     );
-
-    console.log('player', player.toJSON());
 
     socket.emit(SOCKET_EVENTS.FINDING_MATCH, {
       player: player.toJSON(),
