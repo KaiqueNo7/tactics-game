@@ -1,5 +1,3 @@
-import { SOCKET_EVENTS } from '../../api/events.js';
-
 import GameScene from './scenes/game-scene.js';
 import MainMenuScene from './scenes/main-menu-scene.js';
 import HeroSelectionScene from './scenes/hero-selection-scene.js';

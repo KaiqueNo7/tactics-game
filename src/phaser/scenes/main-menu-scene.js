@@ -15,7 +15,7 @@ export default class MainMenuScene extends Phaser.Scene {
     const { width, height } = this.scale;
 
     // Fundo
-    createBackground(this, height, width);
+    createBackground(this, height, width, 'background_main_menu');
 
     // Título do jogo
     const titleGame = this.add.image(width / 2, height * 0.15, 'title_game');

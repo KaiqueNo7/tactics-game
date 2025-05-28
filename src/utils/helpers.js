@@ -30,8 +30,8 @@ export function createButton(scene, x, y, text, callback, disabled = false) {
   return container;
 }
 
-export function createBackground(scene, height, width) {
-    const bg = scene.add.image(0, 0, 'background').setOrigin(0);
+export function createBackground(scene, height, width, imageKey = 'background') {
+    const bg = scene.add.image(0, 0, imageKey).setOrigin(0);
     const scaleX = width / bg.width;
     const scaleY = height / bg.height;
     const scale = Math.max(scaleX, scaleY);
@@ -113,7 +113,7 @@ export async function getHeroData() {
 }
 
 export function registerSyncGameStateListener(socket) {
-  if (!socket.hasSyncGameStateListener) {
+  if (!socket) {
     socket.on(SOCKET_EVENTS.SYNC_GAME_STATE, ({ gameState }) => {
       const currentScene = game.scene.getScenes(true)[0];
 
