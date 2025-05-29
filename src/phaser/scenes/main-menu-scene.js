@@ -38,5 +38,7 @@ export default class MainMenuScene extends Phaser.Scene {
     const battleButton = createButton(this, width / 2, buttonY, 'BATALHA', () => {
       this.scene.start('MatchOnlineScene');
     });
+
+    createText(this, width / 2, buttonY - 60, `alpha`, '14px', '#fff').setOrigin(0, 0);
   }
 }
