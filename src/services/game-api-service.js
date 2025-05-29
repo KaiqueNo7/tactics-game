@@ -6,30 +6,36 @@ const APLICATION_URL = import.meta.env.VITE_APLICATION_URL || 'http://localhost:
 
 let socket = null;
 
-export function connectSocket() {
+export async function connectSocket() {
   const token = localStorage.getItem('token');
 
-  // Desconecta socket anterior, se existir
-  if (socket) {
-    socket.disconnect();
-  }
-
-  socket = io(APLICATION_URL, {
-    auth: { token },
-  });
-
-  socket.on('connect', async () => {
-    let user = getUserData();
-    if (!user) {
-      user = await setUserData();
+  return new Promise((resolve, reject) => {
+    if (socket) {
+      socket.disconnect();
     }
 
-    if (user?.id) {
-      socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, { playerId: user.id });
-    }
-  });
+    socket = io(APLICATION_URL, {
+      auth: { token },
+    });
 
-  return socket;
+    socket.on('connect', async () => {
+      let user = getUserData();
+      if (!user) {
+        user = await setUserData();
+      }
+
+      if (user?.id) {
+        socket.emit(SOCKET_EVENTS.RECONNECTING_PLAYER, { playerId: user.id });
+        resolve(socket);
+      } else {
+        reject('Usuário inválido');
+      }
+    });
+
+    socket.on('connect_error', () => {
+      reject('Erro de conexão');
+    });
+  });
 }
 
 export function getSocket() {

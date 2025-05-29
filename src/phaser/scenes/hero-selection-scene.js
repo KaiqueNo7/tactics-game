@@ -120,8 +120,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
 
-    this.autoSelectHeroesForTesting();
-
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)

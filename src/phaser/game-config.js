@@ -6,6 +6,8 @@ import FindingMatchScene from './scenes/finding-match-scene.js';
 import PreMatchScene from './scenes/pre-match-scene.js';
 import LoginScene from './scenes/login-scene.js';
 import RegisterScene from './scenes/register-scene.js';
+import { BootScene } from './scenes/boot-scene.js';
+import { ReconnectScene } from './scenes/reconnect-scene.js';
 
 export const config = {
   type: Phaser.AUTO,
@@ -47,6 +49,8 @@ export const config = {
     forceSetTimeOut: true
   },
   scene: [
+    BootScene,
+    ReconnectScene,
     LoginScene,
     RegisterScene,
     MainMenuScene,

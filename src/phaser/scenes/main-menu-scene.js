@@ -14,34 +14,23 @@ export default class MainMenuScene extends Phaser.Scene {
   async create() {
     const { width, height } = this.scale;
 
-    // Fundo
     createBackground(this, height, width, 'background_main_menu');
 
-    // Título do jogo
-    const titleGame = this.add.image(width / 2, height * 0.15, 'title_game');
+    const titleGame = this.add.image(width / 2, height * 0.20, 'title_game');
     titleGame.setOrigin(0.5);
-    titleGame.setScale(0.6);  // ligeiramente maior para foco mobile
+    titleGame.setScale(0.4);
     titleGame.setDepth(1);
 
-    // Dados do usuário
-    let user = getUserData();
-    if (!user) {
-      user = await setUserData();
-    }
+    let user = await setUserData();
 
     const userName = user.username;
 
-    // Container de stats
-    const statsY = height * 0.8;
-    const statsSpacing = 25;
+    createText(this, 20, 125, `${userName}`, '14px', '#fff', 'bold').setOrigin(0, 0);
 
-    createText(this, width / 2, statsY, `${userName}`, '20px', '#fff', 'bold').setOrigin(0.5);
-    createText(this, width / 2, statsY + statsSpacing, `${user.wins} VITÓRIAS`, '16px', '#fff').setOrigin(0.5);
-    createText(this, width / 2, statsY + statsSpacing * 2, `${user.losses} DERROTAS`, '16px', '#fff').setOrigin(0.5);
-
-    // Coins e Level no topo
     createText(this, 20, 20, `Coins: ${user.coins}`, '14px', '#fff', 'bold').setOrigin(0, 0);
     createText(this, 20, 45, `Level: ${user.level}`, '14px', '#fff', 'bold').setOrigin(0, 0);
+    createText(this, 20, 70, `W: ${user.wins}`, '14px', '#fff').setOrigin(0, 0);
+    createText(this, 20, 95, `L: ${user.losses}`, '14px', '#fff').setOrigin(0, 0);
 
     // Botão principal de batalha
     const buttonY = height * 0.55;

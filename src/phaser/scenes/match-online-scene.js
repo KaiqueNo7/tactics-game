@@ -12,7 +12,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
   create() {
     const { width, height } = this.scale;
 
-    createBackground(this, height, width);
+    createBackground(this, height, width, 'background_main_menu');
 
     createText(this, width / 2, 100, 'PARTIDA ONLINE', 32);
 
