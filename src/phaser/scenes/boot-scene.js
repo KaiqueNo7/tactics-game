@@ -1,4 +1,4 @@
-import { connectSocket } from "../../services/game-api-service";
+import { connectSocket, getSocket } from "../../services/game-api-service";
 import { SOCKET_EVENTS } from "../../../api/events";
 
 export class BootScene extends Phaser.Scene {
@@ -8,13 +8,22 @@ export class BootScene extends Phaser.Scene {
 
   async init() {
     const token = localStorage.getItem('token');
+
     if (!token) {
       this.scene.start('LoginScene');
       return;
     }
 
-    this.socket = await connectSocket();
-    this.setupSocketEvents(this.socket);
+    await connectSocket();
+    this.socket = getSocket();
+
+    if (!this.socket) {
+      console.error('Erro ao conectar ao socket');
+      this.scene.start('LoginScene');
+      return;
+    }
+
+    this.setupSocketEvents(this.socket, this);
   }
 
   setupSocketEvents(socket) {

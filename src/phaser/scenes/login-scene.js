@@ -104,7 +104,7 @@ export default class LoginScene extends Phaser.Scene {
       loginBtn.style.background = '#00bcd4';
     });
 
-    loginBtn.addEventListener('click', () => {
+    loginBtn.addEventListener('click', async () => {
       const username = usernameInput.value.trim();
       const password = passwordInput.value.trim();
 
@@ -113,8 +113,11 @@ export default class LoginScene extends Phaser.Scene {
         return;
       }
 
-      errorMsg.textContent = '';
-      login(this, username, password);
+      const result = await login(this, username, password);
+
+      if (typeof result === 'string') {
+        errorMsg.textContent = result;
+      }
     });
 
     container.appendChild(loginBtn);
@@ -170,8 +173,6 @@ export default class LoginScene extends Phaser.Scene {
   async validateToken() {
     const token = localStorage.getItem('token');
     if (token) {
-      const socket = await connectSocket();
-      registerSyncGameStateListener(socket, this);
       this.scene.start('MainMenuScene');
     }
   }

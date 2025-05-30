@@ -9,7 +9,7 @@ export default class FindingMatchScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('background', 'assets/background/menu.png');
+    this.load.image('background', 'assets/background/all.png');
   }
 
   create() {

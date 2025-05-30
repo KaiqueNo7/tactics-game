@@ -6,7 +6,7 @@ export default class MainMenuScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('background_main_menu', 'assets/background/menu.png');
+    this.load.image('background_main_menu', 'assets/background/all.jpeg');
     this.load.image('button_bg', 'assets/ui/button_bg.png');
     this.load.image('title_game', 'assets/ui/title_game.png');
   }
@@ -39,6 +39,10 @@ export default class MainMenuScene extends Phaser.Scene {
       this.scene.start('MatchOnlineScene');
     });
 
-    createText(this, width / 2, buttonY - 60, `alpha`, '14px', '#fff').setOrigin(0, 0);
+    createButton(this, width / 2, height - 50, `SAIR`, () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.scene.start('LoginScene');
+    });
   }
 }

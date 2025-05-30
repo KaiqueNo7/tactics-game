@@ -1,5 +1,5 @@
 import { SOCKET_EVENTS } from "../../api/events";
-import { connectSocket } from "../services/game-api-service";
+import { connectSocket, getSocket } from "../services/game-api-service";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -47,26 +47,38 @@ export function createText(scene, x, y, text, fontSize = '16px', color = '#fff')
 }
 
 export async function login(scene, username, password) {
-  const res = await fetch(`${API_BASE}/login`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ username, password }),
-  });
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
 
-  if (!res.ok) {
-    throw new Error('Login failed');
+    if (!res.ok) {
+      return 'Login ou senha inválidos.';
+    }
+
+    const data = await res.json();
+
+    localStorage.setItem('token', data.token);
+
+    await connectSocket();
+    const socket = getSocket();
+
+    if (!socket) {
+      console.error('Erro ao conectar ao socket');
+      return 'Erro de conexão. Tente novamente mais tarde.';
+    }
+
+    registerSyncGameStateListener(socket);
+
+    scene.scene.start('MainMenuScene');
+
+    return data;
+  } catch (err) {
+    console.error(err);
+    return 'Erro de rede. Tente novamente mais tarde.';
   }
-
-  const data = await res.json();
-
-  localStorage.setItem('token', data.token);
-
-  const socket = connectSocket();
-  registerSyncGameStateListener(socket);
-
-  scene.scene.start('MainMenuScene');
-
-  return data;
 }
 
 
