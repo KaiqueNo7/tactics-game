@@ -1,4 +1,4 @@
-import { Mineiro, Vic, Dante, Ralph, Ceos, Blade } from '../heroes/heroes.js';
+import { Mineiro, Vic, Dante, Ralph, Ceos, Blade, Noctin, Elaria, Bramm } from '../heroes/heroes.js';
 
 const HERO_CLASSES = {
   Mineiro,
@@ -6,7 +6,10 @@ const HERO_CLASSES = {
   Dante,
   Ralph,
   Ceos,
-  Blade
+  Blade,
+  Noctin,
+  Elaria,
+  Bramm,
 };
 
 export function createHeroByName(name, scene, x, y, socket, state = null) {

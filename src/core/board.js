@@ -121,7 +121,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
   createHexagons() {
     this.hexagons.forEach(hex => {
       if (hex.image) hex.image.destroy();
-      if (hex.borderSprite) hex.borderSprite.destroy();
     });
 
     this.hexagons = [];
@@ -135,16 +134,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       image.setPosition(hex.x, hex.y);
       this.boardContainer.add(image);
         
-      const borderSprite = this.scene.add.image(0, 0, 'hexagon_blue')
-        .setOrigin(0.5)
-        .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
-        .setAngle(30)
-        .setVisible(false);
-      borderSprite.setPosition(hex.x, hex.y);
-      this.boardContainer.add(borderSprite);
-        
       this.hexagons.push({
-        borderSprite,
         hexData: hex,
         image
       });            
@@ -185,10 +175,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
   
     const attackerHex = this.getHexByLabel(attacker.state.position);
-    const targetHex = this.getHexByLabel(target.state.position);
-    if (!attackerHex || !targetHex) return;
+    
+    if (!attackerHex) return;
   
-    const enemyHexes = this.getEnemiesInRange(attacker, attacker.attackRange);
+    const enemyHexes = this.getEnemiesInRange(attacker, 1);
     const tauntEnemies = enemyHexes
       .map(hex => this.gameManager.getHeroByPosition(hex.label))
       .filter(enemy => enemy && enemy.state.isAlive && enemy.ability === 'Taunt');
@@ -202,12 +192,17 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
 
     attacker.attackTarget(target);
+
+    const targetHex = this.getHexByLabel(target.state.position);
+    if (!targetHex) return;
+
     turnManager.markHeroAsAttacked(attacker.id);
 
     console.log(`${attacker.name} atacou ${target.name}!`);
 
     if (!turnManager.currentTurn.counterAttack && target.state.isAlive) {
       const distanceTarget = this.calculateDistance(targetHex, attackerHex);
+
       if (distanceTarget <= target.attackRange) {
         this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
             roomId: this.roomId,
@@ -482,7 +477,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.spriteSize || 80, this.spriteSize || 80)
+        .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
         .setAlpha(0.4)
         .setAngle(30)
         .setInteractive();

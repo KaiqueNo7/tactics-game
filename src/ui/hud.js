@@ -64,6 +64,27 @@ export default class UIManager {
     });
   } 
 
+  spriteAnimation(target, color = 0x00ff00) {
+    const sprite = target.sprite || target;
+
+    this.scene.tweens.add({
+      alpha: 0.3,
+      duration: 100,
+      onComplete: () => {
+        sprite.alpha = 1;
+      },
+      repeat: 3,
+      targets: sprite,
+      yoyo: true
+    });
+
+
+    sprite.setTint(color);
+    this.scene.time.delayedCall(300, () => {
+        sprite.clearTint();
+    });
+  }
+
   playDamageAnimation(target) {
     const sprite = target.sprite || target;
     

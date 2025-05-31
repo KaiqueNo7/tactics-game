@@ -341,7 +341,6 @@ export default class GameUI extends Phaser.GameObjects.Container {
     this.isShowingMessage = true;
 
     this.text.setText(message);
-    this.container.setY(-50);
     this.container.setAlpha(0);
     this.container.setDepth(100);
 
@@ -360,7 +359,6 @@ export default class GameUI extends Phaser.GameObjects.Container {
               this.displayNextMessage();
             },
             targets: this.container,
-            y: this.finalY - 20
           });
         });
       },

@@ -172,5 +172,82 @@ export const skills = {
     description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
     name: 'Trusted in Team',
     triggers: ['onMove', 'onTurnStart']
+  },
+  aloneIsBetter: {
+    apply: ({hero, target, scene}) => {
+      const board = hero.scene.board;
+      const isAlone = board.getAlliesInRange(target, 1);
+
+      if (isAlone.length === 0) {
+        scene.uiManager.heroTalk(hero, 'Muahauhauhaua!');
+        target.takeDamage(hero.stats.attack * 2, hero);
+        hero.damageApplied = true;
+      }
+    },
+    description: 'Se atacar um inimigo isolado causa o dobro de dano.',
+    name: 'Alone is Better',
+    triggers: ['onAttack', 'onCounterAttack']
+  }, 
+  health: {
+    apply: ({hero, scene}) => {
+      const board = scene.board;
+      const allies = board.getAlliesInRange(hero, 1);
+
+      allies.forEach(ally => {
+        let target = ally.occupiedBy;
+
+        if(target.state.isAlive && target.stats.currentHealth < target.stats.maxHealth) {
+          target.heal(1);
+          console.log(`${target.name} recebe cura de 1 ponto!`);
+          scene.uiManager.spriteAnimation(target);
+          scene.uiManager.spriteAnimation(hero);
+        }
+      });
+    },
+    description: 'Cura aliados próximos. (+1)',
+    name: 'Health',
+    triggers: ['onTurnEnd']
+  },
+  clean: {
+    apply: ({hero, scene}) => {
+      const board = scene.board;
+      const allies = board.getAlliesInRange(hero, 1);
+
+      if (allies.length === 0) return;
+
+      allies.forEach(ally => {
+        let target = ally.occupiedBy;
+
+        if (target.state.statusEffects?.length > 0) {
+          target.clearStatusEffects();
+          console.log(`${target.name} teve seus efeitos negativos removidos!`);
+          scene.uiManager.spriteAnimation(target, 0xffffff);
+          scene.uiManager.spriteAnimation(hero, 0xffffff);
+        }
+      });
+    },
+    description: 'Remove os efeitos negativos de aliados próximos.',
+    name: 'Clean',
+    triggers: ['onAttack']
+  },
+  rage: {
+    apply: ({hero, target, scene}) => {
+      const board = scene.board;
+      const fromHex = board.getHexByLabel(hero.state.position);
+      const toHex = board.getHexByLabel(target.state.position);
+      const line = board.getHexesInLine(fromHex, toHex, 1);
+      const nextHex = line[0];
+
+      if (nextHex == undefined || nextHex.occupied) {
+        const bonusDamage = hero.stats.attack * 2;
+        target.takeDamage(bonusDamage, hero);
+        hero.damageApplied = true;
+      } else {
+        board.moveHero(target, nextHex);
+      }
+    },
+    description: 'Move o inimigo uma casa para trás. Se bloqueado o movimento o inimigo recebe dano novamente.',
+    name: 'Rage',
+    triggers: ['onAttack']
   }
 };

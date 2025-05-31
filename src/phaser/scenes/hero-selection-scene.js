@@ -16,7 +16,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
   preload() {
     this.load.spritesheet('heroes', 'assets/sprites/heroes.png', {
       frameWidth: 165,
-      frameHeight: 231    
+      frameHeight: 231
     });
 
     this.load.spritesheet('faces_heroes', 'assets/sprites/faces_heroes.png', {
@@ -25,7 +25,6 @@ export default class HeroSelectionScene extends Phaser.Scene {
     });
 
     this.load.image('hexagon_empty', 'assets/ui/hex_tile.png');
-    this.load.image('queue_selection_bg', 'assets/background/queue_selection_bg.jpeg');
   }
 
   async create(data) {
@@ -51,6 +50,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
     
     this.currentStep = 0;
     this.currentStepCount = 0;
+    this.selecting = false;
     
     const { width, height } = this.scale;
     
@@ -120,6 +120,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDisplayP1 = this.add.group();
     this.heroDisplayP2 = this.add.group();
 
+    this.autoSelectHeroesForTesting();
+
     this.input.on('pointerdown', (pointer) => {
       const clickedHero = this.heroSprites.some(heroObj =>
         heroObj.sprite.getBounds().contains(pointer.x, pointer.y)
@@ -134,14 +136,18 @@ export default class HeroSelectionScene extends Phaser.Scene {
     this.heroDetailUI = createHeroDetailUI(this, true);    
 
     this.events.once('shutdown', () => {
-      this.socket.off(SOCKET_EVENTS.START_GAME);
+      this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
+      this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);
+      this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
+      this.socket.off(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
+      this.socket.off(SOCKET_EVENTS.HERO_SELECTED_REQUEST);
       this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
     });
   }
 
   autoSelectHeroesForTesting() {
-    const presetP1 = ['Ralph', 'Ceos', 'Blade'];
-    const presetP2 = ['Mineiro', 'Vic', 'Dante'];
+    const presetP1 = ['Vic', 'Ceos', 'Blade'];
+    const presetP2 = ['Noctin', 'Elaria', 'Bramm'];
   
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];
@@ -206,9 +212,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
       hex.fillPath();
       hex.strokePath();
   
-      const sprite = this.add.sprite(x, y, 'faces_heroes', hero.frame)
+      const sprite = this.add.sprite(x, y, 'heroes', hero.frame)
         .setInteractive()
-        .setScale(0.250)
+        .setScale(0.220)
         .setData('heroName', hero.name);
   
       sprite.on('pointerover', () => {
@@ -296,12 +302,16 @@ export default class HeroSelectionScene extends Phaser.Scene {
       return;
     }
 
-    this.socket.emit(SOCKET_EVENTS.HERO_SELECTED_REQUEST, {
-      heroName: hero.name,
-      player: currentPlayer,
-      roomId: this.roomId,
-      step: this.currentStep
-    }); 
+    if(this.selecting == false){
+      this.socket.emit(SOCKET_EVENTS.HERO_SELECTED_REQUEST, {
+        heroName: hero.name,
+        player: currentPlayer,
+        roomId: this.roomId,
+        step: this.currentStep
+      }); 
+
+      this.selecting = true;
+    }
   }
 
   updateCurrentPlayerSelect() {
@@ -323,6 +333,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
       color: current.player === 2 ? '#ffd700' : '#ffffff',
       fontStyle: current.player === 2 ? 'bold' : 'normal'
     });
+
+    this.selecting = false;
   }
   
   updateSelectedHeroDisplay(player, hero) {
@@ -376,20 +388,13 @@ export default class HeroSelectionScene extends Phaser.Scene {
   
   startGame() {
     if (this.timerText) this.timerText.setVisible(false);
-
-    this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TICK);
-    this.socket.off(SOCKET_EVENTS.HERO_SELECTION_TIMEOUT);
-    this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
-    this.socket.off(SOCKET_EVENTS.RETURN_TO_MATCH_ONLINE);
-    this.socket.off(SOCKET_EVENTS.HERO_SELECTED_REQUEST);
-    this.socket.off(SOCKET_EVENTS.HERO_SELECTED);
   
     const player1 = this.player1;
     const player2 = this.player2;
   
     player1.heroes = this.selectedHeroesP1;
     player2.heroes = this.selectedHeroesP2;
-  
+
     this.socket.emit(SOCKET_EVENTS.SELECTION_COMPLETE, {
       roomId: this.roomId,
       selectedHeroes: {

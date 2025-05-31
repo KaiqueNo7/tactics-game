@@ -21,8 +21,6 @@ export default function turnManagerSocketEvents(turnManager) {
   socket.on(SOCKET_EVENTS.TURN_TIMEOUT, ({ playerId }) => {
     const myPlayerId = getUserData().id;
 
-    console.log('turn timeout', playerId, myPlayerId);
-
     if (playerId === myPlayerId) {
       socket.emit(SOCKET_EVENTS.NEXT_TURN_REQUEST, { 
         roomId: turnManager.gameState.roomId, 

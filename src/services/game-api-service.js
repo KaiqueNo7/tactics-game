@@ -10,8 +10,8 @@ export async function connectSocket() {
   const token = localStorage.getItem('token');
 
   return new Promise((resolve, reject) => {
-    if (socket) {
-      socket.disconnect();
+    if (socket && socket.connected) {
+      return Promise.resolve    
     }
 
     socket = io(APLICATION_URL, {

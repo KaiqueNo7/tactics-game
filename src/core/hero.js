@@ -93,6 +93,17 @@ class Hero extends Phaser.GameObjects.Container {
     this.updateHeroStats();
   }
     
+  clearStatusEffects() {
+    this.state.statusEffects = [];
+    
+    if (this.effectSprites.poison) {
+      this.effectSprites.poison.destroy();
+      delete this.effectSprites.poison;
+    }
+
+    this.updateHeroStats();
+  }
+
   setSelected(selected) {
     this.isSelected = selected;
   }   

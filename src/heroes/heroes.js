@@ -216,3 +216,107 @@ export class Ceos extends Hero {
     );
   }
 }
+
+export class Noctin extends Hero {
+  static data = {
+    abilities: [
+      {
+        description: skills.aloneIsBetter.description,
+        key: 'aloneIsBetter',
+        name: skills.aloneIsBetter.name
+      }
+    ],
+    frame: 8,
+    name: 'Noctin',
+    stats: { ability: 'Sprint', attack: 3, hp: 14 },
+    id: 7
+  };
+
+  constructor(scene, x, y, socket) {
+    super(
+      scene,
+      x,
+      y,
+      Noctin.data.frame,
+      Noctin.data.name,
+      Noctin.data.stats.attack,
+      Noctin.data.stats.hp,
+      Noctin.data.stats.ability,
+      Noctin.data.abilities.map(a => a.key),
+      null,
+      socket,
+      Noctin.data.id
+    );
+  }
+}
+
+export class Elaria extends Hero {
+  static data = {
+    abilities: [
+      {
+        description: skills.health.description,
+        key: 'health',
+        name: skills.health.name
+      },
+      {
+        description: skills.clean.description,
+        key: 'clean',
+        name: skills.clean.name
+      }
+    ],
+    frame: 7,
+    name: 'Elaria',
+    stats: { ability: 'Ranged', attack: 1, hp: 18 },
+    id: 8
+  };
+
+  constructor(scene, x, y, socket) {
+    super(
+      scene,
+      x,
+      y,
+      Elaria.data.frame,
+      Elaria.data.name,
+      Elaria.data.stats.attack,
+      Elaria.data.stats.hp,
+      Elaria.data.stats.ability,
+      Elaria.data.abilities.map(a => a.key),
+      null,
+      socket,
+      Elaria.data.id
+    );
+  }
+}
+
+export class Bramm extends Hero {
+  static data = {
+    abilities: [
+      {
+        description: skills.rage.description,
+        key: 'rage',
+        name: skills.rage.name
+      }
+    ],
+    frame: 6,
+    name: 'Bramm',
+    stats: { ability: 'Taunt', attack: 2, hp: 26 },
+    id: 9
+  };
+
+  constructor(scene, x, y, socket) {
+    super(
+      scene,
+      x,
+      y,
+      Bramm.data.frame,
+      Bramm.data.name,
+      Bramm.data.stats.attack,
+      Bramm.data.stats.hp,
+      Bramm.data.stats.ability,
+      Bramm.data.abilities.map(a => a.key),
+      null,
+      socket,
+      Bramm.data.id
+    );
+  }
+}

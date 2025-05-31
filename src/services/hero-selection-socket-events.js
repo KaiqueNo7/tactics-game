@@ -12,6 +12,7 @@ export default function heroSelectionSocketListeners(socket, scene){
     console.log(`Recebi seleção do jogador ${player}: ${heroName} (step ${step})`);
 
     const heroData = scene.HERO_DATA.find(h => h.name === heroName);
+
     if (!heroData) {
       console.warn(`Herói não encontrado: ${heroName}`);
       return;
@@ -19,7 +20,10 @@ export default function heroSelectionSocketListeners(socket, scene){
     
     const playerSelection = player === 1 ? scene.selectedHeroesP1 : scene.selectedHeroesP2;
     
-    if (playerSelection.includes(heroName)) return;
+    if (playerSelection.includes(heroName)){
+      console.warn(`Jogador ${player} já selecionou o herói ${heroName}`);
+      return;
+    } 
     
     console.log(`Jogador ${player} selecionou: ${heroName}`); 
     
