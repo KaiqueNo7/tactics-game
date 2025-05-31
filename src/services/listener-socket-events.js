@@ -27,8 +27,8 @@ export function setupSocketListeners(socket, gameManager, scene) {
     }
   });
 
-  socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winner }) => {
-    const winnerId = winner.id;
-    gameManager.finishGame(winnerId);
+  socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ players }) => {
+    console.log('Game finished:', players);
+    gameManager.finishGame(players);
   });
 }

@@ -22,7 +22,15 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     if (alivePlayers.length === 1) {
       const winner = alivePlayers[0];
       const roomId = this.gameState.roomId;
-      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED_REQUEST, { roomId, winner });
+
+      this.gameState.status = 'finished';
+      this.gameState.winnerId = winner.id;
+
+      this.socket.emit(SOCKET_EVENTS.GAME_FINISHED_REQUEST, { 
+        roomId,
+        winner, 
+        playerIds: [this.player1.id, this.player2.id] 
+      });
     }
   }
 
@@ -119,35 +127,14 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     }
   }
 
-  finishGame(winnerId) {
-    this.gameState.status = 'finished';
-    this.gameState.winnerId = winnerId;
+  async finishGame(data) {
+    const winnerId = this.gameState.winnerId;
+    console.log(this.user.id);
+    console.log(data);
   
-    const iWon = winnerId === this.user.id;
+    const updatedStats = data[this.user.id];
     const winner = this.getPlayerById(winnerId);
-  
-    this.scene.uiManager.showVictoryUI(iWon, winner);
-  
-    this.sendGameStateUpdate();
-  
-    const result = iWon ? 'win' : 'loss';
-    const API_BASE = import.meta.env.VITE_API_BASE || 'http://localhost:3000';
-  
-    fetch(`${API_BASE}/update-stats`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
-      },
-      body: JSON.stringify({ result })
-    })
-    .then(res => res.json())
-    .then(data => {
-      console.log('Estatísticas atualizadas:', data);
-    })
-    .catch(err => {
-      console.error('Erro ao atualizar estatísticas:', err);
-    });
+    this.scene.uiManager.showVictoryUI(winnerId === this.user.id, winner, updatedStats);
   }
 
   getTurnManager() {
