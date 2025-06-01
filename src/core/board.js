@@ -477,13 +477,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
-        .setAlpha(0.4)
-        .setAngle(30)
+        .setDisplaySize(this.hexRadius * 1.860, this.hexRadius * 1.740)
         .setInteractive();
   
-      highlight.on('pointerover', () => highlight.setAlpha(0.6));
-      highlight.on('pointerout', () => highlight.setAlpha(0.4));
+      highlight.on('pointerover', () => highlight.setAlpha(0.8));
+      highlight.on('pointerout', () => highlight.setAlpha(1.0));
   
       highlight.on('pointerdown', () => {
         if (!selectedHero) return;

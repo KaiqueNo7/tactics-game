@@ -45,7 +45,7 @@ export const config = {
     antialiasGL: true,
   },
   fps: {
-    target: 30,
+    target: 15,
     forceSetTimeOut: true,
     min: 10,
     deltaHistory: 10,
