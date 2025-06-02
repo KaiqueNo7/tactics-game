@@ -6,13 +6,14 @@ export default class MatchOnlineScene extends Phaser.Scene {
   }
 
   preload() {
+    this.load.image('background_match', 'assets/background/all.jpeg');
     this.load.image('button_bg', 'assets/ui/button_bg.png');
   }
 
   create() {
     const { width, height } = this.scale;
 
-    createBackground(this, height, width, 'background_main_menu');
+    createBackground(this, height, width, 'background_match');
 
     createText(this, width / 2, 100, 'PARTIDA ONLINE', 32);
 

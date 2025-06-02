@@ -1,23 +1,18 @@
-import { Mineiro, Vic, Dante, Ralph, Ceos, Blade, Noctin, Elaria, Bramm } from '../heroes/heroes.js';
+import { HeroClasses, loadHeroClasses } from './heroes.js';
 
-const HERO_CLASSES = {
-  Mineiro,
-  Vic,
-  Dante,
-  Ralph,
-  Ceos,
-  Blade,
-  Noctin,
-  Elaria,
-  Bramm,
-};
+let heroesLoaded = false;
 
-export function createHeroByName(name, scene, x, y, socket, state = null) {
-  const HeroClass = HERO_CLASSES[name];
+export async function createHeroByName(name, scene, x, y, socket, state = null) {
+  if (!heroesLoaded) {
+    await loadHeroClasses();
+    heroesLoaded = true;
+  }
+
+  const HeroClass = HeroClasses[name];
   if (!HeroClass) {
     throw new Error(`Herói não encontrado: ${name}`);
   }
   return new HeroClass(scene, x, y, socket, state);
 }
 
-export default HERO_CLASSES;
+export default HeroClasses;

@@ -10,7 +10,7 @@ import { BootScene } from './scenes/boot-scene.js';
 import { ReconnectScene } from './scenes/reconnect-scene.js';
 
 export const config = {
-  type: Phaser.AUTO,
+  type: Phaser.CANVAS,
   backgroundColor: '#333333',
   parent: 'game-container',
   audio: {
@@ -25,28 +25,28 @@ export const config = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: window.innerWidth,
-    height: window.innerHeight,
+    width: 430,
+    height: 700,
     min: {
-      width: 320,
-      height: 480
+      width: 360,
+      height: 640
     },
     max: {
-      width: 1600,
-      height: 1200
+      width: 1080,
+      height: 1920
     }
   },
   dom: {
     createContainer: true
   },
   render: {
-    pixelArt: false,
-    antialias: true,
-    antialiasGL: true,
+    pixelArt: true,
+    antialias: false,
+    antialiasGL: false
   },
   fps: {
-    target: 15,
-    forceSetTimeOut: true,
+    target: 60,
+    forceSetTimeOut: false,
     min: 10,
     deltaHistory: 10,
   },

@@ -6,6 +6,17 @@ import { getSocket } from '../../services/game-api-service.js';
 import BoardInputManager from '../../ui/board-input-manager.js';
 import { getUserData } from '../../utils/helpers.js';
 
+function startPing(socket, updatePingUI) {
+  setInterval(() => {
+    const start = Date.now();
+    socket.emit('ping_check', () => {
+      const ms = Date.now() - start;
+      updatePingUI(ms);
+    });
+  }, 2000);
+}
+
+
 export default class GameScene extends Phaser.Scene {
   constructor() {
     super('GameScene');
@@ -17,6 +28,8 @@ export default class GameScene extends Phaser.Scene {
 
   async create(state) {
     const { roomId } = state.gameState;
+    const { height } = this.scale;
+
     const socket = getSocket();
 
     this.roomId = roomId;
@@ -44,9 +57,18 @@ export default class GameScene extends Phaser.Scene {
     await this.gameManager.buildFromGameState(state.gameState, this.board, this.gameUI);
     
     this.gameUI.updateGamePanel(this.gameManager.getPlayers());
+
+    this.pingText = this.add.text(10, height - 30, 'ms', {
+      fontSize: '16px',
+      fill: '#FF0',
+    });
+
+    startPing(socket, (ms) => {
+      this.pingText.setText(`${ms} ms`);
+    });
   } 
 
   update() {
-    //
+
   }
 }

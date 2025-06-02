@@ -157,7 +157,7 @@ export default class UIManager {
       strokeThickness: 2,
     }).setOrigin(0.5).setDepth(100);
   
-    const statsContainer = this.scene.add.container(width / 2, height * 0.35).setDepth(100); // ✅ Removido setOrigin
+    const statsContainer = this.scene.add.container(width / 2, height * 0.35).setDepth(100);
   
     if (updatedStats) {
       const xpText = this.scene.add.text(0, -30, `XP: ${Math.round(updatedStats.xp)}`, {
@@ -212,7 +212,7 @@ export default class UIManager {
       heroSprites.push(sprite);
     });
   
-    const playAgainBtn = this.scene.add.text(width / 2, height * 0.80, 'Jogar novamente', {
+    const playAgainBtn = this.scene.add.text(width / 2, height * 0.80, 'Continuar', {
       backgroundColor: '#222',
       fill: '#00ff00',
       fontSize: Math.round(width * 0.035) + 'px',
@@ -229,7 +229,6 @@ export default class UIManager {
     });
   
     playAgainBtn.on('pointerdown', () => {
-      this.scene.scene.stop('GameScene');
       this.scene.scene.start('MatchOnlineScene');
     });
   

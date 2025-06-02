@@ -34,36 +34,40 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     }
   }
 
-  buildFromGameState(state, board, gameUI) {
+ async buildFromGameState(state, board, gameUI) {
     this.gameState = state;
     this.board = board;
     this.gameUI = gameUI;
     this.roomId = state.roomId;
     this.startedPlayerId = state.startedPlayerId;
-  
-    const players = state.players.map(playerData => {
+
+    const players = await Promise.all(state.players.map(async playerData => {
       const player = new Player(playerData.name, [], playerData.id);
-  
-      const heroes = playerData.heroes.map(heroData => {
-        const hero = createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
-  
+
+      const heroes = await Promise.all(playerData.heroes.map(async heroData => {
+        const hero = await createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
+
+        if (!hero.stats) {
+          throw new Error(`Stats não definido para o herói ${heroData.name}`);
+        }
+
         hero.stats.attack = heroData.stats.attack;
         hero.stats.currentHealth = heroData.stats.currentHealth;
         hero.state.position = heroData.state.position;
         hero.state.isAlive = heroData.state.isAlive;
         hero.state.statusEffects = heroData.state.statusEffects || [];
         hero.firstAttack = heroData.firstAttack;
-  
+
         return hero;
-      });
-  
+      }));
+
       player.addHeroes(heroes);
       return player;
-    });
-  
+    }));
+
     this.player1 = players[0];
     this.player2 = players[1];
-  
+
     this.player1.heroes.forEach(hero => {
       this.scene.gameUI.placeHeroOnBoard(hero, hero.state.position, 'hexagon_blue');
     });
@@ -75,7 +79,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
 
     allHeroes.forEach(hero => {
-      if(!hero.state.isAlive){
+      if (!hero.state.isAlive) {
         hero.die();
       }
 
@@ -83,9 +87,9 @@ export default class GameManager extends Phaser.Events.EventEmitter {
         this.rehydrateStatusEffects(hero);
       }
     });
-  
+
     this.setupMatch(state);
-  }  
+  } 
 
   setupMatch(gameState) {
     if(!gameState) {
@@ -129,8 +133,11 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
   async finishGame(data) {
     const winnerId = this.gameState.winnerId;
-    console.log(this.user.id);
-    console.log(data);
+
+    if(!data){
+      this.gameUI.showMessage("Sei adversário caiu!");
+      this.scene.scene.start('MatchOnlineScene');
+    }
   
     const updatedStats = data[this.user.id];
     const winner = this.getPlayerById(winnerId);

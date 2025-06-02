@@ -146,8 +146,8 @@ export default class HeroSelectionScene extends Phaser.Scene {
   }
 
   autoSelectHeroesForTesting() {
-    const presetP1 = ['Vic', 'Ceos', 'Blade'];
-    const presetP2 = ['Noctin', 'Elaria', 'Bramm'];
+    const presetP1 = ['Ralph', 'Ceos', 'Blade'];
+    const presetP2 = ['Noctin', 'Vic', 'Bramm'];
   
     this.selectedHeroesP1 = [];
     this.selectedHeroesP2 = [];

@@ -358,6 +358,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
               this.isShowingMessage = false;
               this.displayNextMessage();
             },
+            y: this.finalY + 20,
             targets: this.container,
           });
         });

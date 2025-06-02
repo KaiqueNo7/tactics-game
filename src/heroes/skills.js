@@ -3,17 +3,7 @@ export const skills = {
     apply: ({hero}) => {
         hero.heal(hero.stats.attack);
     },
-    description: 'Recupera vida equivalente ao dano causado.',
-    name: 'Absorb Roots',
     triggers: ['onAttack', 'onCounterAttack']
-  },
-  autoDefense: {
-    apply: () => {
-      //
-    },
-    description: 'Recebe 1 ponto a menos de dano ao sofrer contra-ataques.',
-    name: 'Auto Defense',
-    triggers: ['']
   },
   beyondFront: {
     apply: ({hero, target, scene}) => {
@@ -47,14 +37,12 @@ export const skills = {
         scene.uiManager.heroTalk(hero, 'Hiay!');
       }
     },
-    description: 'Ataca até 3 casas em linha reta na direção do ataque, se estiverem ocupadas por inimigos.',
-    name: 'Beyond Front',
     triggers: ['onAttack']
   },
   brokenDefense: {
     apply: ({hero, target, isCounterAttack, scene}) => {
       if (target.ability === 'Taunt') {
-        const bonusDamage = hero.stats.attack + 2;
+        const bonusDamage = hero.stats.attack + 1;
         console.log(`${hero.name} causa dano extra a ${target.name} devido a "Broken Defense"!`);
         scene.uiManager.heroTalk(hero, 'Dano extra!');
         target.takeDamage(bonusDamage, hero, isCounterAttack);
@@ -65,9 +53,7 @@ export const skills = {
         hero.damageApplied = true;
       }
     },
-    description: 'Causa +2 de dano contra inimigos com o status "Taunt".',
-    name: 'Broken Defense',
-    triggers: ['onAttack', 'onCounterAttack']
+    triggers: ['onAttack']
   },  
   firstPunch: {
     apply: ({hero, target, isCounterAttack, scene}) => {
@@ -90,8 +76,6 @@ export const skills = {
         return;
       }
     },
-    description: 'O primeiro ataque do herói na partida causa +2 de dano.',
-    name: 'First Punch',
     triggers: ['onTurnStart', 'onAttack', 'onCounterAttack']
   },
   goodLuck: {
@@ -112,8 +96,6 @@ export const skills = {
         console.log(`${hero.name} não teve sorte!`);
       }
     },
-    description: 'Tem 50% de chance de ganhar +1 de ataque ao mudar o turno.',
-    name: 'Good Luck',
     triggers: ['onTurnEnd']
   },  
   poisonAttack: {
@@ -147,8 +129,6 @@ export const skills = {
         });
       }
     },
-    description: 'Envenena o inimigo por 3 turnos causando 1 de dano por turno. Causa  +2 de dano contra inimigos já envenenados.',
-    name: 'Poison Attack',
     triggers: ['onAttack', 'onCounterAttack']        
   },
   trustInTeam: {
@@ -169,23 +149,19 @@ export const skills = {
         hero.increaseAttack(-1);
       }
     },
-    description: 'Recebe +1 de ataque ao ter aliados em casas adjacentes.',
-    name: 'Trusted in Team',
     triggers: ['onMove', 'onTurnStart']
   },
   aloneIsBetter: {
-    apply: ({hero, target, scene}) => {
+    apply: ({hero, target, isCounterAttack, scene}) => {
       const board = hero.scene.board;
       const isAlone = board.getAlliesInRange(target, 1);
 
       if (isAlone.length === 0) {
         scene.uiManager.heroTalk(hero, 'Muahauhauhaua!');
-        target.takeDamage(hero.stats.attack * 2, hero);
+        target.takeDamage(hero.stats.attack * 2, hero, isCounterAttack);
         hero.damageApplied = true;
       }
     },
-    description: 'Se atacar um inimigo isolado causa o dobro de dano.',
-    name: 'Alone is Better',
     triggers: ['onAttack', 'onCounterAttack']
   }, 
   health: {
@@ -204,8 +180,6 @@ export const skills = {
         }
       });
     },
-    description: 'Cura aliados próximos. (+1)',
-    name: 'Health',
     triggers: ['onTurnEnd']
   },
   clean: {
@@ -226,8 +200,6 @@ export const skills = {
         }
       });
     },
-    description: 'Remove os efeitos negativos de aliados próximos.',
-    name: 'Clean',
     triggers: ['onAttack']
   },
   rage: {
@@ -239,15 +211,13 @@ export const skills = {
       const nextHex = line[0];
 
       if (nextHex == undefined || nextHex.occupied) {
-        const bonusDamage = hero.stats.attack * 2;
+        const bonusDamage = hero.stats.attack + 1;
         target.takeDamage(bonusDamage, hero);
         hero.damageApplied = true;
       } else {
         board.moveHero(target, nextHex);
       }
     },
-    description: 'Move o inimigo uma casa para trás. Se bloqueado o movimento o inimigo recebe dano novamente.',
-    name: 'Rage',
     triggers: ['onAttack']
   }
 };
