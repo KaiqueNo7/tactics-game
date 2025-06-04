@@ -14,11 +14,20 @@ export class BootScene extends Phaser.Scene {
       return;
     }
 
-    await connectSocket();
+    try {
+      await connectSocket();
+    } catch (err) {
+      console.error('Erro ao conectar ao socket:', err);
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      this.scene.start('LoginScene');
+      return;
+    }
+
     this.socket = getSocket();
 
     if (!this.socket) {
-      console.error('Erro ao conectar ao socket');
+      console.error('Socket não está disponível');
       this.scene.start('LoginScene');
       return;
     }

@@ -34,6 +34,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
         rows = 7;
       }
 
+      if (col == 2) {
+        currentYOffset -= this.hexHeight / 2 + 30;
+        rows = 8;
+      }
+
       for (let row = 0; row < rows; row++) {
         let label = String.fromCharCode(65 + col) + (row + 1);
         let hex = { 

@@ -27,8 +27,11 @@ export function setupSocketListeners(socket, gameManager, scene) {
     }
   });
 
-  socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ players }) => {
-    console.log('Game finished:', players);
-    gameManager.finishGame(players);
+  socket.on(SOCKET_EVENTS.GAME_FINISHED, ({ winnerId }) => {
+    if (scene.scene.isPaused('GameScene')) {
+      scene.scene.resume('GameScene');
+    }
+
+    gameManager.finishGame(winnerId);
   });
 }

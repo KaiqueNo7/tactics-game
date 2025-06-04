@@ -11,8 +11,8 @@ export async function connectSocket() {
 
   return new Promise((resolve, reject) => {
     if (socket && socket.connected) {
-      return Promise.resolve    
-    }
+      return resolve(socket); 
+    }f
 
     socket = io(APLICATION_URL, {
       auth: { token },
@@ -33,10 +33,13 @@ export async function connectSocket() {
     });
 
     socket.on('connect_error', () => {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       reject('Erro de conexão');
     });
   });
 }
+
 
 export function getSocket() {
   return socket;

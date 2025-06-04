@@ -173,8 +173,8 @@ export const skills = {
         let target = ally.occupiedBy;
 
         if(target.state.isAlive && target.stats.currentHealth < target.stats.maxHealth) {
-          target.heal(1);
-          console.log(`${target.name} recebe cura de 1 ponto!`);
+          target.heal(2);
+          console.log(`${target.name} recebe cura de 2 ponto!`);
           scene.uiManager.spriteAnimation(target);
           scene.uiManager.spriteAnimation(hero);
         }

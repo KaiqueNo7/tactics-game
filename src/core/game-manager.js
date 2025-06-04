@@ -131,17 +131,10 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     }
   }
 
-  async finishGame(data) {
-    const winnerId = this.gameState.winnerId;
+  async finishGame(winnerId) {
+    const iWon = winnerId === this.user.id ? true : false;
 
-    if(!data){
-      this.gameUI.showMessage("Sei adversário caiu!");
-      this.scene.scene.start('MatchOnlineScene');
-    }
-  
-    const updatedStats = data[this.user.id];
-    const winner = this.getPlayerById(winnerId);
-    this.scene.uiManager.showVictoryUI(winnerId === this.user.id, winner, updatedStats);
+    this.scene.uiManager.showVictoryUI(iWon);
   }
 
   getTurnManager() {
@@ -177,7 +170,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     });
   }
   
-
   showGameState() {
     console.log(this.gameState);
   }  

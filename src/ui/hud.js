@@ -133,7 +133,7 @@ export default class UIManager {
     this.characterPanel.setVisible(false);
   }
 
-  showVictoryUI(iWon, winner, updatedStats) {
+  showVictoryUI(iWon) {
     const resultText = iWon ? 'Vitória' : 'Derrota';
     const width = this.scene.scale.width;
     const height = this.scene.scale.height;
@@ -148,69 +148,6 @@ export default class UIManager {
       stroke: '#000',
       strokeThickness: 4,
     }).setOrigin(0.5).setDepth(100);
-  
-    const winnerNameText = this.scene.add.text(width / 2, height * 0.25, `Vencedor: ${winner.name}`, {
-      fill: '#ffffff',
-      fontSize: Math.round(width * 0.035) + 'px',
-      fontFamily: 'Fredoka',
-      stroke: '#000',
-      strokeThickness: 2,
-    }).setOrigin(0.5).setDepth(100);
-  
-    const statsContainer = this.scene.add.container(width / 2, height * 0.35).setDepth(100);
-  
-    if (updatedStats) {
-      const xpText = this.scene.add.text(0, -30, `XP: ${Math.round(updatedStats.xp)}`, {
-        fill: '#ffd700',
-        fontSize: Math.round(width * 0.03) + 'px',
-        fontFamily: 'Fredoka',
-        stroke: '#000',
-        strokeThickness: 1,
-      }).setOrigin(0.5);
-  
-      const levelText = this.scene.add.text(0, 0, `Nível: ${updatedStats.level}`, {
-        fill: '#00bfff',
-        fontSize: Math.round(width * 0.03) + 'px',
-        fontFamily: 'Fredoka',
-        stroke: '#000',
-        strokeThickness: 1,
-      }).setOrigin(0.5);
-  
-      const coinsText = this.scene.add.text(0, 30, `Moedas: ${updatedStats.coins}`, {
-        fill: '#adff2f',
-        fontSize: Math.round(width * 0.03) + 'px',
-        fontFamily: 'Fredoka',
-        stroke: '#000',
-        strokeThickness: 1,
-      }).setOrigin(0.5);
-  
-      statsContainer.add([xpText, levelText, coinsText]);
-    } else {
-      const errorText = this.scene.add.text(0, 0, 'Erro ao carregar as estatísticas.', {
-        fill: '#ff0000',
-        fontSize: Math.round(width * 0.03) + 'px',
-        fontFamily: 'Fredoka',
-        stroke: '#000',
-        strokeThickness: 1,
-      }).setOrigin(0.5);
-  
-      statsContainer.add(errorText);
-    }
-  
-    const heroSprites = [];
-  
-    const heroCount = winner.heroes.length;
-    const spacing = 70;
-    const totalWidth = (heroCount - 1) * spacing;
-    const startX = width / 2 - totalWidth / 2;
-    const spriteY = height * 0.55;
-  
-    winner.heroes.forEach((hero, index) => {
-      const x = startX + index * spacing;
-      const sprite = this.scene.add.sprite(x, spriteY, 'heroes', hero.frameIndex);
-      sprite.setOrigin(0.5).setScale(0.5).setDepth(100);
-      heroSprites.push(sprite);
-    });
   
     const playAgainBtn = this.scene.add.text(width / 2, height * 0.80, 'Continuar', {
       backgroundColor: '#222',
@@ -232,13 +169,12 @@ export default class UIManager {
       this.scene.scene.start('MatchOnlineScene');
     });
   
-    // Animação de entrada
     this.scene.tweens.add({
       alpha: { from: 0, to: 1 },
       delay: 100,
       duration: 500,
       ease: 'Power1',
-      targets: [victoryText, winnerNameText, statsContainer, ...heroSprites, playAgainBtn],
+      targets: [victoryText, playAgainBtn],
       y: '+=20',
     });
   }  
