@@ -51,8 +51,6 @@ export default class GameScene extends Phaser.Scene {
     this.board = new Board(this, socket, this.roomId, this.gameManager, this.user);
     this.board.initializeBoard();
     this.board.createHexagons();
-  
-    this.inputManager = new BoardInputManager(this, this.board, socket);
 
     await this.gameManager.buildFromGameState(state.gameState, this.board, this.gameUI);
     
@@ -65,6 +63,10 @@ export default class GameScene extends Phaser.Scene {
 
     startPing(socket, (ms) => {
       this.pingText.setText(`${ms} ms`);
+    });
+
+    this.events.once('shutdown', () => {
+      this.gameManager.turnManager.dispose();
     });
   } 
 

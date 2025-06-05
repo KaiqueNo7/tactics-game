@@ -1,4 +1,5 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
+import Phaser from 'phaser';
 
 export default class Board extends Phaser.GameObjects.GameObject {
   constructor(scene, socket, roomId, gameManager, user) {
@@ -32,11 +33,6 @@ export default class Board extends Phaser.GameObjects.GameObject {
       if (col % 2 === 1) { 
         currentYOffset -= this.hexHeight / 2;
         rows = 7;
-      }
-
-      if (col == 2) {
-        currentYOffset -= this.hexHeight / 2 + 30;
-        rows = 8;
       }
 
       for (let row = 0; row < rows; row++) {
@@ -234,8 +230,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
     if (hero.attackText) hero.attackText.destroy();
 
     if (hero.sprite) {
-      hero.sprite.setScale(0.23);
-      hero.sprite.setTint(0x808080);
+      hero.sprite.setTexture('rip');
+      hero.sprite.setScale(0.2);
     } 
 
     if (hero.shieldSprite){
@@ -475,24 +471,40 @@ export default class Board extends Phaser.GameObjects.GameObject {
     
   highlightHexes(hexEntries) {
     const selectedHero = this.selectedHero;
-  
+
     hexEntries.forEach(({ hex, type }) => {
       const texture = type === 'enemy' ? 'hex_highlight_enemy' : 'hex_highlight';
-  
+
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
         .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
         .setAngle(30)
-        .setAlpha(0.4)
-        .setInteractive();
-  
-      highlight.on('pointerover', () => highlight.setAlpha(0.6));
-      highlight.on('pointerout', () => highlight.setAlpha(0.4));
-  
-      highlight.on('pointerdown', () => {
+        .setAlpha(0.4);
+
+      this.boardContainer.add(highlight);
+      this.highlightedHexes.push(highlight);
+
+      const hexHitArea = new Phaser.Geom.Polygon([
+        30, 0,
+        60, 15,
+        60, 45,
+        30, 60,
+        0, 45,
+        0, 15
+      ]);
+
+      const interactiveHex = this.scene.add.zone(hex.x, hex.y, this.hexRadius * 2, this.hexRadius * 2)
+        .setOrigin(0.5)
+        .setInteractive(hexHitArea, Phaser.Geom.Polygon.Contains)
+        .setDepth(2);
+
+      interactiveHex.on('pointerover', () => highlight.setAlpha(0.6));
+      interactiveHex.on('pointerout', () => highlight.setAlpha(0.4));
+
+      interactiveHex.on('pointerdown', () => {
         if (!selectedHero) return;
-  
+
         if (type === 'move') {
           this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
             roomId: this.roomId,
@@ -511,11 +523,11 @@ export default class Board extends Phaser.GameObjects.GameObject {
           }
         }
       });
-  
-      this.boardContainer.add(highlight);
-      this.highlightedHexes.push(highlight);
+
+      this.boardContainer.add(interactiveHex);
+      this.highlightedHexes.push(interactiveHex); // opcional: se quiser limpá-los depois
     });
-  }  
+  }
         
   clearHighlights() {
     this.highlightedHexes.forEach(h => {

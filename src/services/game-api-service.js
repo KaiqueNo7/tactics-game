@@ -12,7 +12,7 @@ export async function connectSocket() {
   return new Promise((resolve, reject) => {
     if (socket && socket.connected) {
       return resolve(socket); 
-    }f
+    }
 
     socket = io(APLICATION_URL, {
       auth: { token },

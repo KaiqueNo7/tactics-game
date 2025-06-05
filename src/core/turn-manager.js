@@ -1,4 +1,4 @@
-import turnManagerSocketEvents from "../services/turn-manager-socket-events";
+import { registerTurnManagerSocketEvents, unregisterTurnManagerSocketEvents } from "../services/turn-manager-socket-events";
 
 export default class TurnManager {
   constructor(board, gameUI, playerId, gameManager, user) {
@@ -12,7 +12,7 @@ export default class TurnManager {
 
     this.createNewTurn(this.gameState.currentTurn);
 
-    turnManagerSocketEvents(this);
+    registerTurnManagerSocketEvents(this);
   }
 
   createNewTurn(turnData) {
@@ -78,7 +78,6 @@ export default class TurnManager {
   }
 
   nextTurn(playerId) {
-    this.gameManager.showGameState();
     const currentPlayer = this.gameManager.getPlayerById(playerId);
     this.triggerEndOfTurnSkills(currentPlayer);
 
@@ -126,5 +125,9 @@ export default class TurnManager {
    const player = this.gameManager.getPlayerById(this.currentTurn.playerId);
 
     return player;
+  }
+
+  dispose() {
+    unregisterTurnManagerSocketEvents();
   }
 }

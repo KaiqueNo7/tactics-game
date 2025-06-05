@@ -40,7 +40,7 @@ export const config = {
     createContainer: true
   },
   render: {
-    pixelArt: true,
+    pixelArt: false,
     antialias: false,
     antialiasGL: false
   },

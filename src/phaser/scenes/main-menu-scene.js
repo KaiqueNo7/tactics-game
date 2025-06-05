@@ -23,6 +23,10 @@ export default class MainMenuScene extends Phaser.Scene {
 
     let user = await setUserData();
 
+    if(!user){
+      this.cleanDataAndRedirectToLogin();
+    }
+
     const userName = user.username;
 
     createText(this, 20, 125, `${userName}`, '14px', '#fff', 'bold').setOrigin(0, 0);
@@ -40,9 +44,13 @@ export default class MainMenuScene extends Phaser.Scene {
     });
 
     createButton(this, width / 2, height - 50, `SAIR`, () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      this.scene.start('LoginScene');
+      this.cleanDataAndRedirectToLogin();
     });
+  }
+
+  cleanDataAndRedirectToLogin(){
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    this.scene.start('LoginScene');
   }
 }

@@ -20,15 +20,12 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     );
 
     if (alivePlayers.length === 1) {
-      const winner = alivePlayers[0];
+      const winnerId = alivePlayers[0].id;
       const roomId = this.gameState.roomId;
-
-      this.gameState.status = 'finished';
-      this.gameState.winnerId = winner.id;
 
       this.socket.emit(SOCKET_EVENTS.GAME_FINISHED_REQUEST, { 
         roomId,
-        winner, 
+        winnerId, 
         playerIds: [this.player1.id, this.player2.id] 
       });
     }
@@ -169,10 +166,6 @@ export default class GameManager extends Phaser.Events.EventEmitter {
       }
     });
   }
-  
-  showGameState() {
-    console.log(this.gameState);
-  }  
 
   updateCurrentTurn(currentTurn) {
     const { playerId, numberTurn, attackedHeroes = [], movedHeroes = [], counterAttack = false } = currentTurn;
