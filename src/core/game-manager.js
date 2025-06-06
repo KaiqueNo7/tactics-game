@@ -1,9 +1,9 @@
 import TurnManager from './turn-manager.js';
 import Player from './player.js';
 import { getSocket } from '../services/game-api-service.js';
-import { setupSocketListeners } from '../services/listener-socket-events.js';
+import { registerSetupSocketListeners, unRegisterSetupSocketListeners } from '../services/listener-socket-events.js';
 import { SOCKET_EVENTS } from '../../api/events.js';
-import { boardSocketListeners } from '../services/board-socket-events.js';
+import { registerBoardSocketListeners, unRegisterBoardSocketListeners } from '../services/board-socket-events.js';
 import { createHeroByName } from '../heroes/heroFactory.js';
 
 export default class GameManager extends Phaser.Events.EventEmitter {
@@ -104,8 +104,8 @@ export default class GameManager extends Phaser.Events.EventEmitter {
 
     this.currentTurn = this.turnManager.currentTurn;
 
-    setupSocketListeners(this.socket, this, this.scene);
-    boardSocketListeners(this.board, this.socket, this);
+    registerSetupSocketListeners(this, this.scene);
+    registerBoardSocketListeners(this.board, this);
   }
   
   getPlayerById(playerId) {
@@ -212,5 +212,10 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     }
   
     console.warn(`Herói com ID ${heroId} não encontrado para update de posição.`);
+  }
+
+  dispose() {
+    unRegisterSetupSocketListeners();
+    unRegisterBoardSocketListeners();
   }
 }

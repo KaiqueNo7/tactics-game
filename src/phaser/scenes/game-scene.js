@@ -3,19 +3,7 @@ import GameManager from '../../core/game-manager.js';
 import UIManager from '../../ui/hud.js';
 import GameUI from '../../ui/game-ui.js';
 import { getSocket } from '../../services/game-api-service.js';
-import BoardInputManager from '../../ui/board-input-manager.js';
 import { getUserData } from '../../utils/helpers.js';
-
-function startPing(socket, updatePingUI) {
-  setInterval(() => {
-    const start = Date.now();
-    socket.emit('ping_check', () => {
-      const ms = Date.now() - start;
-      updatePingUI(ms);
-    });
-  }, 2000);
-}
-
 
 export default class GameScene extends Phaser.Scene {
   constructor() {
@@ -61,12 +49,9 @@ export default class GameScene extends Phaser.Scene {
       fill: '#FF0',
     });
 
-    startPing(socket, (ms) => {
-      this.pingText.setText(`${ms} ms`);
-    });
-
     this.events.once('shutdown', () => {
       this.gameManager.turnManager.dispose();
+      this.gameManager.dispose();
     });
   } 
 
