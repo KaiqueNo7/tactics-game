@@ -6,7 +6,7 @@ export default class MatchOnlineScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('background_match', 'assets/background/all.jpeg');
+    this.load.image('background_match', 'assets/background/MenuScreen.jpg');
     this.load.image('button_bg', 'assets/ui/button_bg.png');
   }
 

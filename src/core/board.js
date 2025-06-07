@@ -150,7 +150,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
   }   
 
-  attackHero(attacker, target) {
+  async attackHero(attacker, target) {
     if (!attacker || !target || attacker === target) return;
   
     const gameManager = this.scene.gameManager;
@@ -192,7 +192,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       return;
     }
 
-    attacker.attackTarget(target);
+    await attacker.attackTarget(target);
 
     const targetHex = this.getHexByLabel(target.state.position);
     if (!targetHex) return;

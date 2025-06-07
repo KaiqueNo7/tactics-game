@@ -44,11 +44,6 @@ export default class GameScene extends Phaser.Scene {
     
     this.gameUI.updateGamePanel(this.gameManager.getPlayers());
 
-    this.pingText = this.add.text(10, height - 30, 'ms', {
-      fontSize: '16px',
-      fill: '#FF0',
-    });
-
     this.events.once('shutdown', () => {
       this.gameManager.turnManager.dispose();
       this.gameManager.dispose();

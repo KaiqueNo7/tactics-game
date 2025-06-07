@@ -17,6 +17,7 @@ export async function loadHeroClasses() {
           y,
           hero.frame,
           hero.name,
+          hero.icon_attack,
           hero.stats.attack,
           hero.stats.hp,
           hero.stats.ability,

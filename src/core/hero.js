@@ -1,7 +1,8 @@
 import { skills } from '../heroes/skills.js';
+import Phaser from 'phaser'; 
 
 class Hero extends Phaser.GameObjects.Container {
-  constructor(scene, x, y, frameIndex, name, attack, hp, ability, skillNames = [], playerId = null, socket = null, id = null) {
+  constructor(scene, x, y, frameIndex, name, iconAttack = 'default', attack, hp, ability, skillNames = [], playerId = null, socket = null, id = null) {
     super(scene, x, y);
 
     this.scene = scene;
@@ -12,13 +13,14 @@ class Hero extends Phaser.GameObjects.Container {
     this.playerId = playerId;
 
     const sprite = scene.add.sprite(0, -10, 'heroes', frameIndex);
-    sprite.setScale(0.230);
+    sprite.setScale(0.240);
     this.add(sprite);
     this.sprite = sprite;
         
     this.isSelected = false;
     this.frameIndex = frameIndex;
     this.name = name;
+    this.iconAttack = iconAttack;
     this.attack = attack;
     this.hp = hp;
     this.ability = ability;
@@ -53,21 +55,53 @@ class Hero extends Phaser.GameObjects.Container {
     this.playerId = playerId;
   }
 
-  attackTarget(target) {
+  async attackTarget(target) {
     console.log(`${this.name} ataca ${target.name}!`);
 
     this.damageApplied = false;
 
-    this.triggerSkills('onAttack', target);
+    await this.attackAnimate(target);
 
-    if(!this.damageApplied){
-      target.takeDamage(this.stats.attack, this);
-    }
-    
-    this.firstAttack = true;
-    this.updateHeroStats();
     return true;
-  } 
+  }
+
+  attackAnimate(target) {
+    return new Promise((resolve) => {
+      const start = new Phaser.Math.Vector2();
+      const end = new Phaser.Math.Vector2();
+
+      this.sprite.getWorldTransformMatrix().transformPoint(0, 0, start);
+      target.sprite.getWorldTransformMatrix().transformPoint(0, 0, end);
+
+      const projectile = this.scene.add.image(start.x, start.y, this.iconAttack);
+      projectile.setDepth(10);
+      projectile.setScale(2);
+
+      const angle = Phaser.Math.Angle.Between(start.x, start.y, end.x, end.y);
+      projectile.setRotation(angle);
+
+      this.scene.tweens.add({
+        targets: projectile,
+        x: end.x,
+        y: end.y,
+        duration: 300,
+        onComplete: () => {
+          projectile.destroy();
+          this.triggerSkills('onAttack', target);
+
+          if (!this.damageApplied) {
+            target.takeDamage(this.stats.attack, this);
+          }
+
+          this.firstAttack = true;
+          this.updateHeroStats();
+
+          resolve(); // sinaliza que terminou
+        }
+      });
+    });
+  }
+
 
   applyTaunt() {
     if (this.shieldSprite) return;
@@ -255,6 +289,8 @@ class Hero extends Phaser.GameObjects.Container {
   }
 
   counterAttack(target) {
+    if(!this.state.isAlive) return;
+
     this.scene.time.delayedCall(1000, () => {
       console.log(`${this.name} realiza um contra-ataque em ${target.name}!`);
       this.damageApplied = false;

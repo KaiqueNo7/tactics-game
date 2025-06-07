@@ -13,6 +13,13 @@ export default class PreMatchScene extends Phaser.Scene {
       frameHeight: 165    
     });
     this.load.image('background_game', 'assets/background/01.png');
+    this.load.image('arrow', 'assets/attacks/arrow.png');
+    this.load.image('spell', 'assets/attacks/spell.png');
+    this.load.image('default', 'assets/attacks/default.png');
+    this.load.image('knife_slash', 'assets/attacks/knife_slash.png');
+    this.load.image('sword_slash', 'assets/attacks/sword_slash.png');
+    this.load.image('poison', 'assets/attacks/poison.png');
+    this.load.image('boxing_glove', 'assets/attacks/boxing_glove.png');
     this.load.image('rip', 'assets/ui/rip.png');
     this.load.image('hexagon_blue', 'assets/sprites/hexagon_blue.png');
     this.load.image('hexagon_red', 'assets/sprites/hexagon_red.png');
