@@ -19,8 +19,6 @@ function heroAttacked(gameManager, board, heroAttackerId, heroTargetId, isCounte
     board.attackHero(attacker, target);
   }
 
-  console.log(target.state);
-
   if (attacker && target && isCounterAttack && target.state.isAlive) {
     target.counterAttack(attacker, target);
   }

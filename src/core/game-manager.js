@@ -39,7 +39,7 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     this.startedPlayerId = state.startedPlayerId;
 
     const players = await Promise.all(state.players.map(async playerData => {
-      const player = new Player(playerData.name, [], playerData.id);
+      const player = new Player(playerData.name, [], playerData.id, playerData.isBot);
 
       const heroes = await Promise.all(playerData.heroes.map(async heroData => {
         const hero = await createHeroByName(heroData.name, this.scene, 0, 0, this.socket);
@@ -142,6 +142,11 @@ export default class GameManager extends Phaser.Events.EventEmitter {
     return [this.player1, this.player2];
   }
 
+  getBotPlayer() {
+    const players = [this.player1, this.player2];
+    return players.find(player => typeof player.id === 'string' && player.id.startsWith('BOT_'));
+  }  
+
   getHeroById(heroId) {
     const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
     return allHeroes.find(hero => hero.id === heroId);
@@ -150,6 +155,15 @@ export default class GameManager extends Phaser.Events.EventEmitter {
   getHeroByPosition(position) {
     const allHeroes = [...this.player1.heroes, ...this.player2.heroes];
     return allHeroes.find(hero => hero.state.position === position);
+  }
+
+  getEnemyHeroes(playerId) {
+    if (this.player1.id === playerId) {
+      return this.player2.heroes;
+    } else if (this.player2.id === playerId) {
+      return this.player1.heroes;
+    }
+    return [];
   }
 
   rehydrateStatusEffects(hero) {

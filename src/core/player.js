@@ -1,8 +1,9 @@
 export default class Player {
-  constructor(name, heroes = [], id) {
+  constructor(name, heroes = [], id, isBot = false) {
     this.id = id;
     this.name = name;
     this.heroes = heroes;
+    this.isBot = isBot;
   }
 
   addHeroes(heroes){

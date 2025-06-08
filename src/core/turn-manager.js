@@ -1,4 +1,5 @@
 import { registerTurnManagerSocketEvents, unregisterTurnManagerSocketEvents } from "../services/turn-manager-socket-events";
+import BotPlayer from "./botPlayer";
 
 export default class TurnManager {
   constructor(board, gameUI, playerId, gameManager, user) {
@@ -15,7 +16,7 @@ export default class TurnManager {
     registerTurnManagerSocketEvents(this);
   }
 
-  createNewTurn(turnData) {
+  async createNewTurn(turnData) {
     this.currentTurn = {
       playerId: turnData.playerId,
       numberTurn: turnData.numberTurn,
@@ -28,6 +29,7 @@ export default class TurnManager {
     this.board.clearHighlights();
 
     const currentPlayerIndex = this.gameManager.getPlayers().findIndex(player => player.id === turnData.playerId);
+    const currentPlayer = this.gameManager.getPlayerById(turnData.playerId);
 
     this.gameUI.updateTurnPanel(currentPlayerIndex, this.currentTurn.numberTurn);
 
@@ -49,6 +51,11 @@ export default class TurnManager {
 
     this.gameUI.setEndTurnButtonEnabled(isMyTurn);
     this.gameManager.updateCurrentTurn(this.currentTurn);
+
+    if (currentPlayer.isBot) {
+      const bot = new BotPlayer(this.board, this.gameManager, this.gameState.roomId, this);
+      await bot.playTurn();
+    }    
   }
 
   markHeroAsMoved(heroId) {

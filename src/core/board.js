@@ -203,14 +203,22 @@ export default class Board extends Phaser.GameObjects.GameObject {
 
     if (!turnManager.currentTurn.counterAttack && target.state.isAlive) {
       const distanceTarget = this.calculateDistance(targetHex, attackerHex);
+      const botPlayer = gameManager.getBotPlayer();
+      const matchWithBot = !!botPlayer;
+
+      console.log(matchWithBot);
 
       if (distanceTarget <= target.attackRange) {
-        this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
-            roomId: this.roomId,
-            heroAttackerId: attacker.id,
-            heroTargetId: target.id
-        });
-
+        if(!matchWithBot){
+          this.socket.emit(SOCKET_EVENTS.HERO_COUNTER_ATTACK_REQUEST, {
+              roomId: this.roomId,
+              heroAttackerId: attacker.id,
+              heroTargetId: target.id,
+          });
+        } else {
+          target.counterAttack(attacker);
+        }
+        
         turnManager.currentTurn.counterAttack = true;
       }
     }
