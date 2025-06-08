@@ -58,23 +58,9 @@ export default class MainMenuScene extends Phaser.Scene {
       this.cleanDataAndRedirectToLogin();
     });
 
-    // Botão principal de batalha
     const battleButton = createButton(this, width / 2, height * 0.60, 'BATALHA', () => {
       this.scene.start('MatchOnlineScene');
     });
-
-    // Painel inferior com outros botões
-    // const inventoryBtn = createButton(this, width / 2 - 120, height - 80, 'INVENTÁRIO', () => {
-    //   console.log('Abrir inventário');
-    // });
-
-    // const heroesBtn = createButton(this, width / 2, height - 80, 'HERÓIS', () => {
-    //   console.log('Abrir seleção de heróis');
-    // });
-
-    // const shopBtn = createButton(this, width / 2 + 120, height - 80, 'LOJA', () => {
-    //   console.log('Abrir loja');
-    // });
   }
 
   cleanDataAndRedirectToLogin() {

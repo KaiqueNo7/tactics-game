@@ -41,7 +41,7 @@ export const config = {
   },
   render: {
     pixelArt: false,
-    antialias: false,
+    antialias: true,
     antialiasGL: false
   },
   fps: {
