@@ -1,3 +1,4 @@
+import { i18n } from "../../i18n";
 import { registerTurnManagerSocketEvents, unregisterTurnManagerSocketEvents } from "../services/turn-manager-socket-events";
 import BotPlayer from "./botPlayer";
 
@@ -38,11 +39,11 @@ export default class TurnManager {
     const isMyTurn = this.currentTurn.playerId === this.user.id;
 
     if(isMyTurn){
-      this.gameUI.showMessage('Sua vez!');
+      this.gameUI.showMessage(i18n.your_turn);
     }
 
     if(this.currentTurn.numberTurn == 15){
-      this.gameUI.showMessage('Morte súbita em 5 turnos!');
+      this.gameUI.showMessage(i18n.sudden_death);
     }
 
     if(this.currentTurn.numberTurn >= 20){

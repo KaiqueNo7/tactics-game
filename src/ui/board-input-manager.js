@@ -1,3 +1,5 @@
+import { i18n } from "../../i18n";
+
 export default class BoardInputManager {
   constructor(scene, board, socket) {
     this.scene = scene;
@@ -16,10 +18,7 @@ export default class BoardInputManager {
     const turnManager = gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
 
-    if (!isMyHero) {
-      this.scene.gameUI.showMessage('Esse herói não é seu.');
-      return;
-    }
+    if (!isMyHero) return;
 
     if (this.selectedHero === hero) {
       this.deselectHero();
@@ -49,14 +48,14 @@ export default class BoardInputManager {
   handleEnemyHeroSelection(targetHero, turnManager) {
     if (this.selectedHero?.attackTarget) {
       if (turnManager.currentTurn.attackedHeroes.has(this.selectedHero)) {
-        this.scene.gameUI.showMessage('Este herói já atacou neste turno.');
+        this.scene.gameUI.showMessage(i18n.already_attacked);
       } else {
         this.board.attackHero(this.selectedHero, targetHero);
         turnManager.markHeroAsAttacked(this.selectedHero);
       }
       this.deselectHero();
     } else {
-      this.scene.gameUI.showMessage('Aguarde a sua vez!');
+      this.scene.gameUI.showMessage(i18n.wait_your_turn);
     }
   }
 

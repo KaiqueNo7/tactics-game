@@ -1,5 +1,6 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
 import Phaser from 'phaser';
+import { i18n } from "../../i18n.js";
 
 export default class Board extends Phaser.GameObjects.GameObject {
   constructor(scene, socket, roomId, gameManager, user) {
@@ -69,7 +70,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
     }
     
     if (!currentPlayer.heroes.includes(hero)) {
-      this.scene.gameUI.showMessage('Aguarde a sua vez!');
+      this.scene.gameUI.showMessage(i18n.wait_your_turn);
     
       return;
     }
@@ -157,13 +158,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
     const turnManager = gameManager.getTurnManager();
     const currentPlayer = turnManager.getCurrentPlayer();
   
-    if (!currentPlayer.heroes.includes(attacker)) {
-      this.scene.gameUI.showMessage("Você só pode atacar com seus heróis.");
-      return;
-    }
+    if (!currentPlayer.heroes.includes(attacker)) return;
 
     if (turnManager.currentTurn.attackedHeroes.includes(attacker.id)) {
-      this.scene.gameUI.showMessage("Este herói já atacou neste turno.");
+      this.scene.gameUI.showMessage(i18n.already_attacked);
       this.selectedHero = null;
       this.clearHighlights();
       return;
@@ -551,13 +549,10 @@ export default class Board extends Phaser.GameObjects.GameObject {
       const turnManager = gameManager.getTurnManager();
       const heroId = hero.id;
 
-      if (!hero || !targetHex){
-        console.log('Herói ou hexágono alvo inválido.');
-        return;
-      } 
+      if (!hero || !targetHex) return; 
     
       if (!turnManager.canMoveHero(heroId)) {
-        this.scene.gameUI.showMessage("Este herói não pode se mover.");
+        this.scene.gameUI.showMessage(i18n.cannot_move);
         this.clearHighlights();
         this.selectedHero = null;    
         return;

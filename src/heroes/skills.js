@@ -3,6 +3,7 @@ export const skills = {
     apply: ({hero}) => {
         hero.heal(hero.stats.attack);
     },
+    description: "absorb_roots_desc",
     triggers: ['onAttack', 'onCounterAttack']
   },
   beyondFront: {
@@ -37,6 +38,7 @@ export const skills = {
         scene.uiManager.heroTalk(hero, 'Hiay!');
       }
     },
+    description: "beyond_front_desc",
     triggers: ['onAttack']
   },
   brokenDefense: {
@@ -53,6 +55,7 @@ export const skills = {
         hero.damageApplied = true;
       }
     },
+    description: "broken_defense_desc",
     triggers: ['onAttack']
   },  
   firstPunch: {
@@ -62,20 +65,19 @@ export const skills = {
           hero.increaseAttack(2);
           hero.firstPunchApplied = true;
           console.log(`${hero.name} prepara um soco poderoso! (+2 ataque)`);
-          scene.uiManager.heroTalk(hero, 'Ta na hora do fight!');
         }
         return;
       }
 
       if (target && !hero.firstAttack) {
         console.log(`${hero.name} usa seu First Punch causando dano adicional!`);
-        scene.uiManager.heroTalk(hero, 'Soco carregado!');
         target.takeDamage(hero.stats.attack, hero, isCounterAttack);
         hero.damageApplied = true;
         hero.increaseAttack(-2);
         return;
       }
     },
+    description: "first_punch_desc",
     triggers: ['onTurnStart', 'onAttack', 'onCounterAttack']
   },
   goodLuck: {
@@ -96,6 +98,7 @@ export const skills = {
         console.log(`${hero.name} não teve sorte!`);
       }
     },
+    description: "good_luck_desc",
     triggers: ['onTurnEnd']
   },  
   poisonAttack: {
@@ -118,7 +121,6 @@ export const skills = {
       }
 
       if (!poisonEffect) {
-        scene.uiManager.heroTalk(hero, 'Veneno!');
         target.applyStatusEffect({
           duration: 3,
           effect: (target) => {
@@ -129,6 +131,7 @@ export const skills = {
         });
       }
     },
+    description: "poison_attack_desc",
     triggers: ['onAttack', 'onCounterAttack']        
   },
   trustInTeam: {
@@ -141,14 +144,13 @@ export const skills = {
 
       if (allies.length > 0 && !buffed) {
         console.log(`${hero.name} está com aliados próximos! (+1 ataque)`);
-        scene.uiManager.heroTalk(hero, 'Aliado próximo!');
         hero.increaseAttack(1);
       } else if (allies.length === 0 && buffed) {
         console.log(`${hero.name} não tem aliados próximos! (-1 ataque)`);
-        scene.uiManager.heroTalk(hero, 'Estou sozinho...');
         hero.increaseAttack(-1);
       }
     },
+    description: "trust_in_team_desc",
     triggers: ['onMove', 'onTurnStart']
   },
   aloneIsBetter: {
@@ -162,6 +164,7 @@ export const skills = {
         hero.damageApplied = true;
       }
     },
+    description: "alone_is_better_desc",
     triggers: ['onAttack', 'onCounterAttack']
   }, 
   health: {
@@ -180,6 +183,7 @@ export const skills = {
         }
       });
     },
+    description: "health_desc",
     triggers: ['onTurnEnd']
   },
   clean: {
@@ -200,6 +204,7 @@ export const skills = {
         }
       });
     },
+    description: "clean_desc",
     triggers: ['onAttack']
   },
   rage: {
@@ -218,6 +223,7 @@ export const skills = {
         board.moveHero(target, nextHex);
       }
     },
+    description: "rage_desc",
     triggers: ['onAttack']
   }
 };

@@ -2,6 +2,7 @@ import { createButton, createBackground, createText, getUserData } from '../../u
 import Player from '../../core/player.js';
 import { getSocket } from '../../services/game-api-service.js';
 import { SOCKET_EVENTS } from '../../../api/events.js';
+import { i18n } from '../../../i18n.js';
 
 export default class FindingMatchScene extends Phaser.Scene {
   constructor() {
@@ -20,7 +21,7 @@ export default class FindingMatchScene extends Phaser.Scene {
     createBackground(this, height, width);
   
     const player = new Player(
-      this.user.username?.trim().substring(0, 20) || 'Jogador_' + Math.floor(Math.random() * 1000),
+      this.user.username?.trim().substring(0, 20) || 'Player_' + Math.floor(Math.random() * 1000),
       [],
       this.user.id,
       null
@@ -30,19 +31,19 @@ export default class FindingMatchScene extends Phaser.Scene {
       player: player.toJSON(),
     });
   
-    this.procurandoText = createText(this, width / 2, 100, 'PROCURANDO', 28);
+    this.searchingText = createText(this, width / 2, 100, i18n.searching, 28);
   
     this.dots = '';
     this.time.addEvent({
       callback: () => {
         this.dots = this.dots.length < 3 ? this.dots + '.' : '';
-        this.procurandoText.setText('PROCURANDO' + this.dots);
+        this.searchingText.setText(i18n.searching + this.dots);
       },
       delay: 500,
       loop: true
     });
   
-    createButton(this, width / 2, 500, 'CANCELAR', () => {
+    createButton(this, width / 2, 500, i18n.cancel, () => {
       socket.emit(SOCKET_EVENTS.QUIT_QUEUE);
       this.scene.stop('FindingMatchScene');
       this.scene.start('MatchOnlineScene');

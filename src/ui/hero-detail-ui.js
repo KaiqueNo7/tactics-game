@@ -1,3 +1,5 @@
+import { i18n } from "../../i18n";
+
 export default function createHeroDetailUI(scene, withConfirmButton = false) {
   const centerX = scene.scale.width / 2;
   const centerY = scene.scale.height / 2 - 50;
@@ -45,7 +47,7 @@ export default function createHeroDetailUI(scene, withConfirmButton = false) {
   ]);
 
   if (withConfirmButton) {
-    elements.confirmButton = scene.add.text(centerX - 50, centerY + 100, 'Selecionar', {
+    elements.confirmButton = scene.add.text(centerX - 50, centerY + 100, i18n.select, {
       backgroundColor: '#1E3888',
       color: '#fff8dc',
       fontSize: '16px',
@@ -71,8 +73,10 @@ export default function createHeroDetailUI(scene, withConfirmButton = false) {
     const ability = hero.ability || hero.stats.ability || '-';
 
     const abilitiesFormatted = abilities.length
-      ? abilities.map(a => a.description).join('\n')
-      : 'Sem habilidades.';
+      ? abilities.map(a => i18n[a.description] || a.description).join('\n')
+      : 'No skills';
+
+    console.log(hero);
 
     elements.previewSprite.setTexture('heroes', frame);
     elements.heroNameText.setText(hero.name);

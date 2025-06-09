@@ -3,8 +3,8 @@ import {
   createBackground,
   createText,
   setUserData,
-  getUserData
 } from '../../utils/helpers';
+import { i18n } from '../../../i18n';
 
 export default class MainMenuScene extends Phaser.Scene {
   constructor() {
@@ -39,9 +39,7 @@ export default class MainMenuScene extends Phaser.Scene {
       this.cleanDataAndRedirectToLogin();
     }
 
-    const userName = user.username;
-
-    createText(this, width / 2, 40, userName, '18px', '#fff', 'bold').setOrigin(0.5);
+    createText(this, width / 2, 40, `${user.username}`, '18px', '#fff', 'bold').setOrigin(0.5);
 
     this.add.image(width / 2 - 100, 80, 'coin_icon').setScale(0.5);
     createText(this, width / 2 - 80, 80, `${user.coins}`, '14px', '#fff').setOrigin(0, 0.5);
@@ -52,13 +50,16 @@ export default class MainMenuScene extends Phaser.Scene {
     this.add.image(width / 2 + 80, 80, 'skull_icon').setScale(0.5);
     createText(this, width / 2 + 100, 80, `${user.losses}L`, '14px', '#fff').setOrigin(0, 0.5);
 
-    const settingsBtn = this.add.image(width - 40, 40, 'settings_icon').setInteractive();
-    settingsBtn.setScale(0.5);
-    settingsBtn.on('pointerdown', () => {
+    createText(this, 40, 40, `Lvl: ${user.level}`, '14px', '#fff').setOrigin(0, 0.5);
+
+    const leaverBtn = createText(this, width - 40, height - 40, i18n.exit, '12px', '#fff', 'bold').setInteractive();
+    leaverBtn.setScale(1);
+    leaverBtn.setOrigin(0.5);
+    leaverBtn.on('pointerdown', () => {
       this.cleanDataAndRedirectToLogin();
     });
 
-    const battleButton = createButton(this, width / 2, height * 0.60, 'BATALHA', () => {
+    const battleButton = createButton(this, width / 2, height * 0.60, i18n.battle, () => {
       this.scene.start('MatchOnlineScene');
     });
   }

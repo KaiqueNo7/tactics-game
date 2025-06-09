@@ -1,3 +1,4 @@
+import { i18n } from "../../i18n.js";
 import { getSocket } from "../services/game-api-service.js";
 
 export default class UIManager {
@@ -107,34 +108,8 @@ export default class UIManager {
     }
   }
 
-  setTextWithBackground(textObject, content) {
-    textObject.setText(content);
-    if (content && content.trim() !== '') {
-      textObject.setStyle({ backgroundColor: '#444444' });
-    } else {
-      textObject.setStyle({ backgroundColor: null });
-    }
-
-    this.characterPanel.setVisible(true);
-  }
-
-  showDetailedCharacterInfo(character) {
-    const text = `Personagem: ${character.name}\n` +
-                     `Vida: ${character.stats.currentHealth}\n` +
-                     `Ataque: ${character.stats.attack}\n` +
-                     `Passiva: ${character.abilities.passive}\n` +
-                     `Habilidades: ${character.abilities.specialSkills}`;
-        
-    this.setTextWithBackground(this.characterPanel, text);
-  }
-
-  hideDetailedCharacterInfo() {
-    this.setTextWithBackground(this.characterPanel, '');
-    this.characterPanel.setVisible(false);
-  }
-
   showVictoryUI(iWon) {
-    const resultText = iWon ? 'Vitória' : 'Derrota';
+    const resultText = iWon ? i18n.victory : i18n.defeat;
     const width = this.scene.scale.width;
     const height = this.scene.scale.height;
   
@@ -149,7 +124,7 @@ export default class UIManager {
       strokeThickness: 4,
     }).setOrigin(0.5).setDepth(100);
   
-    const playAgainBtn = this.scene.add.text(width / 2, height * 0.80, 'Continuar', {
+    const playAgainBtn = this.scene.add.text(width / 2, height * 0.80, i18n.continue, {
       backgroundColor: '#222',
       fill: '#00ff00',
       fontSize: Math.round(width * 0.035) + 'px',

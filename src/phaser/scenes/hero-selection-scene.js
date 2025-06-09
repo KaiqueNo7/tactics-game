@@ -7,6 +7,7 @@ import {
   getHeroData, 
   getUserData } from '../../utils/helpers.js';
 import createHeroDetailUI from '../../ui/hero-detail-ui.js';
+import { i18n } from '../../../i18n.js';
 
 export default class HeroSelectionScene extends Phaser.Scene {
   constructor() {
@@ -297,10 +298,7 @@ export default class HeroSelectionScene extends Phaser.Scene {
   confirmSelection(hero) {
     const currentPlayer = this.selectionOrder[this.currentStep].player;
 
-    if (currentPlayer !== this.playerNumber) {
-      console.warn('Não é sua vez de selecionar!');
-      return;
-    }
+    if (currentPlayer !== this.playerNumber) return;
 
     if(this.selecting == false){
       this.socket.emit(SOCKET_EVENTS.HERO_SELECTED_REQUEST, {
@@ -319,9 +317,9 @@ export default class HeroSelectionScene extends Phaser.Scene {
     if (!current) return;
 
     if (current.player === this.playerNumber) {
-      this.turnInfoText.setText('É a sua vez de escolher um herói').setStyle({ color: '#ffd700' });
+      this.turnInfoText.setText(i18n.your_turn_choose_hero).setStyle({ color: '#ffd700' });
     } else {
-      this.turnInfoText.setText('Aguardando o oponente escolher...').setStyle({ color: '#cccccc' });
+      this.turnInfoText.setText(i18n.waiting_for_opponent_choose).setStyle({ color: '#cccccc' });
     }    
   
     this.player1NameText.setStyle({
