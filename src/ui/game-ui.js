@@ -137,6 +137,30 @@ export default class GameUI extends Phaser.GameObjects.Container {
     hero.add(hero.healthIcon);
   
     const healthColor = hero.stats.currentHealth < hero.hp ? '#FF6666' : '#FFFFFF';
+
+    if (hero.ability) {
+      // Decide a textura do ícone com base na habilidade
+      let texture = null;
+      switch (hero.ability) {
+        case 'Sprint':
+          texture = 'sprint';
+          break;
+        case 'Ranged':
+          texture = 'ranged';
+          break;
+        case 'Taunt':
+          texture = 'taunt';
+          break;
+      }
+
+      if (texture) {
+        hero.abilitySymbol = this.scene.add.image(7, offsetY - 10, texture);
+        hero.abilitySymbol.setScale(0.280);
+        hero.abilitySymbol.setDepth(3);
+        hero.abilitySymbol.setOrigin(1, 0.5);
+        hero.add(hero.abilitySymbol);
+      }
+    }
   
     hero.healthText = this.scene.add.text(17, offsetY, `${hero.stats.currentHealth}`, {
       align: 'center',

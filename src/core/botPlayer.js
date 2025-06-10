@@ -29,18 +29,31 @@ export default class BotPlayer {
           if (targetHex) {
             await this.moveHeroTo(hero, targetHex.label);
             plannedMoves.add(targetHex.label);
-            await this.delay(500);
+            await this.delay(800);
           }
         }
       }
   
       if (!alreadyAttacked) {
         const enemiesInRange = this.board.getEnemiesInRange(hero, hero.attackRange);
-        for (const hex of enemiesInRange) {
+
+        const tauntTargets = enemiesInRange.filter(hex => {
+          const target = hex.occupiedBy;
+          return target?.state?.isAlive && target.ability == 'Taunt';
+        });
+
+        const fallbackTargets = enemiesInRange.filter(hex => {
+          const target = hex.occupiedBy;
+          return target?.state?.isAlive && !target.ability != 'Taunt';
+        });
+
+        const prioritizedTargets = [...tauntTargets, ...fallbackTargets];
+
+        for (const hex of prioritizedTargets) {
           const target = hex.occupiedBy;
           if (target?.state?.isAlive) {
             await this.board.attackHero(hero, target);
-            await this.delay(500);
+            await this.delay(800);
             break;
           }
         }
@@ -56,28 +69,30 @@ export default class BotPlayer {
   chooseClosestToEnemy(hexes, hero, plannedMoves) {
     const enemies = this.gameManager.getEnemyHeroes(hero.playerId).filter(e => e.state.isAlive);
     if (enemies.length === 0) return null;
-  
+
     const filteredHexes = hexes.filter(h => !plannedMoves.has(h.label));
     if (filteredHexes.length === 0) return null;
-  
+
+    const weakestEnemy = enemies.reduce((lowest, curr) => {
+      return curr.stats.hp < lowest.stats.currentHealth ? curr : lowest;
+    }, enemies[0]);
+
+    const enemyHex = this.board.getHexByLabel(weakestEnemy.state.position);
+    if (!enemyHex) return null;
+
     let closestHex = null;
     let minDistance = Infinity;
-  
+
     for (const hex of filteredHexes) {
-      for (const enemy of enemies) {
-        const enemyHex = this.board.getHexByLabel(enemy.state.position);
-        if (!enemyHex) continue;
-  
-        const distance = this.board.calculateDistance(hex, enemyHex);
-        if (distance < minDistance) {
-          minDistance = distance;
-          closestHex = hex;
-        }
+      const distance = this.board.calculateDistance(hex, enemyHex);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestHex = hex;
       }
     }
-  
+
     return closestHex;
-  }  
+  }
 
   async moveHeroTo(hero, hexLabel) {
     this.socket.emit(SOCKET_EVENTS.HERO_MOVE_REQUEST, {
@@ -86,7 +101,7 @@ export default class BotPlayer {
       targetLabel: hexLabel
     });
 
-    await this.delay(300);
+    await this.delay(500);
   }
 
   delay(ms) {

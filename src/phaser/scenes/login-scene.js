@@ -10,7 +10,7 @@ export default class LoginScene extends Phaser.Scene {
   }
 
   preload() {
-    this.load.image('background', 'assets/background/menu.png');
+    this.load.image('background', 'assets/background/MenuScreen.jpg');
   }
 
   create() {

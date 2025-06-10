@@ -151,7 +151,7 @@ export const skills = {
       }
     },
     description: "trust_in_team_desc",
-    triggers: ['onMove', 'onTurnStart']
+    triggers: ['onMove', 'onTurnStart', 'onDie']
   },
   aloneIsBetter: {
     apply: ({hero, target, isCounterAttack, scene}) => {

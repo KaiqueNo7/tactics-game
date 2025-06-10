@@ -45,10 +45,6 @@ class Hero extends Phaser.GameObjects.Container {
   
     this.setInteractive();
     this.id = id;
-
-    if (this.ability === 'Taunt') {
-      this.applyTaunt();
-    }
   }
 
   addPlayerId(playerId) {
@@ -100,21 +96,6 @@ class Hero extends Phaser.GameObjects.Container {
         }
       });
     });
-  }
-
-
-  applyTaunt() {
-    if (this.shieldSprite) return;
-  
-    const shield = this.scene.add.image(0, 0, 'shield');
-    shield.setScale(0.5);
-    shield.setDepth(15);
-    shield.setY(-13);
-    shield.setX(-13);
-    shield.setOrigin(0.5, 0.5);
-    
-    this.add(shield);
-    this.shieldSprite = shield;
   }
 
   applyStatusEffect(effect) {
@@ -241,6 +222,8 @@ class Hero extends Phaser.GameObjects.Container {
     if (hexHeroDie) {
       this.scene.board?.handleHeroDeath(this, hexHeroDie);
     }
+
+    this.triggerSkills('onDie');
     
     this.scene.gameUI?.updateGamePanel(gameState.players ?? []);
   }  
