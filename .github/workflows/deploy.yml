@@ -12,7 +12,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - name: Deploy to server
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm install
+        working-directory: ./tactics-game # caso o projeto esteja numa subpasta
+
+      - name: Build project
+        run: npm run build
+        working-directory: ./tactics-game
+
+      - name: Prepare build for deployment
+        run: ls -la tactics-game/dist
+
+      - name: Deploy build to server
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ vars.REMOTE_HOST }}
+          username: ${{ vars.REMOTE_USER }}
+          key: ${{ secrets.SERVER_SSH_KEY }}
+          port: ${{ vars.REMOTE_PORT }}
+          source: "tactics-game/dist/*"
+          target: "/domains/kaiquenocetti.com/public_html/hero-tactics/"
+
+      - name: Clean old files on server (optional)
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ vars.REMOTE_HOST }}
@@ -21,25 +47,5 @@ jobs:
           port: ${{ vars.REMOTE_PORT }}
           script: |
             cd domains/kaiquenocetti.com/public_html/hero-tactics/
-
-            # Apagar apenas arquivos de frontend antigos
-            rm -rf assets favicon.ico index.html tactics-game
-
-            git clone --depth=1 https://github.com/KaiqueNo7/tactics-game.git
-
-            cd tactics-game
-
-            echo "VITE_API_BASE=${{ secrets.API_BASE }}" >> .env
-            echo "VITE_APLICATION_URL=${{ secrets.APLICATION_URL }}" >> .env
-
-            npm install
-            npm run build
-
-            # Voltar para a pasta pública
-            cd ..
-
-            # Copiar novos arquivos da build
-            cp -R tactics-game/dist/* .
-
-            # (Opcional) Apagar node_modules para não ocupar espaço
-            rm -rf tactics-game
+            # Se quiser garantir que só ficam os arquivos novos:
+            find . -maxdepth 1 ! -name 'dist' ! -name '.' -exec rm -rf {} +
