@@ -25,7 +25,7 @@ export const config = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 430,
+    width: 360,
     height: window.innerHeight,
     min: {
       width: 360,
