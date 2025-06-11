@@ -35,7 +35,6 @@ export default class PreMatchScene extends Phaser.Scene {
     this.load.image('sprint', 'assets/ui/sprint.png');
     this.load.image('ranged', 'assets/ui/ranged.png');
     this.load.image('taunt', 'assets/ui/taunt.png');
-    this.load.image('ability', 'assets/ui/ability.png');
     this.load.spritesheet('poison_effect', 'assets/sprites/poison.png', {
       frameWidth: 180,
       frameHeight: 180

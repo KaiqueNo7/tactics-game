@@ -37,7 +37,6 @@ export default class UIManager {
       }
     });
   }
-  
 
   showFloatingAmount(hero, amount, x = 0, color = '#FF6666') {
     if (!hero || !hero.add) return;

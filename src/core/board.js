@@ -240,8 +240,8 @@ export default class Board extends Phaser.GameObjects.GameObject {
       hero.sprite.setScale(0.2);
     } 
 
-    if (hero.shieldSprite){
-      hero.shieldSprite.destroy();
+    if (hero.abilitySymbol){
+      hero.abilitySymbol.destroy();
     }
 
     if (hero.effectSprites.poison){
@@ -479,14 +479,18 @@ export default class Board extends Phaser.GameObjects.GameObject {
     const selectedHero = this.selectedHero;
 
     hexEntries.forEach(({ hex, type }) => {
-      const texture = type === 'enemy' ? 'hex_highlight_enemy' : 'hex_highlight';
+      const isEnemy = type === 'enemy';
+      const texture = isEnemy ? 'hex_highlight_enemy' : 'hex_highlight';
+      const alpha = isEnemy ? 1.0 : 0.5;
+      const angle = isEnemy ? 0 : 30;
+      const size = isEnemy ? this.hexRadius * 1.8 : this.hexRadius * 2.3;
 
       const highlight = this.scene.add.image(hex.x, hex.y, texture)
         .setOrigin(0.5)
         .setDepth(1)
-        .setDisplaySize(this.hexRadius * 2.3, this.hexRadius * 2.3)
-        .setAngle(30)
-        .setAlpha(0.4);
+        .setDisplaySize(size, size)
+        .setAngle(angle)
+        .setAlpha(alpha);
 
       this.boardContainer.add(highlight);
       this.highlightedHexes.push(highlight);
@@ -505,8 +509,30 @@ export default class Board extends Phaser.GameObjects.GameObject {
         .setInteractive(hexHitArea, Phaser.Geom.Polygon.Contains)
         .setDepth(2);
 
-      interactiveHex.on('pointerover', () => highlight.setAlpha(0.6));
-      interactiveHex.on('pointerout', () => highlight.setAlpha(0.4));
+      if (isEnemy) {
+        interactiveHex.on('pointerover', () => {
+          this.scene.tweens.add({
+            targets: highlight,
+            alpha: 0.3,
+            duration: 150,
+            yoyo: true,
+            repeat: 1
+          });
+        });
+
+        interactiveHex.on('pointerout', () => {
+          highlight.setAlpha(alpha);
+        });
+
+      } else {
+        interactiveHex.on('pointerover', () => {
+          highlight.setAlpha(0.8);
+        });
+
+        interactiveHex.on('pointerout', () => {
+          highlight.setAlpha(alpha);
+        });
+      }
 
       interactiveHex.on('pointerdown', () => {
         if (!selectedHero) return;
@@ -517,7 +543,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
             heroId: selectedHero.id,
             targetLabel: hex.label
           });
-        } else if (type === 'enemy') {
+        } else if (isEnemy) {
           const target = this.gameManager.getHeroByPosition(hex.label);
           if (target) {
             console.log('Atacando inimigo:', target.name);
@@ -531,7 +557,7 @@ export default class Board extends Phaser.GameObjects.GameObject {
       });
 
       this.boardContainer.add(interactiveHex);
-      this.highlightedHexes.push(interactiveHex); // opcional: se quiser limpá-los depois
+      this.highlightedHexes.push(interactiveHex);
     });
   }
         
