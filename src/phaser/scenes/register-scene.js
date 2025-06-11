@@ -1,4 +1,5 @@
 import { createBackground, login } from "../../utils/helpers";
+import { i18n } from '../../../i18n.js';
 
 export default class RegisterScene extends Phaser.Scene {
   constructor() {
@@ -32,14 +33,12 @@ export default class RegisterScene extends Phaser.Scene {
       borderRadius: '10px'
     });
 
-    // Título
     const title = document.createElement('h2');
-    title.textContent = 'Criar conta';
+    title.textContent = i18n.create_account;
     title.style.color = '#fff';
     title.style.marginBottom = '10px';
     container.appendChild(title);
 
-    // Username label + input
     const usernameLabel = document.createElement('label');
     usernameLabel.textContent = 'Username';
     usernameLabel.style.color = '#fff';
@@ -49,14 +48,14 @@ export default class RegisterScene extends Phaser.Scene {
     const usernameInput = document.createElement('input');
     Object.assign(usernameInput, {
       type: 'text',
-      placeholder: 'Digite seu nome de usuário'
+      placeholder: 'Username'
     });
     this.styleInput(usernameInput);
     container.appendChild(usernameInput);
 
     // Password label + input
     const passwordLabel = document.createElement('label');
-    passwordLabel.textContent = 'Senha';
+    passwordLabel.textContent = i18n.password;
     passwordLabel.style.color = '#fff';
     passwordLabel.style.alignSelf = 'flex-start';
     container.appendChild(passwordLabel);
@@ -64,7 +63,7 @@ export default class RegisterScene extends Phaser.Scene {
     const passwordInput = document.createElement('input');
     Object.assign(passwordInput, {
       type: 'password',
-      placeholder: 'Digite sua senha'
+      placeholder: 'Password'
     });
     this.styleInput(passwordInput);
     container.appendChild(passwordInput);
@@ -79,7 +78,7 @@ export default class RegisterScene extends Phaser.Scene {
 
     // Botão de registro
     const registerBtn = document.createElement('button');
-    registerBtn.textContent = 'Registrar';
+    registerBtn.textContent = i18n.register;
     Object.assign(registerBtn.style, {
       width: '100%',
       padding: '10px',
@@ -134,7 +133,7 @@ export default class RegisterScene extends Phaser.Scene {
 
     // Link para Login
     const loginLink = document.createElement('a');
-    loginLink.textContent = 'Já tem conta? Entrar';
+    loginLink.textContent = i18n.has_account;
     Object.assign(loginLink.style, {
       color: '#00bcd4',
       fontFamily: 'Fredoka',

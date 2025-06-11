@@ -1,4 +1,12 @@
 {
+  "create_account": "Create account",
+  "password": "Password",
+  "not_have_account": "Don't have an account yet? Register",
+  "has_account": "Already have an account? Log in",
+  "login": "Login",
+  "register": "Register",
+  "turn": "Turn",
+  "your_username": "Enter your username",
   "find_match": "寻找匹配",
   "searching": "搜索中",
   "sudden_death": "5回合后突然死亡！",

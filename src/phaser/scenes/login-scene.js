@@ -1,5 +1,5 @@
-import { connectSocket } from "../../services/game-api-service";
-import { createBackground, login, registerSyncGameStateListener } from "../../utils/helpers";
+import { createBackground, login } from "../../utils/helpers";
+import { i18n } from '../../../i18n.js';
 
 export default class LoginScene extends Phaser.Scene {
   constructor() {
@@ -52,14 +52,14 @@ export default class LoginScene extends Phaser.Scene {
     const usernameInput = document.createElement('input');
     Object.assign(usernameInput, {
       type: 'text',
-      placeholder: 'Digite seu nome de usuário'
+      placeholder: 'Username'
     });
     this.styleInput(usernameInput);
     container.appendChild(usernameInput);
 
     // Password label + input
     const passwordLabel = document.createElement('label');
-    passwordLabel.textContent = 'Senha';
+    passwordLabel.textContent = i18n.password;
     passwordLabel.style.color = '#fff';
     passwordLabel.style.alignSelf = 'flex-start';
 
@@ -68,7 +68,7 @@ export default class LoginScene extends Phaser.Scene {
     const passwordInput = document.createElement('input');
     Object.assign(passwordInput, {
       type: 'password',
-      placeholder: 'Digite sua senha'
+      placeholder: 'Password'
     });
     this.styleInput(passwordInput);
     container.appendChild(passwordInput);
@@ -83,7 +83,7 @@ export default class LoginScene extends Phaser.Scene {
 
     // Botão de login
     const loginBtn = document.createElement('button');
-    loginBtn.textContent = 'Entrar';
+    loginBtn.textContent = i18n.login;
     Object.assign(loginBtn.style, {
       width: '100%',
       padding: '10px',
@@ -123,7 +123,7 @@ export default class LoginScene extends Phaser.Scene {
     container.appendChild(loginBtn);
 
     const registerLink = document.createElement('a');
-    registerLink.textContent = 'Não tem conta ainda? Cadastrar';
+    registerLink.textContent = i18n.not_have_account;
     Object.assign(registerLink.style, {
       color: '#00bcd4',
       fontFamily: 'Fredoka',

@@ -1,4 +1,13 @@
 {
+  "not_have_account": "Ainda não tem uma conta? Cadastre-se",
+  "has_account": "Já tem uma conta? Entrar",
+  "register": "Registrar",
+  "turn": "Turno Atual",
+  "your_username": "Enter your username",
+  "create_account": "Criar conta",
+  "password": "Senha",
+  "have_account": "Não tem conta ainda? Cadastrar",
+  "login": "Entrar",
   "find_match": "Procurar Partida",
   "searching": "Procurando",
   "sudden_death": "Morte súbita em 5 turnos!",

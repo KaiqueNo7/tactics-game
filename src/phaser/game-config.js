@@ -25,16 +25,16 @@ export const config = {
   scale: {
     mode: Phaser.Scale.FIT,
     autoCenter: Phaser.Scale.CENTER_BOTH,
-    width: 360,
+    width: window.innerWidth,
     height: window.innerHeight,
-    min: {
-      width: 360,
-      height: 640
-    },
-    max: {
-      width: 1080,
-      height: 1920
-    }
+    // min: {
+    //   width: 360,
+    //   height: 640
+    // },
+    // max: {
+    //   width: 520,
+    //   height: 920
+    // }
   },
   dom: {
     createContainer: true

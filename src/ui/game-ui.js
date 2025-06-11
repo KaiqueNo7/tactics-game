@@ -1,4 +1,5 @@
 import { SOCKET_EVENTS } from "../../api/events.js";
+import { i18n } from "../../i18n.js";
 import createHeroDetailUI from "./hero-detail-ui.js";
 
 export default class GameUI extends Phaser.GameObjects.Container {
@@ -197,7 +198,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
       strokeThickness: 1.5
     }).setOrigin(0.5);
     
-    this.turnLabelText = this.scene.add.text(0, - 40, 'Turno Atual', {
+    this.turnLabelText = this.scene.add.text(0, - 40, i18n.turn, {
       align: 'center',
       color: '#FFFFFF',
       fontSize: '12px',
@@ -299,7 +300,7 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
   updateGamePanel(players) {
     const tileSize = 75;
-    const spacingY = 50;
+    const spacingY = 40;
     const startY = 50;
   
     players.forEach((player, playerIndex) => {
@@ -325,17 +326,17 @@ export default class GameUI extends Phaser.GameObjects.Container {
   
         const heroContainer = this.scene.add.container(x, startY + 10);
   
-        const tile = this.scene.add.image(0, + 10, 'hex_tile')
+        const tile = this.scene.add.image(0, 0, 'hex_tile')
           .setOrigin(0.5)
-          .setScale(tileSize / 54);
+          .setScale(tileSize / 64);
   
         if (!isAlive) {
           tile.setTint(0x808080);
         }
   
-        const sprite = this.scene.add.sprite(0, + 5, 'heroes', frame)
+        const sprite = this.scene.add.sprite(0, 0, 'heroes', frame)
           .setOrigin(0.5)
-          .setScale(0.160);
+          .setScale(0.100);
   
         heroContainer.add([tile, sprite]);
         heroContainer.setSize(tileSize, tileSize).setInteractive();
